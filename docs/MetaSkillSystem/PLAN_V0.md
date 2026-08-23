@@ -523,9 +523,37 @@ calcolati in `mss:query --fail`; D5 celle owner §4-bis/allineamento `mss:status
 **P2A (in corso):** manuale operativo + puntatori ingresso/viste — [`MANUALE_OPERATIVO_MSS_V0.md`](MANUALE_OPERATIVO_MSS_V0.md).
 Non implementa export motore né bootstrap in repo nuova.
 
-**P2B (prossimo):** export/bootstrap riproducibile del motore MSS; intervista iniziale; prova agente
-freddo fuori da questo albero. Restano fuori P2: D2/D3 (gate A/B), hook Claude, guard PROD,
-generatore viste (`D14`), P3 `mss:move`, P4 copertura sicurezza.
+**P2B:** export/bootstrap riproducibile del motore MSS; intervista iniziale; prova agente
+freddo fuori da questo albero. Restano fuori P2: hook Claude, guard PROD, generatore viste (`D14`),
+P3 `mss:move`, P4 copertura sicurezza.
+
+### Prossimo task atomico dal 24-08-2026 — apertura del ciclo **orchestratore**
+
+Revisione esterna del 24-08: [`Report-revisione-esterna-stato-mss-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-revisione-esterna-stato-mss-24-08-26.md).
+Sette difetti su nove dell'audit 23-08 risultano chiusi e coperti da test **che nominano il difetto**.
+
+**Mandato vivo:** [`PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](PROMPT_ORCHESTRATOR_MSS_24-08-26.md) —
+sostituisce `PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`, che resta agli atti come storia di `P0`/`P1`/`P2A`.
+Definisce che cosa significa **100% della struttura** (una prova eseguibile per ciascuno degli otto
+requisiti `R1`–`R8` di §16.2), raggruppa i difetti aperti in **cinque mandati** e fissa il budget di
+documentazione per mandato.
+
+| Mandato | Copre | Perché in quest'ordine |
+|---|---|---|
+| `M-A` protezioni | guardia PROD non tracciata e non testata, hook Claude senza test, cablaggio non riproducibile | unica falla con conseguenze su **dati reali**; fix piccoli |
+| `M-B` cancelli | `npm run validate` ibrido → `validate:app` / `validate:mss:all` / `validate`; tag di ripristino (`SK-1`); freno all'allowlist (`D21`) | risparmio token per ogni agente futuro; chiude la metà aperta di `SK-5` |
+| `M-C` attrezzi che non mentono | **`N1`** (nuovo): `mss:capsule` esce 0 e **scrive** una capsula che `validate:mss` poi rifiuta — controlla la completezza dei giudizi, non la validità. Più il generatore viste (`D14`) | `D18`: l'attrezzo **importa** la regola del `core`, non la riscrive |
+| `M-D` portabilità | `P2B` | `R8` |
+| `M-E` attrezzi mancanti | `mss:move` (`SK-9`/`R6`, oggi a zero), poi `mss:review` (`SK-3`) | strutturali, ultimi |
+
+`M-A`+`M-B` vanno affidati **insieme** a un unico esecutore: otto fix piccoli, un solo report, una
+sola capsula. `M-C` non si accorpa a nulla e vuole un revisore di famiglia diversa.
+
+**Rettifica documentale eseguita il 24-08 (`V2`/`V3`):** la tabella di stato in
+`Senior-Eval-Pack/ROADMAP_V0.md` è stata **rimossa**, non corretta — aveva accumulato tre stati
+diversi di `SK-7`; i conteggi di test cablati in `Senior-Eval-Pack/HANDOFF_SENIOR_V0.md` sono stati
+sostituiti dal comando che li produce. È un tampone: torneranno alla prima seduta produttiva finché
+`D14` resta aperto.
 
 **Storico di questa sezione, per non riaprire strade già chiuse:**
 

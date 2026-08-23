@@ -1,0 +1,225 @@
+{
+  "session_event": {
+    "intent_user": "Controllare lo stato del MetaSkillSystem dopo il lavoro proseguito senza di me, in ruolo di revisore esterno e agente senior; produrre un report del quadro generale e giudicare l'organizzazione del cantiere; rispondere alla domanda sulla separazione fra suite di test app e suite MSS.",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "revisore esterno MetaSkillSystem",
+    "area": "MetaSkillSystem / revisione di stato e organizzazione cantiere",
+    "authorization": {
+      "read": [
+        "docs/MetaSkillSystem/**",
+        "docs/Sessioni di lavoro/**",
+        "scripts/mss/**",
+        ".cursor/hooks/**",
+        ".claude/hooks/**",
+        "package.json",
+        ".github/workflows/ci.yml",
+        "git log e git ls-files"
+      ],
+      "write": [
+        "docs/Sessioni di lavoro/24-08-26/Report-revisione-esterna-stato-mss-24-08-26.md",
+        "docs/Sessioni di lavoro/24-08-26/judgments-revisione-esterna-stato-mss-24-08-26.json",
+        "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+        "docs/MetaSkillSystem/PLAN_V0.md sezione 15",
+        "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md puntatori",
+        "docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md e HANDOFF_SENIOR_V0.md, rimozione viste stale"
+      ],
+      "forbid": [
+        "src/**",
+        "scripts/mss/**",
+        "Supabase e qualunque scrittura su database",
+        "chiusura o riapertura di pacchetti SK-*",
+        "modifiche altrui presenti nel working tree"
+      ]
+    },
+    "authorized_outputs": [
+      "report di revisione esterna",
+      "capsula di sessione generata dall'attrezzo"
+    ],
+    "route": {
+      "chosen": "MetaSkillSystem deep in sola lettura: riesecuzione dei comandi, rilettura del codice nei punti che reggono le dichiarazioni, giudizio di revisore",
+      "alternatives_or_conflicts": "nessuno"
+    },
+    "observed_outcome": "Sette difetti su nove segnalati il 23-08 risultano chiusi e coperti da test di regressione nominati sul difetto. Restano aperti D7 e D8 (hook Claude e guardia PROD senza test ne CI, con la copia sotto .claude non tracciata da git) e D14, peggiorato: le viste ROADMAP e HANDOFF portano ora tre strati contraddittori su SK-7 e un conteggio test falso. Il manuale operativo e i comandi citati nell'ingresso chiudono il difetto di scoperta degli attrezzi. Il cancello npm run validate resta un ibrido che non copre per intero ne l'app ne il MetaSkillSystem. Difetto nuovo trovato chiudendo questa seduta con l'attrezzo: mss:capsule esce 0 e scrive la capsula nel report anche quando il record viola le regole che validate:mss applica subito dopo (enum Persona e gate product_candidate); il generatore controlla la completezza dei giudizi ma non la loro validita. Su richiesta di Matteo sono state ripulite le due viste stale togliendo la tabella invece di correggerla (32 righe in meno) ed e stato scritto il mandato dell'agente orchestratore, che definisce il 100 per cento della struttura come una prova eseguibile per ciascuno degli otto requisiti R1-R8.",
+    "open_items": [
+      "D7 e D8: hook Claude e guardia PROD senza test ne CI; la copia sotto .claude non e tracciata",
+      "D14: generatore delle viste assente, rettifiche manuali che si stratificano",
+      "SK-5: npm run validate non include test:mss ne validate:docs",
+      "allowlist documentale a 26 voci senza freno automatico",
+      "SK-1: nessun tag di ripristino",
+      "mss:capsule non valida il JSONL che produce: va importato il validator del core prima della scrittura, coerente con D18"
+    ],
+    "subject_runtime": {
+      "actor_id": "Matteo",
+      "provider": "non_applicabile: soggetto umano",
+      "model": "non_applicabile: soggetto umano",
+      "runtime": "non_applicabile: soggetto umano",
+      "surface": "chat Claude Code"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "stato Git",
+        "esiti di test aggregati",
+        "path del repository",
+        "hash commit"
+      ],
+      "prohibited_content": [
+        "materiale privato non registrabile",
+        "segreti",
+        "token di autenticazione"
+      ],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-plan",
+        "owner_id": "SYS-1",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "sezione 4-bis e 4-ter",
+        "revision_or_hash": "43feca8",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-audit",
+        "owner_id": "SYS-1",
+        "uri_or_path": "docs/MetaSkillSystem/AUDIT_STATO_REALE_23-08-26.md",
+        "stable_anchor_or_event_id": "elenco difetti D1-D8 e D14",
+        "revision_or_hash": "43feca8",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-manuale",
+        "owner_id": "SK-10",
+        "uri_or_path": "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        "stable_anchor_or_event_id": "manuale operativo agente freddo",
+        "revision_or_hash": "43feca8",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-roadmap",
+        "owner_id": "SEP",
+        "uri_or_path": "docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md",
+        "stable_anchor_or_event_id": "traccia viva SK-* e rettifica audit",
+        "revision_or_hash": "43feca8",
+        "sensitivity": "internal"
+      }
+    ],
+    "environment": "repo locale Windows, branch env/test, HEAD 43feca8; working tree con due file non tracciati e uno modificato, appartenenti ad altro lavoro e lasciati intatti"
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "Matteo ha chiesto una revisione esterna prima di continuare a sviluppare, e ha dichiarato l'ordine di priorita dei fix invece di lasciarlo dedurre.",
+          "actor": "Matteo",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "owner-plan",
+          "effect": "il backlog e stato ordinato secondo criteri suoi dichiarati, non secondo la comodita dell'esecutore",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5",
+        "role": "revisore esterno",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "unverified",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessuna valutazione Persona",
+        "criterion_ref": "owner-plan",
+        "evidence_refs": [],
+        "notes": "nessuna inferenza di competenza o livello"
+      }
+    },
+    "sistema": {
+      "delta": "verificato",
+      "assertions": [
+        {
+          "rule_id_version": "revisione-esterna@24-08-26",
+          "trigger_event": "riesecuzione dei comandi MSS e rilettura del codice nei punti che reggono le dichiarazioni del piano",
+          "decision_or_output_changed": "confermata la chiusura di D1-D5, privacy e source_refs con test nominati; confermati aperti D7, D8 e D14; rilevato che la copia della guardia PROD sotto .claude non e tracciata da git e che le viste ROADMAP e HANDOFF portano stati e conteggi falsi",
+          "G": 2,
+          "O": 2,
+          "E": 1
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5",
+        "role": "revisore esterno",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-plan",
+        "evidence_refs": [
+          "source-audit",
+          "source-roadmap"
+        ],
+        "notes": "ogni affermazione poggia su un comando rieseguito o su una lettura di codice citata nel report"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "report-revisione-esterna-stato-mss-24-08-26",
+          "primary_type": "registro",
+          "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-revisione-esterna-stato-mss-24-08-26.md",
+          "recipient": "Matteo",
+          "problem_or_job": "sapere lo stato di salute reale del MetaSkillSystem e se il cantiere e organizzato correttamente, prima di autorizzare altro sviluppo",
+          "intended_use": "decisione sull'ordine dei prossimi mandati e sulla separazione dei cancelli",
+          "conceived_by": "richiesta di Matteo",
+          "decided_by": "Matteo",
+          "directed_by": "chat corrente",
+          "authored_by": "anthropic-claude-opus-5",
+          "verified_by": "validate:mss sul report con require-capsule",
+          "acceptance_criterion": "ogni affermazione riconducibile a un comando rieseguito o a una lettura di codice citata; capsula valida",
+          "verification_or_use_evidence": "controlli registrati in questa capsula con exit code reali",
+          "verification_status": "self_report",
+          "owner_ref": "owner-plan",
+          "privacy_release": "internal",
+          "support_files": [
+            "docs/MetaSkillSystem/AUDIT_STATO_REALE_23-08-26.md"
+          ],
+          "relations_no_double_count": [
+            "registro di revisione; non e un prodotto di alcun pacchetto SK-*"
+          ],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "fail",
+            "result": "not_eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5",
+        "role": "revisore esterno",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-plan",
+        "evidence_refs": [],
+        "notes": "registro interno, non deliverable esterno"
+      }
+    }
+  }
+}

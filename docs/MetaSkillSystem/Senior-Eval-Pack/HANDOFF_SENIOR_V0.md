@@ -218,17 +218,21 @@ La revisione indipendente ha rimisurato sette affermazioni: **sei confermate, un
    `REPORT_PATH_RE` condivisa in `adapter.mjs`; contratto allineato `0.1.1`/`freeze-2`. Stato owner
    **`PROVATO`** in `PLAN_V0.md` §4-bis `S4`; chiusura formale riservata a Matteo. Report:
    `docs/Sessioni di lavoro/23-08-26/Report-ciclo-SK-4-23-08-26.md` + revisione R1.
-3. **Copertura test attrezzi — parziale.** `SK-11` A1–A4 (23-08): `test:mss:tools` **9 test** su
-   `query`/`status`/`runtime`; lint script su `.mjs`. Restano A5 (controprova rossa) e `SK-5` (CI).
-   `test:mss` (42 fixture) copre il validator, non tutti i percorsi CLI degli attrezzi.
+3. **Copertura test attrezzi — parziale.** Il numero di test è **mobile**: eseguire
+   `npm run test:mss:tools` e `npm run test:mss`, mai copiarlo qui (era la fonte di `V3`). Restano
+   scoperti: guardie PROD, hook di chiusura Claude, e il percorso in cui `mss:capsule` scrive una
+   capsula che il validator rifiuta (`N1`). Dettaglio e mandato:
+   [`../PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](../PROMPT_ORCHESTRATOR_MSS_24-08-26.md) §3.
 4. `rule_id_version` è **testo libero**, non un identificatore: non esiste alcun campo strutturato
    per i **gate** né per i **file toccati**.
-5. Gli **hook** vivono in un file **escluso da git**: quell'enforcement non esiste per nessun altro.
+5. Gli **hook**: dal 23-08 lo script di chiusura Claude è tracciato, ma **il file di impostazioni
+   che lo attiva no**, e la guardia PROD del canale Claude non è tracciata affatto. Su una repo
+   clonata quell'enforcement non esiste (`A1`/`A4` del mandato orchestratore).
 
 ### Cosa non è dimostrato
 
-- Che gli attrezzi `mss:*` siano **pienamente** coperti: A1–A4 fanno la prima rete (9 test tools),
-  ma A5 e CI (`SK-5`) **non sono ancora chiusi**.
+- Che gli attrezzi `mss:*` siano **pienamente** coperti: la suite `tools` è la prima rete, ma
+  protezioni e autovalidazione del generatore restano scoperte (`A2`, `A3`, `N1`).
 - Che le capsule scritte a mano dicano il vero: durante la costruzione un generatore ha registrato
   `fail` su comandi che in realtà **passavano** (su Windows `npm` è `npm.cmd`). Un controllo falso
   invalida la raccolta quanto uno omesso.

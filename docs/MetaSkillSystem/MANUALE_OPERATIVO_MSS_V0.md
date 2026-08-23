@@ -15,7 +15,7 @@
 | Fotografia tecnica recente | [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md) | Rettifiche «dichiarato vs reale»; non sostituisce il plan |
 | Schema capsula | [`CONTRATTO_CAPSULA_SESSIONE_V0.md`](CONTRATTO_CAPSULA_SESSIONE_V0.md) | Coppia viva `0.1.1` / `freeze-2`; dove vive la capsula; `controls` obbligatori |
 | Chiusura report | [`../Comunicazione-Skill/CHIUSURA_SESSIONE.md`](../Comunicazione-Skill/CHIUSURA_SESSIONE.md) | Sezioni obbligatorie + Q1–Q6 per standard/deep |
-| Mandato P0/P1/P2 (se citato) | [`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`](PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md) | Task atomici audit; aggiornare o sostituire quando il plan §15 cambia |
+| **Mandato vivo** | [`PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](PROMPT_ORCHESTRATOR_MSS_24-08-26.md) | Ciclo orchestratore: cosa vuol dire 100%, i cinque mandati, budget documentazione, controverifica. Sostituisce [`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`](PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md), che resta come storia |
 | Vista continuità senior | [`Senior-Eval-Pack/HANDOFF_SENIOR_V0.md`](Senior-Eval-Pack/HANDOFF_SENIOR_V0.md) | Puntatore operativo; **vince** `PLAN_V0.md` se divergono |
 | Vista sequenza SEP (parcheggiata) | [`Senior-Eval-Pack/ROADMAP_V0.md`](Senior-Eval-Pack/ROADMAP_V0.md) | Non è il fronte attivo; traccia `SK-*` come vista |
 
@@ -73,7 +73,7 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 | **Opzioni** | `--template` · `--check "ID=>comando"` (legacy: un solo `:`) · `--role` · `--tool` · `--package "id\|ver\|ref"` |
 | **Uso sicuro** | `npm run mss:capsule -- --template` · `npm run mss:capsule -- --help` |
 
-**Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. **Attenzione SK-7:** D2/D3 noti — `--check` può registrare `pass` falso su alcuni input; non usare per prove gate finché gate A/B Matteo.
+**Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. D2/D3 sono **chiusi** (sintassi canonica `ID=>comando`, ambigui rifiutati). **Attenzione `N1`:** il generatore esce `0` e **scrive** anche quando i giudizi violano le regole del validator — dopo `mss:capsule`, esegui sempre `validate:mss` sul report.
 
 ### 2.5 Suite e cancelli globali
 
