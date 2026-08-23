@@ -685,7 +685,18 @@ function fieldPathParts(fieldPath) {
   return parts
 }
 
-function applyAmendmentsView(entries, file, out, historicalById = new Map()) {
+/**
+ * Applica la catena degli amendment (contratto §6) e restituisce la vista effettiva.
+ *
+ * Esportata perche' e' l'UNICA implementazione di questa regola nel repo: il validator la usa per
+ * un bundle alla volta, `scripts/mss/query.mjs` la usa sull'intero corpus. Due implementazioni
+ * divergenti della stessa regola sarebbero un difetto peggiore di quello che la regola governa.
+ *
+ * @param applied  se passato un array, ogni campo effettivamente cambiato ci viene registrato
+ *                 (chi ha corretto cosa, con valore prima e dopo). Serve ai lettori che devono
+ *                 MOSTRARE la differenza fra grezzo ed effettivo, non solo applicarla.
+ */
+export function applyAmendmentsView(entries, file, out, historicalById = new Map(), applied = null) {
   const effective = entries.map((entry) => ({ ...entry, record: structuredClone(entry.record) }))
   const byId = new Map(effective.map((entry) => [entry.record?.record_id, entry]))
   for (const [recordId, variants] of historicalById) {
@@ -795,7 +806,20 @@ function applyAmendmentsView(entries, file, out, historicalById = new Map()) {
         })
         continue
       }
+      const previous = parent[leaf]
       parent[leaf] = structuredClone(change.corrected_value)
+      if (applied) {
+        const source = group.candidates[0].entry
+        applied.push({
+          amendment_id: source.record?.amendment?.amendment_id,
+          target_record_id: group.targetId,
+          field_path: group.fieldPath,
+          previous,
+          corrected: change.corrected_value,
+          effective_at: source.record?.amendment?.effective_at,
+          file: source.file,
+        })
+      }
     }
   }
   return effective

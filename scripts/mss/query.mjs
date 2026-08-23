@@ -25,7 +25,8 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { extractCapsulesFromMarkdown, detectReportMode } from './parse.mjs'
-import { SCHEMA_CURRENT, SCHEMA_LEGACY, REVISION_CURRENT, REVISION_LEGACY } from './rules.mjs'
+import { SCHEMA_CURRENT, SCHEMA_LEGACY, REVISION_CURRENT, REVISION_LEGACY, RULE } from './rules.mjs'
+import { applyAmendmentsView } from './core.mjs'
 
 // Radice cercata risalendo fino al package.json: robusta rispetto alla profondita della cartella.
 // Stessa strategia di scripts/mss/status.mjs; non si importa da li perche quel modulo stampa
@@ -192,6 +193,118 @@ function collect() {
   if (senzaSessione) anomalies.push({ path: '<vari>', kind: `record senza session_id: ${senzaSessione}` })
 
   return { files, records, sessions: [...sessions.values()], anomalies, headCount: head.size, workCount: work.size }
+}
+
+// ------------------------------------------------------------------ vista effettiva (contratto §6)
+//
+// NON reimplementa la catena degli amendment: la DELEGA a core.mjs::applyAmendmentsView(), che e'
+// la stessa funzione usata dal validator. Una sola implementazione della regola nel repo: se
+// cambia, cambia per tutti e due i lettori insieme. Qui si fa solo l'adattamento di forma
+// (i record di query.mjs sono {r, path}, quelli di core.mjs sono {record, file, line}) e la
+// classificazione dei casi che il validator segnala altrove ma questa vista deve MOSTRARE.
+//
+// Differenza di perimetro, voluta: il validator applica la catena su un bundle alla volta, questo
+// comando la applica sull'intero corpus, dove un amendment puo' avere il bersaglio in un report
+// diverso dal proprio.
+
+/**
+ * Costruisce la vista effettiva dell'intero corpus.
+ *
+ * Ritorna { dataEffettiva, applicate, nonRisolte }. `dataEffettiva` ha la STESSA FORMA di `data`,
+ * cosi' i modelli esistenti (verificaModel, failModel, ...) funzionano invariati passando l'uno o
+ * l'altro: la differenza fra le due chiamate E' la vista effettiva.
+ *
+ * Non ripara nulla: una catena che non si risolve finisce in `nonRisolte`, mostrata per intero.
+ */
+function buildVistaEffettiva(data) {
+  const entries = data.records.map((rec) => ({ record: rec.r, file: rec.path, line: 0 }))
+  const byId = new Map()
+  for (const e of entries) {
+    // Identita' divergenti con lo stesso record_id sono gia' un difetto che validate:mss segnala
+    // altrove (MSS-RECORD-ID-COLLISION): qui si tiene la prima occorrenza e non si duplica quel
+    // controllo, che non e' lo scopo di questo lettore.
+    if (e.record?.record_id && !byId.has(e.record.record_id)) byId.set(e.record.record_id, e.record)
+  }
+
+  const nonRisolte = []
+  // Due casi che applyAmendmentsView() salta in silenzio perche' il validator li segnala in altri
+  // controlli (validateAmendment per supersedes, validateGlobalRecordView per orfano/non-final).
+  // Un LETTORE deve mostrarli: un archivio che nasconde le proprie incoerenze e' il difetto che
+  // questo cantiere esiste per impedire. Classificazione, non riapplicazione della regola.
+  for (const e of entries) {
+    if (e.record?.record_type !== 'amendment' || e.record?.finalization !== 'final') continue
+    const a = e.record.amendment
+    if (a?.relation !== 'amends') {
+      nonRisolte.push({
+        rule: RULE.AMENDMENT_SUPERSEDES_UNSUPPORTED,
+        amendment_id: a?.amendment_id,
+        target_record_id: a?.target_record_id,
+        field_path: null,
+        motivo: 'relation "supersedes" non porta un payload applicabile (contratto §6)',
+        path: e.file,
+      })
+      continue
+    }
+    const target = byId.get(a.target_record_id)
+    if (!target || target.finalization !== 'final') {
+      nonRisolte.push({
+        rule: target ? RULE.AMENDMENT_TARGET_NOT_FINAL : RULE.AMENDMENT_ORPHAN,
+        amendment_id: a.amendment_id,
+        target_record_id: a.target_record_id,
+        field_path: null,
+        motivo: target
+          ? 'il record bersaglio esiste ma non e finalization:final'
+          : 'target_record_id non trovato in nessun report letto da questo comando',
+        path: e.file,
+      })
+    }
+  }
+
+  const issues = []
+  const applied = []
+  const effective = applyAmendmentsView(entries, '<corpus>', issues, new Map(), applied)
+
+  // Gli issue che la vista produce sono esattamente le catene che non si risolvono: conflitto,
+  // field_path invalido o che non risolve, previous_value_or_hash che non coincide.
+  for (const i of issues) {
+    const [, targetId = null, fieldPath = null] = String(i.fieldPath || '').split(':')
+    nonRisolte.push({
+      rule: i.rule,
+      amendment_id: null,
+      target_record_id: targetId,
+      field_path: fieldPath,
+      motivo: i.message,
+      path: i.file,
+    })
+  }
+
+  const recordsEffettivi = data.records.map((rec, i) => ({ ...rec, r: effective[i].record }))
+
+  const sessioniEffettive = new Map()
+  for (const rec of recordsEffettivi) {
+    const id = rec.r.session_id
+    if (!id) continue
+    if (!sessioniEffettive.has(id)) sessioniEffettive.set(id, { id, records: [], paths: new Set() })
+    const s = sessioniEffettive.get(id)
+    s.records.push(rec)
+    s.paths.add(rec.path)
+  }
+  for (const s of sessioniEffettive.values()) {
+    s.event = s.records.find((x) => x.r.record_type === 'session_event')?.r || null
+  }
+
+  const applicate = applied.map((a) => ({
+    amendment_id: a.amendment_id,
+    target_record_id: a.target_record_id,
+    field_path: a.field_path,
+    precedente: a.previous,
+    corretto: a.corrected,
+    effective_at: a.effective_at,
+    path: a.file,
+  }))
+
+  const dataEffettiva = { ...data, records: recordsEffettivi, sessions: [...sessioniEffettive.values()] }
+  return { dataEffettiva, applicate, nonRisolte }
 }
 
 // ------------------------------------------------------------------ utilita
@@ -454,13 +567,12 @@ function verificaModel(data) {
     else fuoriContratto.set(s, (fuoriContratto.get(s) || 0) + 1)
   }
 
-  // LIMITE STRUTTURALE, dichiarato qui perche va dichiarato anche in output: questo comando legge
-  // gli stati COSI COME dichiarati nei record, e NON applica la catena degli amendment che il
-  // contratto (CONTRATTO_CAPSULA_SESSIONE_V0.md §6) prescrive per ricostruire la vista effettiva.
-  // Un amendment valido puo correggere annotation.verification.status di un record gia scritto: se
-  // lo fa, il conteggio sopra resta quello GREZZO (pre-correzione), non quello effettivo. Implementare
-  // l'applicazione della catena e un pacchetto a se (decisione di Matteo) — qui ci si limita a
-  // contare gli amendment presenti e a dichiarare il limite, non ad applicarli.
+  // NOTA (23-08-26, vista effettiva): questa funzione resta VOLUTAMENTE grezza — legge gli stati
+  // COSI COME scritti nel record passato, senza applicare alcuna catena. Non e piu un limite
+  // nascosto: e una scelta di composizione. renderVerifica() chiama questa stessa funzione due
+  // volte, una su `data` (grezzo) e una su `vista.dataEffettiva` (dopo aver applicato la catena
+  // amendment del contratto §6 — vedi buildVistaEffettiva()), e mostra entrambe le risposte fianco
+  // a fianco: la differenza fra le due chiamate E' la vista effettiva, non un campo speciale qui.
   const amds = amendments(data)
   const FIELD_VERIFICATION_STATUS_RE = /(^|\.)annotation\.verification\.status$/
   const amdsVerificationStatus = amds.filter((a) =>
@@ -532,84 +644,116 @@ function verificaModel(data) {
   }
 }
 
-function renderVerifica(data) {
+/** Anteprima troncata di un valore per una riga di terminale: il valore intero vive in --json. */
+function previewValore(v, n = 70) {
+  const s = typeof v === 'string' ? v : JSON.stringify(v)
+  const t = s.replace(/\s+/g, ' ').trim()
+  return t.length > n ? `${t.slice(0, n)}…` : t
+}
+
+function renderVerifica(data, vista) {
   const m = verificaModel(data)
+  const me = verificaModel(vista.dataEffettiva)
   const tot = m.conVerification.length
   const L = intestazione(data)
   L.push(`${C.b}--verifica${C.x}  quante dichiarazioni sono verificate, e chi ha verificato chi`)
   L.push('')
   L.push(`  ${C.b}Stato di verifica delle annotazioni${C.x} ${C.d}(tutti e ${STATI_CONTRATTO.length} i valori del contratto, anche a zero)${C.x}`)
+  L.push(`  ${C.d}GREZZO = come scritto nel record originale · EFFETTIVO = dopo la catena degli amendment${C.x}`)
+  L.push(`  ${C.d}(contratto §6 — applicata sotto, in «Vista effettiva applicata»)${C.x}`)
   for (const s of STATI_CONTRATTO) {
-    const n = m.stati.get(s)
-    const col = n === 0 ? C.d : s === 'independently_verified' ? C.g : C.y
-    // «mai usato» e falso se un amendment valido usa gia questo valore per correggere un record:
-    // qui e 0 solo nei record GREZZI, non «mai usato» in senso assoluto nell'archivio.
-    let nota = ''
-    if (n === 0 && m.statiCorrettiDaAmendment.has(s)) {
-      nota = `  ${C.y}0 nei record grezzi — un amendment valido lo dichiara (vista non applicata, vedi sotto)${C.x}`
-    } else if (n === 0) {
-      nota = `  ${C.d}mai usato${C.x}`
-    }
-    L.push(`    ${col}${pad(s, 26)}${suTotale(n, tot)}${C.x}${nota}`)
+    const ng = m.stati.get(s)
+    const ne = me.stati.get(s)
+    const delta = ne - ng
+    const deltaTxt = delta === 0 ? '' : `  ${delta > 0 ? C.g : C.r}(${delta > 0 ? '+' : ''}${delta})${C.x}`
+    const col = ne === 0 ? C.d : s === 'independently_verified' ? C.g : C.y
+    L.push(`    ${col}${pad(s, 26)}${C.x}grezzo ${pad(suTotale(ng, tot), 10)}effettivo ${pad(suTotale(ne, tot), 10)}${deltaTxt}`)
   }
   for (const [k, v] of m.fuoriContratto) L.push(`    ${C.r}${pad(k, 26)}${suTotale(v, tot)}  FUORI CONTRATTO${C.x}`)
   L.push('')
   L.push(`  ${C.b}Chi ha verificato chi${C.x}`)
-  if (m.verifiedBy.length === 0) {
-    L.push(`    ${C.y}Non e ricostruibile nei record grezzi, e il motivo e esso stesso la risposta:${C.x}`)
-    L.push(`    il campo verification.verified_by e ${C.y}vuoto in tutte e ${tot} le annotazioni GREZZE${C.x}.`)
-    L.push(`    Il valore ${C.b}independently_verified${C.x} non compare ${C.y}mai${C.x} nei record grezzi, e nemmeno ${C.b}contradicted${C.x}.`)
+  L.push(`    ${C.y}Nei record GREZZI verification.verified_by e vuoto in tutte e ${tot} le annotazioni:${C.x}`)
+  L.push(`    ${C.d}nessuno ha mai scritto direttamente di aver verificato nessuno.${C.x}`)
+  if (me.verifiedBy.length === 0) {
+    L.push(`    ${C.d}Nella vista EFFETTIVA resta cosi: nessun amendment applicato in questo corpus corregge${C.x}`)
+    L.push(`    ${C.d}verification.verified_by. Il sistema resta autocertificato al 100% anche nella vista effettiva.${C.x}`)
+  } else {
     L.push('')
-    L.push(`    ${C.y}In ${data.sessions.length} sedute nessuno ha mai registrato NEI RECORD GREZZI di aver verificato nessuno.${C.x}`)
-    L.push(`    ${C.d}Il sistema e autocertificato al 100% NEI RECORD GREZZI.${C.x}`)
-    if (m.revisori.length) {
-      const tot = m.revisori.reduce((a, r) => a + r.controlli, 0)
-      const sedute = new Set(m.revisori.flatMap((r) => [...r.sedute]))
-      L.push('')
-      L.push(`    ${C.b}E pero delle review sono state fatte davvero.${C.x} ${C.d}L'unica traccia strutturata${C.x}`)
-      L.push(`    ${C.d}e recorded_by.role del session_event: un campo con semantica sua, mai una stringa${C.x}`)
-      L.push(`    ${C.d}di comando (a differenza del campo esecutore dei singoli controls).${C.x}`)
-      L.push(`    ${C.d}Criterio usato per riconoscerli, dichiarato perche tu possa rifiutarlo:${C.x}`)
-      L.push(`    ${C.d}il ruolo dichiarato della seduta (recorded_by.role) contiene «reviewer» o${C.x}`)
-      L.push(`    ${C.d}«revisor». Nessun altro testo e letto. Attenzione alla semantica: TUTTI i${C.x}`)
-      L.push(`    ${C.d}controls della seduta vengono attribuiti a chi l'ha condotta — non solo quelli${C.x}`)
-      L.push(`    ${C.d}il cui singolo esecutore nomina un revisore. E «quanti controlli sono registrati${C.x}`)
-      L.push(`    ${C.d}in una seduta condotta da un revisore», non «quali ha eseguito un revisore».${C.x}`)
-      // Larghezza colonna dinamica: un pad fisso si e gia rotto una volta (id da 36 caratteri
-      // attaccato al numero). Regge l'id piu lungo osservato + un margine, non un valore a memoria.
-      const largAttore = Math.max(20, ...m.revisori.map((r) => r.attore.length)) + 2
-      for (const r of m.revisori.sort((a, b) => b.controlli - a.controlli)) {
-        L.push(`      ${pad(r.attore, largAttore)}${r.controlli} controlli in ${r.sedute.size} seduta/e  ${C.d}ruolo: ${r.ruolo}${C.x}`)
+    L.push(`    ${C.g}Nella vista EFFETTIVA (dopo gli amendment) ${suTotale(me.verifiedBy.length, tot)} annotazioni hanno${C.x}`)
+    L.push(`    ${C.g}un verificatore — questa e la prima rettifica indipendente della storia del sistema,${C.x}`)
+    L.push(`    ${C.g}oggi visibile a questo comando per la prima volta:${C.x}`)
+    for (const a of me.verifiedBy) {
+      const chi = (a.r.annotation.verification.verified_by || [])
+        .map((v) => (typeof v === 'string' ? v : v?.actor_id ?? JSON.stringify(v)))
+        .join(', ')
+      const target = a.r.annotation?.subject_record_ids?.[0] ?? '?'
+      L.push(`      ${C.g}${pad(a.r.annotation.verification.status, 24)}${C.x}verificato da ${chi}`)
+      L.push(`        ${C.d}target: ${target} — ${a.path.split('/').pop()}${C.x}`)
+    }
+  }
+  if (m.revisori.length) {
+    const totC = m.revisori.reduce((a, r) => a + r.controlli, 0)
+    const sedute = new Set(m.revisori.flatMap((r) => [...r.sedute]))
+    L.push('')
+    L.push(`    ${C.b}Al di la del campo verification, delle review sono state condotte davvero.${C.x} ${C.d}L'unica traccia${C.x}`)
+    L.push(`    ${C.d}strutturata e recorded_by.role del session_event: un campo con semantica sua, mai una stringa${C.x}`)
+    L.push(`    ${C.d}di comando (a differenza del campo esecutore dei singoli controls).${C.x}`)
+    L.push(`    ${C.d}Criterio usato per riconoscerli, dichiarato perche tu possa rifiutarlo:${C.x}`)
+    L.push(`    ${C.d}il ruolo dichiarato della seduta (recorded_by.role) contiene «reviewer» o${C.x}`)
+    L.push(`    ${C.d}«revisor». Nessun altro testo e letto. Attenzione alla semantica: TUTTI i${C.x}`)
+    L.push(`    ${C.d}controls della seduta vengono attribuiti a chi l'ha condotta — non solo quelli${C.x}`)
+    L.push(`    ${C.d}il cui singolo esecutore nomina un revisore. E «quanti controlli sono registrati${C.x}`)
+    L.push(`    ${C.d}in una seduta condotta da un revisore», non «quali ha eseguito un revisore».${C.x}`)
+    // Larghezza colonna dinamica: un pad fisso si e gia rotto una volta (id da 36 caratteri
+    // attaccato al numero). Regge l'id piu lungo osservato + un margine, non un valore a memoria.
+    const largAttore = Math.max(20, ...m.revisori.map((r) => r.attore.length)) + 2
+    for (const r of m.revisori.sort((a, b) => b.controlli - a.controlli)) {
+      L.push(`      ${pad(r.attore, largAttore)}${r.controlli} controlli in ${r.sedute.size} seduta/e  ${C.d}ruolo: ${r.ruolo}${C.x}`)
+    }
+    L.push(`    ${C.d}${totC} controlli in sedute condotte da un revisore, in ${sedute.size} sedute.${C.x}`)
+  }
+  L.push('')
+  L.push(`  ${C.b}Vista effettiva applicata${C.x} ${C.d}(contratto §6 — non piu un limite dichiarato, ora un comportamento)${C.x}`)
+  L.push(`    ${C.d}Ordina gli amendment 'final' per effective_at (spareggio: record_id), li applica a batch per${C.x}`)
+  L.push(`    ${C.d}timestamp identico, naviga field_path sul valore CORRENTE del bersaglio (non sul grezzo originale).${C.x}`)
+  L.push(`    ${C.d}Solo relation:"amends" porta un payload; il bersaglio deve esistere ed essere final. Una catena${C.x}`)
+  L.push(`    ${C.d}che non risolve non viene silenziata ne riparata: resta elencata come tale qui sotto.${C.x}`)
+  L.push('')
+  L.push(`    ${C.d}amendment nel corpus (record): ${m.amendmentsTotal}${C.x}`)
+  L.push(`    ${C.g}campi applicati con successo: ${vista.applicate.length}${C.x}`)
+  L.push(`    ${vista.nonRisolte.length === 0 ? C.d : C.r}catene non risolte: ${vista.nonRisolte.length}${vista.nonRisolte.length === 0 ? ' — nessuna, in questo momento' : ''}${C.x}`)
+  L.push('')
+  if (vista.applicate.length === 0) {
+    L.push(`    ${C.d}nessun campo applicato: l'elenco completo e vuoto per costruzione, non per omissione.${C.x}`)
+  } else {
+    L.push(`    ${C.b}Elenco completo dei campi cambiati dalla vista effettiva${C.x} ${C.d}(tutti, non solo verification.status)${C.x}`)
+    vista.applicate.forEach((a, i) => {
+      L.push(`      ${C.d}${i + 1}.${C.x} ${a.field_path} ${C.d}su${C.x} ${a.target_record_id}`)
+      const pg = previewValore(a.precedente)
+      const pe = previewValore(a.corretto)
+      L.push(`         ${C.d}grezzo:    ${pg}${C.x}`)
+      L.push(`         ${C.g}effettivo: ${pe}${C.x}`)
+      // Due anteprime identiche non significano «nessun cambiamento»: il troncamento puo cadere
+      // prima del punto in cui i due valori divergono. Dirlo, invece di lasciar credere il falso.
+      if (pg === pe) {
+        L.push(`         ${C.y}(le due anteprime coincidono: la differenza cade oltre il troncamento — valore intero in --json)${C.x}`)
       }
-      L.push(`    ${C.y}${tot} controlli in sedute condotte da un revisore, in ${sedute.size} sedute —${C.x}`)
-      L.push(`    ${C.y}e zero annotazioni che li registrano NEI RECORD GREZZI come independently_verified.${C.x}`)
-      L.push(`    ${C.d}La review e avvenuta; il campo che la renderebbe interrogabile e rimasto vuoto nel record${C.x}`)
-      L.push(`    ${C.d}grezzo — ma vedi subito sotto: un amendment puo averlo gia corretto altrove.${C.x}`)
-    }
-  } else {
-    L.push(`    verified_by valorizzato in ${suTotale(m.verifiedBy.length, tot)} annotazioni:`)
-    for (const a of m.verifiedBy.slice(0, 20)) {
-      L.push(`      ${(a.r.annotation.verification.verified_by || []).join(', ')} ${C.d}— ${a.path.split('/').pop()}${C.x}`)
-    }
+      L.push(`         ${C.d}${a.amendment_id} · effective_at ${a.effective_at} · ${a.path.split('/').pop()}${C.x}`)
+    })
+  }
+  if (vista.nonRisolte.length > 0) {
+    L.push('')
+    L.push(`    ${C.r}${C.b}Catene non risolte${C.x} ${C.d}(mostrate, non riparate — un difetto misurato vale piu di uno nascosto)${C.x}`)
+    vista.nonRisolte.forEach((u, i) => {
+      L.push(`      ${C.r}${i + 1}.${C.x} ${u.amendment_id} ${C.d}->${C.x} ${u.target_record_id}${u.field_path ? ` ${u.field_path}` : ''}`)
+      L.push(`         ${C.r}motivo: ${u.motivo}${C.x} ${C.d}[${u.rule}]${C.x}`)
+      L.push(`         ${C.d}${u.path}${C.x}`)
+    })
   }
   L.push('')
-  L.push(`  ${C.r}${C.b}Limite strutturale — vista grezza, non effettiva${C.x}`)
-  L.push(`    ${C.y}Questo comando legge gli stati COSI COME dichiarati nei record. NON applica la catena${C.x}`)
-  L.push(`    ${C.y}degli amendment che il contratto (CONTRATTO_CAPSULA_SESSIONE_V0.md §6) prescrive per${C.x}`)
-  L.push(`    ${C.y}ricostruire la vista effettiva. Implementarla e un pacchetto a se (decisione di Matteo,${C.x}`)
-  L.push(`    ${C.y}non di questo comando): qui ci si limita a contare gli amendment e dichiarare il limite.${C.x}`)
-  L.push('')
-  L.push(`    ${C.d}Amendment nel corpus: ${m.amendmentsTotal}${C.x}`)
-  if (m.amendmentsVerificationStatus.length === 0) {
-    L.push(`    ${C.d}Nessuno di questi corregge annotation.verification.status: i conteggi sopra coincidono${C.x}`)
-    L.push(`    ${C.d}anche con la vista effettiva, per quanto questo comando possa verificarlo.${C.x}`)
-  } else {
-    L.push(`    ${C.r}${m.amendmentsVerificationStatus.length} di questi correggono proprio annotation.verification.status${C.x}`)
-    L.push(`    ${C.r}— valori dichiarati: ${[...m.statiCorrettiDaAmendment].join(', ')}.${C.x}`)
-    L.push(`    ${C.r}Se applicati, i conteggi sopra cambierebbero: uno zero qui puo venire dal lettore${C.x}`)
-    L.push(`    ${C.r}che non applica la catena, non dal dato. --json espone questi amendment per intero${C.x}`)
-    L.push(`    ${C.r}(campo verifica.amendment_verification_status).${C.x}`)
-  }
+  L.push(`    ${C.d}La catena NON e reimplementata qui: e delegata a scripts/mss/core.mjs${C.x}`)
+  L.push(`    ${C.d}applyAmendmentsView(), la stessa funzione che usa il validator. Una sola implementazione${C.x}`)
+  L.push(`    ${C.d}della regola nel repo: se cambia, cambia per tutti e due i lettori insieme.${C.x}`)
   L.push('')
   L.push(`  ${C.b}Quello che il sistema DICHIARA con precisione${C.x} ${C.d}(il contrario di un archivio reticente)${C.x}`)
   L.push(`    ${C.d}verified_at e non_applicabile ovunque, ma con ${m.verifiedAt.length} motivi distinti scritti a mano:${C.x}`)
@@ -637,10 +781,12 @@ function renderVerifica(data) {
   L.push(`    ${C.d}(${m.outVbDistinti.length} valori distinti in tutto — elenco completo con --json)${C.x}`)
   L.push('')
   L.push(...nonVede([
-    'Uno stato di verifica e una dichiarazione di chi scrive: nessuna macchina lo controlla oggi.',
-    'Un valore a zero qui significa «mai usato nei record grezzi», non «non misurato» ne «mai corretto»: ' +
-      'un amendment valido puo gia dichiararlo altrove — vedi il blocco "Limite strutturale" sopra.',
-    'Questo comando non applica la catena degli amendment (contratto §6): legge stati dichiarati, non effettivi.',
+    'Uno stato di verifica e una dichiarazione di chi scrive: nessuna macchina lo controlla oggi, ' +
+      'ne per il grezzo ne per l\'effettivo — un amendment applicato resta autodichiarato da chi lo scrive.',
+    'Un valore a zero GREZZO qui puo diventare diverso da zero EFFETTIVO: la riga sopra mostra entrambi, ' +
+      'e "Vista effettiva applicata" elenca ogni campo che cambia e perche.',
+    'La vista effettiva e ricalcolata in memoria a ogni esecuzione: non scrive nulla su disco e non ' +
+      'modifica le capsule. Se una catena non risolve, resta elencata come tale, non silenziata.',
   ]))
   return L
 }
@@ -677,8 +823,9 @@ function failModel(data) {
   return { controlli, esiti, falliti, parziali, capsuleStatus, eventKind, contradicted, outNotEligible }
 }
 
-function renderFail(data) {
+function renderFail(data, vista) {
   const m = failModel(data)
+  const me = failModel(vista.dataEffettiva)
   const L = intestazione(data)
   L.push(`${C.b}--fail${C.x}  gli esiti negativi: il sistema promette di conservarli`)
   L.push('')
@@ -719,9 +866,12 @@ function renderFail(data) {
   }
   L.push(
     `    ${m.contradicted.length === 0 ? C.d : C.r}verification = contradicted    ` +
-      `${suTotale(m.contradicted.length, annotations(data).length)}${C.x}` +
-      `${m.contradicted.length === 0 ? `  ${C.d}mai usato${C.x}` : ''}`,
+      `grezzo ${suTotale(m.contradicted.length, annotations(data).length)}${C.x}` +
+      `  ${me.contradicted.length === 0 ? C.d : C.r}effettivo ${suTotale(me.contradicted.length, annotations(vista.dataEffettiva).length)}${C.x}`,
   )
+  if (me.contradicted.length !== m.contradicted.length) {
+    L.push(`    ${C.d}(la vista effettiva applica la catena amendment del contratto §6 — dettaglio in --verifica)${C.x}`)
+  }
   L.push(`    ${C.y}product_candidate not_eligible ${m.outNotEligible.length}${C.x} ${C.d}— il quinto gate non superato${C.x}`)
   L.push('')
   L.push(`  ${C.r}La storia dei gate NON e interrogabile da qui.${C.x}`)
@@ -828,8 +978,9 @@ function renderCosto(data) {
 
 // ------------------------------------------------------------------ riepilogo
 
-function renderRiepilogo(data) {
+function renderRiepilogo(data, vista) {
   const m = verificaModel(data)
+  const me = verificaModel(vista.dataEffettiva)
   const f = failModel(data)
   const r = regoleModel(data)
   const mo = modelliModel(data)
@@ -840,7 +991,10 @@ function renderRiepilogo(data) {
   L.push(`    record JSONL                      ${data.records.length} ${C.d}(~${(data.records.length / Math.max(data.sessions.length, 1)).toFixed(1)} per seduta)${C.x}`)
   L.push(`    regole distinte citate            ${r.stringhe.length} ${C.d}(${r.unaVolta.length} una volta sola, ${r.multiple.length} stringhe multi-regola)${C.x}`)
   L.push(`    provider piu presente             ${mo.provider[0] ? `${mo.provider[0][0]} — ${suTotale(mo.provider[0][1], data.sessions.length)} sedute` : '—'}`)
-  L.push(`    annotazioni verificate da terzi   ${C.y}${suTotale(m.stati.get('independently_verified'), m.conVerification.length)}${C.x} ${C.d}— il valore non compare mai${C.x}`)
+  L.push(
+    `    annotazioni verificate da terzi   ${C.y}${suTotale(m.stati.get('independently_verified'), m.conVerification.length)}${C.x} grezzo` +
+      `${C.d} · ${C.x}${C.g}${suTotale(me.stati.get('independently_verified'), me.conVerification.length)}${C.x} effettivo ${C.d}(dopo amendment — vedi --verifica)${C.x}`,
+  )
   L.push(`    controlli falliti conservati      ${f.falliti.length ? C.r : C.d}${f.falliti.length}${C.x}`)
   L.push(`    sedute senza controls             ${C.y}${suTotale(co.nessuno.length + co.assenti.length, data.sessions.length)}${C.x}`)
   L.push('')
@@ -928,6 +1082,7 @@ if (ignoti.length) {
 }
 
 const data = collect()
+const vista = buildVistaEffettiva(data)
 
 if (json) {
   const modelli = modelliModel(data)
@@ -979,7 +1134,8 @@ if (json) {
           sedute_totali: new Set(m.revisori.flatMap((r) => [...r.sedute])).size,
         },
         amendment_verification_status: {
-          nota: 'questo comando NON applica la catena degli amendment (contratto §6): i conteggi di stati sopra sono grezzi, non la vista effettiva',
+          nota: 'i conteggi di "stati" sopra restano grezzi per costruzione (verificaModel(data), non effettivo): ' +
+            'la vista effettiva completa, con tutti i campi applicati e le catene non risolte, e in verifica.vista_effettiva',
           amendment_totali_nel_corpus: m.amendmentsTotal,
           amendment_che_correggono_verification_status: m.amendmentsVerificationStatus.length,
           valori_dichiarati_da_amendment: [...m.statiCorrettiDaAmendment],
@@ -989,15 +1145,30 @@ if (json) {
             file: a.path,
           })),
         },
+        vista_effettiva: (() => {
+          const me = verificaModel(vista.dataEffettiva)
+          return {
+            nota: 'catena amendment (contratto §6) applicata su tutto il corpus delegando a ' +
+              'scripts/mss/core.mjs applyAmendmentsView(), la stessa funzione usata dal validator: ' +
+              'una sola implementazione della regola nel repo',
+            stati_effettivi: Object.fromEntries(me.stati),
+            delta_su_grezzo: Object.fromEntries(STATI_CONTRATTO.map((s) => [s, me.stati.get(s) - m.stati.get(s)])),
+            annotazioni_con_verified_by_effettivo: me.verifiedBy.length,
+            applicati: vista.applicate,
+            non_risolti: vista.nonRisolte,
+          }
+        })(),
       }
     })(),
     fail: (() => {
       const m = failModel(data)
+      const me = failModel(vista.dataEffettiva)
       return {
         esiti: Object.fromEntries(m.esiti),
         falliti: m.falliti.map((f) => ({ control_id: f.it.control_id, criterio: f.it.criterio, numeratore: f.it.numeratore, denominatore: f.it.denominatore, esecutore: f.it.esecutore, report: f.path })),
         capsule_status: Object.fromEntries(m.capsuleStatus),
         contradicted: m.contradicted.length,
+        contradicted_effettivo: me.contradicted.length,
       }
     })(),
     costo: (() => {
@@ -1016,11 +1187,11 @@ if (json) {
 
 const out = []
 if (scelte.length === 0) {
-  out.push(...renderRiepilogo(data))
+  out.push(...renderRiepilogo(data, vista))
 } else {
   for (const [i, s] of scelte.entries()) {
     if (i > 0) out.push('', `${C.d}${'─'.repeat(78)}${C.x}`, '')
-    out.push(...DOMANDE[s](data))
+    out.push(...DOMANDE[s](data, vista))
   }
   out.push('')
   out.push(...perimetro(data))

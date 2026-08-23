@@ -95,7 +95,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S3 | `SK-3` — `mss:review` (sola lettura) | `NON INIZIATO` | su una seduta con violazione nota la trova; su una pulita non inventa nulla |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | `NON INIZIATO` | i tre attacchi documentati (schema legacy · sotto-cartella · prefisso nome) vengono respinti |
 | S5 | `SK-5` — controlli MSS in CI su `env/test` | `NON INIZIATO` | una PR con capsula non valida rende la CI rossa |
-| S6 | `SK-6` — `mss:query` (sola lettura) | **`ESISTE, ATTREZZO FUNZIONANTE — chiusura non decisa`** (decide Matteo) | ✅ `npm run mss:query -- --regole/--modelli/--verifica` rispondono, provate a campione risalendo ai report d'origine · ✅ `npm run test:mss` **exit 0** (41 fixture + 32 gruppi) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ nessun test automatico copre `mss:query`: ESLint gira `--ext ts,tsx` e ignora `scripts/`, `test:mss` esercita il validator non il lettore · rettificato 22-08-26: capsula `SK-6` corretta con `amendment` (non riscritta) per il secondo segmento della seduta; criterio revisori spostato da `controls[].esecutore` a `recorded_by.role` (fatto stabile — non decade). Il conteggio che ne esce **cresce a ogni seduta di revisione registrata**: misurato **19/5** alle 22:44 del 22-08-26, **24/6** poco dopo (è atterrata la seduta del revisore Codex). Non è un numero da fissare qui: per il valore di oggi lancia `npm run mss:query -- --verifica` · ⚠️ **22-08-26, seconda tornata:** `mss:query` non applica la catena degli `amendment` (contratto §6) — legge stati grezzi, non la vista effettiva; dichiara ora il limite in output (conta gli `amendment` nel corpus e quelli che correggono `verification.status`) invece di affermare `independently_verified`/`contradicted` «mai usato» quando un `amendment` valido li usa già altrove |
+| S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica` rispondono, provate a campione risalendo ai report d'origine · ✅ `npm run test:mss` **exit 0** (41 fixture + 32 gruppi) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ nessun test automatico copre `mss:query`: ESLint gira `--ext ts,tsx` e ignora `scripts/`, `test:mss` esercita il validator non il lettore · rettificato 22-08-26: capsula `SK-6` corretta con `amendment` (non riscritta) per il secondo segmento della seduta; criterio revisori spostato da `controls[].esecutore` a `recorded_by.role` (fatto stabile — non decade). Il conteggio che ne esce **cresce a ogni seduta di revisione registrata**: misurato **19/5** alle 22:44 del 22-08-26, **24/6** poco dopo (è atterrata la seduta del revisore Codex). Non è un numero da fissare qui: per il valore di oggi lancia `npm run mss:query -- --verifica` · ⚠️ **22-08-26, seconda tornata:** `mss:query` non applica la catena degli `amendment` (contratto §6) — legge stati grezzi, non la vista effettiva; dichiara ora il limite in output (conta gli `amendment` nel corpus e quelli che correggono `verification.status`) invece di affermare `independently_verified`/`contradicted` «mai usato» quando un `amendment` valido li usa già altrove · ✅ **23-08-26, terza tornata (vista effettiva):** il limite sopra è chiuso. `mss:query` applica la catena degli `amendment` su tutto il corpus **delegando a `core.mjs::applyAmendmentsView()`** — la stessa funzione del validator, ora esportata: **una sola implementazione della regola nel repo**, nessuna duplicazione. Grezzo ed effettivo convivono in `--verifica`/`--fail`/`--json`, mai l'uno al posto dell'altro; le catene non risolte sono mostrate, mai riparate. Misurato quel giorno: 6 `amendment`, **13 campi applicati, 0 catene non risolte** — numero mobile, per il valore di oggi lancia il comando. Con questo **Matteo ha dichiarato `SK-6` CHIUSO** |
 | S7 | `SK-7` — `mss:capsule` (generazione) | `NON INIZIATO` | capsula con secondi reali e `controls` con codici di uscita veri |
 | S8 | `SK-8` — radice robusta della suite | `NON INIZIATO` | `npm run test:mss` verde da una profondità di cartelle diversa |
 | S9 | `SK-9` — `mss:move` | `NON INIZIATO` | file spostato, riferimenti vivi, suite verde, costo misurato contro le 1 741 righe di riferimento |
@@ -505,28 +505,27 @@ H-1.3 è **PASS_CON_RISERVE** (non PASS pulito). `SEP-G5` **non** è PASS.
 - ~~`SK-6` (`mss:query`)~~ → **costruito e revisionato** il 22-08-26, da due famiglie di modello
   diverse. **Non dichiarato chiuso: la chiusura è di Matteo** (vedi decisione 1 qui sotto).
 
-### Le decisioni aperte, in ordine di urgenza
+### Decisioni di Matteo — 23-08-2026 (`D16`–`D19`, CHIUSE)
 
-**1. `SK-6` è chiuso?** L'attrezzo esiste, i cancelli sono verdi, una revisione indipendente di
-famiglia diversa lo ha esaminato e i due difetti che ha trovato sono stati rettificati. Manca solo
-la dichiarazione, che non spetta a un agente.
+| ID | Decisione | Scelta | Conseguenza operativa |
+|---|---|---|---|
+| `D16` | `SK-6` è chiuso? | **CHIUSO** | l'attrezzo esiste, i cancelli sono verdi, una revisione indipendente di famiglia diversa lo ha esaminato, la vista effettiva è implementata. §4-bis aggiornato |
+| `D17` | Il vincolo di cambio-famiglia di §16.3 | **resta AVVISO, non gate** | confermato `D13`: una review di famiglia uguale **non invalida** la validazione. È **consigliata, non obbligatoria**. Si riapre solo se emergono problemi reali |
+| `D18` | La duplicazione `core.mjs`/`query.mjs` | **eliminata, non gestita** | `applyAmendmentsView()` è **esportata** da `core.mjs` e `query.mjs` la **delega**. Principio generale dichiarato da Matteo: *«dobbiamo snellire, non duplicare»* — vale per ogni attrezzo futuro |
+| `D19` | Pubblicazione del lavoro | **push, repo pulita** | i commit locali di `SK-6` e la vista effettiva vanno su `env/test` |
 
-**2. Quale pacchetto si apre dopo.** Raccomandazione di chi scrive, con l'argomento accanto —
-non è una decisione, è una proposta con le prove sotto:
+**Principio `D18`, da applicare a tutti i pacchetti `SK-*`:** un attrezzo che ha bisogno di una regola
+già scritta **la importa**. Se non è esportata, si esporta. Due implementazioni della stessa regola
+sono un difetto peggiore di quello che la regola governa — anche quando il perimetro di un mandato
+sembra imporle: in quel caso il mandato va allargato, non aggirato con una copia.
+
+### Prossimo pacchetto — raccomandazione, non decisione
 
 | Ordine | Pacchetto | Perché proprio questo, proprio adesso |
 |---|---|---|
-| 1° | **`SK-4`** + la vista che applica gli `amendment` | Sono **lo stesso problema**: il sistema **sa registrare cose che non sa rileggere**. I tre bypass sono stati **incontrati lavorando** il 22-08, non trovati cercandoli; e uno di essi — il report in sotto-cartella — nasconde una **seduta di revisione**, cioè copre proprio le prove che il sistema esiste per raccogliere. Intanto la **prima rettifica indipendente della storia del sistema** è invisibile al lettore costruito per trovarla |
-| 2° | **`SK-11`** (test sugli attrezzi) poi **`SK-5`** (CI) | Argomento empirico, non di principio: il 22-08 la **stessa classe di difetto** — una colonna di output troppo stretta — è comparsa **tre volte in un giorno**, su tre file diversi, scritta da agenti diversi. Un difetto identico che si ripete misura l'**assenza di test**, non la disattenzione di chi scrive. Oggi `npm run lint` gira `--ext ts,tsx` e ignora `scripts/`: `validate` verde **non dice nulla** su questi file |
-| 3° | **`SK-7`** (`mss:capsule`) | Ha già un mandato pronto, e va **comunque dopo**. Un generatore che scrive in un archivio non presidiato e non rileggibile **moltiplica** il problema invece di risolverlo. Che la sequenza «prima il lettore, poi lo scrittore» (`D12`) sia giusta è ormai **misurato**: costruire il lettore per primo è ciò che ha reso visibili tutti i difetti elencati qui sopra |
-
-**3. `mss:query` deve applicare le catene di `amendment`?** Oggi **no**, e il limite è **dichiarato
-in output** invece che nascosto. Il contratto §6 prescrive però una vista che applichi la catena per
-`effective_at`. Va deciso se rientra in `SK-4` o merita un pacchetto suo — non se farlo.
-
-**4. Il vincolo di cambio-famiglia di §16.3 va approvato o resta proposta?** Oggi il file lo
-etichetta testualmente «**proposto, da approvare**», e `D13` ha reso la regola **avviso, non
-blocco**. Nessun mandato dovrebbe citarlo come regola già chiusa finché resta tale.
+| 1° | **`SK-4`** — chiusura dei tre bypass | I tre bypass sono stati **incontrati lavorando** il 22-08, non trovati cercandoli; e uno di essi — il report in sotto-cartella — nasconde una **seduta di revisione**, cioè copre proprio le prove che il sistema esiste per raccogliere |
+| 2° | **`SK-11`** (test sugli attrezzi) poi **`SK-5`** (CI) | Argomento empirico: il 22-08 la **stessa classe di difetto** — una colonna di output troppo stretta — è comparsa **tre volte in un giorno**, su tre file, scritta da agenti diversi. Un difetto identico che si ripete misura l'**assenza di test**. Oggi `npm run lint` gira `--ext ts,tsx` e ignora `scripts/`: `validate` verde **non dice nulla** su questi file |
+| 3° | **`SK-7`** (`mss:capsule`) | Ha già un mandato pronto, e va **comunque dopo**. Un generatore che scrive in un archivio non presidiato **moltiplica** il problema. Che la sequenza «prima il lettore, poi lo scrittore» (`D12`) sia giusta è ormai **misurato**: costruire il lettore per primo è ciò che ha reso visibili tutti i difetti elencati qui sopra |
 
 ### Un dato nuovo da mettere agli atti (non una richiesta di riaprire `D13`)
 

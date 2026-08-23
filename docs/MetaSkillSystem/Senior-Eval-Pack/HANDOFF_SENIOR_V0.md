@@ -103,11 +103,14 @@ La revisione indipendente ha rimisurato sette affermazioni: **sei confermate, un
 
 ### Problema strutturale corrente
 
-1. ⚠️ **Il sistema sa registrare cose che non sa rileggere.** `mss:query` legge gli stati **grezzi**
-   e **non applica gli amendment**, mentre il contratto §6 prescrive una vista che applichi la catena
-   per `effective_at`. Risultato: la prima rettifica indipendente della storia del sistema **è
-   invisibile al lettore costruito per trovarla**. Mitigato il 22-08 dichiarando il limite in output;
-   **non risolto**.
+1. ✅ **RISOLTO il 23-08-2026** — era «il sistema sa registrare cose che non sa rileggere»:
+   `mss:query` leggeva gli stati **grezzi** e non applicava gli amendment del contratto §6, così la
+   prima rettifica indipendente della storia del sistema era invisibile al lettore costruito per
+   trovarla. Ora la catena è applicata: grezzo ed effettivo compaiono **affiancati** in `--verifica`,
+   `--fail`, riepilogo e `--json`; `independently_verified` e `contradicted` passano da 0 a 1 e 1; le
+   catene non risolte sono mostrate, mai riparate. La regola vive in **un solo posto**
+   (`core.mjs::applyAmendmentsView()`, delegata anche dal validator). Report:
+   `docs/Sessioni di lavoro/23-08-26/Report-vista-effettiva-mss-query-23-08-26.md`.
 2. **Tre bypass dell'enforcement, provati** (→ `SK-4`): la coppia schema legacy rende **opzionale**
    il campo `controls`; un report in **sotto-cartella** esce dal perimetro del pre-commit; basta
    cambiare il **prefisso del nome**. Il secondo non è cosmetico: fra i 22 report esclusi c'è una

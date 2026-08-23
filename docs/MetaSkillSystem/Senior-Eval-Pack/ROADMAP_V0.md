@@ -67,10 +67,12 @@ nello stesso giorno la **stessa classe di difetto è ricomparsa tre volte** — 
 si ripete misura l'assenza di test, non la disattenzione di chi scrive. `SK-7` **dopo**, perché un
 generatore che scrive in un archivio non presidiato moltiplica il problema invece di risolverlo.
 
-**Debito trasversale scoperto il 22-08:** il sistema **sa registrare cose che non sa rileggere**.
-`mss:query` legge gli stati grezzi e **non applica gli amendment**, mentre il contratto §6
-prescrive una vista che applichi la catena per `effective_at`. Il limite è ora **dichiarato in
-output**; **non è risolto**, e va deciso se rientra in `SK-4` o merita un pacchetto suo.
+**Debito trasversale scoperto il 22-08, ✅ CHIUSO il 23-08:** il sistema **sapeva registrare cose
+che non sapeva rileggere**. `mss:query` leggeva gli stati grezzi e non applicava gli amendment che
+il contratto §6 prescrive. Dal 23-08 li applica: `--verifica`, `--fail`, riepilogo e `--json`
+mostrano **grezzo ed effettivo affiancati** (la differenza fra i due è essa stessa un dato), e le
+catene che non si risolvono sono elencate, mai riparate. La logica **non è duplicata**: `query.mjs`
+delega a `core.mjs::applyAmendmentsView()`, la stessa funzione del validator.
 
 ## Lettura operativa
 
