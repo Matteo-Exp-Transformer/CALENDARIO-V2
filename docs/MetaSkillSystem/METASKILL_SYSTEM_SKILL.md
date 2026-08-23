@@ -12,6 +12,12 @@ description: >-
 > **Stato:** v0 in costruzione, modalità ombra. Il sistema esistente resta operativo finché i
 > gate del piano non autorizzano il passaggio. Questo file smista: non conserva la storia.
 
+## Agente freddo — ingresso rapido
+
+Se devi lavorare sul MetaSkillSystem **senza** rileggere tutto il corpus, apri per primo
+[`MANUALE_OPERATIVO_MSS_V0.md`](MANUALE_OPERATIVO_MSS_V0.md): comandi, flussi light/standard/revisione,
+owner vs viste, limiti correnti e confine P2A/P2B. Poi `npm run mss:status` e `PLAN_V0.md` §15.
+
 ## Ordine di lavoro
 
 1. Identificare il tipo di seduta e il perimetro autorizzato.
@@ -35,6 +41,25 @@ description: >-
    oppure confrontare metodi in modo controllato**, leggere
    `Senior-Eval-Pack/SENIOR_EVAL_SKILL.md`. Il pacchetto è sperimentale e subordinato a `SYS-1`:
    non è un nuovo kernel, una remediation H-1.3 o un'autorizzazione per `WP-1`/`WP-3`.
+
+## Attrezzi disponibili e stato prima di agire
+
+Prima di ricostruire lo stato a mano, usare soltanto gli attrezzi necessari (dettaglio operativo:
+`MANUALE_OPERATIVO_MSS_V0.md` §2):
+
+- `npm run mss:status` — fotografia read-only di owner/Git; non sostituisce la lettura di
+  `PLAN_V0.md`. D5 (P1) ha rimosso numeri stale da §4-bis; conteggi mobili restano sui comandi.
+- `npm run mss:query -- --verifica|--regole|--modelli|--fail|--costo|--json` — lettore del corpus;
+  il conteggio dinamico va chiesto qui, non copiato da un report.
+- `npm run validate:mss -- --mode file --file <report> --kind report --require-capsule` — gate di
+  un report; il comando senza argomenti mostra intenzionalmente usage.
+- `npm run test:mss` e `npm run test:mss:tools` — suite del validator e degli attrezzi.
+- `npm run mss:capsule -- --judgments <file.json>` — generatore; richiede giudizi espliciti, non è
+  una chiusura automatica della seduta.
+
+Lo stato tecnico corrente, i limiti e l’ordine degli interventi sono in
+`AUDIT_STATO_REALE_23-08-26.md`. Se il task è P0, caricare anche
+`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md` prima di modificare codice.
 
 ## I tre assi che non si fondono
 

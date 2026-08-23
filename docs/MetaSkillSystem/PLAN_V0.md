@@ -5,13 +5,10 @@
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
-> **Ultimo movimento:** 23-08-26 — Matteo ha dichiarato chiusi `SK-4`, `SK-5`, `SK-6` e `SK-11`.
-> `SK-7` — report proprietario consegnato ma **non approvabile nella forma attuale**: la revisione
-> Codex ha rilevato una citazione privata vietata e conteggi interni incoerenti; la rettifica mirata è
-> preparata, mentre **chiusura `M3` spetta a Matteo**. Il rosso documentale è azzerato in locale e la
-> pubblicazione del working tree è stata autorizzata il 23-08-26. I conteggi Git mobili
-> vivono nel report della seduta, non in questa intestazione. `H-1.3` resta `PASS_CON_RISERVE` e
-> `WP-1` resta `NO-GO`.
+> **Ultimo movimento:** **P2A in corso** — manuale operativo locale
+> [`MANUALE_OPERATIVO_MSS_V0.md`](MANUALE_OPERATIVO_MSS_V0.md) (`SK-10`, non chiuso; `R8` non
+> soddisfatto). Audit e P1 restano in [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md)
+> e report P1. `SK-7` gate A/B; `H-1.3` `PASS_CON_RISERVE`; `WP-1` **NO-GO**.
 >
 > **Rettifica 21-08-26 (append, non riscrittura):** l'intestazione precedente si era fermata al
 > movimento `H-1.1` del 10-08-26 e dichiarava «Checkpoint WP-0.1 locale `7632443`. Nessun commit/push»,
@@ -62,6 +59,9 @@ Stati ammessi per i work package:
 - `CHIUSO E OSSERVATO`
 - `RITIRATO`
 
+Uno stato storicamente dichiarato chiuso che viene smentito da una prova riproducibile torna
+`APERTO`; la dichiarazione non viene cancellata, ma resta nel log con il riferimento alla rettifica.
+
 Il lifecycle futuro di regole e cantieri sarà modellato in WP-3; questi stati governano soltanto il
 lavoro del masterplan.
 
@@ -92,17 +92,27 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | Ordine | Pacchetto | Stato | Prova di chiusura (comando, non opinione) |
 |---|---|---|---|
 | S0 | `SK-0` — sbloccare i cancelli globali | **`CHIUSO E OSSERVATO` 21-08-26** | ✅ `npm run lint` **exit 0** (era 363 problemi / 17 errori) · ✅ `npm run test` **163 file, 1346 test, exit 0** · ✅ `npm run validate` **exit 0** · ✅ `validate:docs` **3 886 → 17** path rotti |
-| S1 | `SK-1` — punto di ripristino (tag annotato) | `NON INIZIATO` | `git tag -l` mostra `mss/baseline-h13` |
-| S2 | `SK-2` — `mss:status` (sola lettura) | `NON INIZIATO` | lo stato stampato coincide con questo file e con `MASTERPLAN_V0.md` |
+| S1 | `SK-1` — punto di ripristino (tag annotato) | `APERTO` — quick win non eseguito | manca `mss/baseline-h13`; oggi il ripristino è uno SHA ricordato |
+| S2 | `SK-2` — `mss:status` (sola lettura) | `IMPLEMENTATO, non allineato` | il comando esiste e gira; il suo output ripete numeri/stati stale e non controlla roadmap/handoff |
 | S3 | `SK-3` — `mss:review` (sola lettura) | `NON INIZIATO` | su una seduta con violazione nota la trova; su una pulita non inventa nulla |
-| S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ B1 capsula legacy-new senza `controls` → `MSS-LEGACY-NEW-FORBIDDEN` · ✅ B2 `_prova-sk4/sub/Report-*.md` staged → deny (`MSS-REPORT-NO-CAPSULE`) · ✅ B3 `Verbale-*.md` in sotto-cartella staged → deny · ✅ `REPORT_PATH_RE` condivisa (`adapter`/`git-adapter`/`query`) · ✅ contratto `0.1.1`/`freeze-2` · ✅ `npm run test:mss` **42 fixture + 32 gruppi exit 0** · ✅ `validate:docs` **17** path rotti (baseline) · ✅ `mss:query --verifica` exit 0 · report ciclo [`Report-ciclo-SK-4-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Report-ciclo-SK-4-23-08-26.md) |
-| S5 | `SK-5` — controlli MSS in CI su `env/test` | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ workflow su push/PR `main` + `env/test` · ✅ report `Report-*.md` aggiunti/modificati validati dal CLI canonico con capsula obbligatoria · ✅ H-1 42 fixture + 32 gruppi e tools 9/9 · ✅ due prove isolate CI rosso exit 1 (`MSS-VITAL-MISSING` + path) → verde exit 0 dopo rimozione sicura · ✅ `npm run validate` exit 0 · ✅ report ciclo `validate:mss OK` · revisione stessa famiglia OpenAI registrata `self_report`, non `independently_verified` · ✅ **gate F2 superato 23-08-26:** push su `env/test` (`7e96fb1`) e **run reale GitHub Actions `32652259771`** — job `mss` **verde** (changed-reports + H-1 + tools); job `ci` rosso al solo passo `validate:docs` con **26** path rotti in clone pulito (17 in locale: i 9 di differenza puntano a `docs/_lavoro/` e `.cursor/`, gitignored). Rosso documentale noto e separato per disegno `D1-A`, **non** tocca i cancelli MSS |
-| S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica` rispondono, provate a campione risalendo ai report d'origine · ✅ `npm run test:mss` **exit 0** (41 fixture + 32 gruppi) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ nessun test automatico copre `mss:query`: ESLint gira `--ext ts,tsx` e ignora `scripts/`, `test:mss` esercita il validator non il lettore · rettificato 22-08-26: capsula `SK-6` corretta con `amendment` (non riscritta) per il secondo segmento della seduta; criterio revisori spostato da `controls[].esecutore` a `recorded_by.role` (fatto stabile — non decade). Il conteggio che ne esce **cresce a ogni seduta di revisione registrata**: misurato **19/5** alle 22:44 del 22-08-26, **24/6** poco dopo (è atterrata la seduta del revisore Codex). Non è un numero da fissare qui: per il valore di oggi lancia `npm run mss:query -- --verifica` · ⚠️ **22-08-26, seconda tornata:** `mss:query` non applica la catena degli `amendment` (contratto §6) — legge stati grezzi, non la vista effettiva; dichiara ora il limite in output (conta gli `amendment` nel corpus e quelli che correggono `verification.status`) invece di affermare `independently_verified`/`contradicted` «mai usato» quando un `amendment` valido li usa già altrove · ✅ **23-08-26, terza tornata (vista effettiva):** il limite sopra è chiuso. `mss:query` applica la catena degli `amendment` su tutto il corpus **delegando a `core.mjs::applyAmendmentsView()`** — la stessa funzione del validator, ora esportata: **una sola implementazione della regola nel repo**, nessuna duplicazione. Grezzo ed effettivo convivono in `--verifica`/`--fail`/`--json`, mai l'uno al posto dell'altro; le catene non risolte sono mostrate, mai riparate. Misurato quel giorno: 6 `amendment`, **13 campi applicati, 0 catene non risolte** — numero mobile, per il valore di oggi lancia il comando. Con questo **Matteo ha dichiarato `SK-6` CHIUSO** |
-| S7 | `SK-7` — `mss:capsule` (generazione) | **`APERTO` — report consegnato, rettifica richiesta; nessuna chiusura `M3`** | ✅ `npm run mss:capsule` registrato · ✅ `scripts/mss/capsule.mjs` + `uuid.mjs` · ✅ `test:mss:tools` **23/23** (golden, giro completo, negativo, controls, git) · ✅ `controls` con exit code veri + fail voluti LEGACY/NEG · ✅ capsula generata dall attrezzo in [`Report-sk7-mss-capsule-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Report-sk7-mss-capsule-23-08-26.md) · ✅ `validate:mss OK` su quel report · ⚠️ revisione Codex: citazione privata vietata nel template/record e conteggi `test:mss`/`validate:docs` incoerenti; fix preparato in [`Prompt-fix-mirato-sk7-report-privacy-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Prompt-fix-mirato-sk7-report-privacy-23-08-26.md) · integrazione fix revisione finale (shell, `non_noto`, git trim, source_refs esistenti) · ⛔ dichiarazione **CHIUSO** solo Matteo (`M3`) |
-| S8 | `SK-8` — radice robusta della suite | `NON INIZIATO` | `npm run test:mss` verde da una profondità di cartelle diversa |
+| S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`APERTO` — D1 chiuso in P1, chiusura formale pendente** | B1–B3 restano provati · ✅ pre-commit passa `requireCapsule: true` come CI (suite H-1/tools) · restano bypass/schema gate in prosa · chiusura storica `D20` rettificata, non cancellata |
+| S5 | `SK-5` — controlli MSS in CI su `env/test` | **`APERTO` — CI esiste, gate complessivo non coerente** | job remoto MSS osservato verde, ma dipende dalla parità `D1`; `npm run validate` non include `test:mss` né `validate:docs`. Il rosso documentale non va più occultato. |
+| S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica/--fail` rispondono · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ copertura test del lettore parziale (suite tools, non H-1 intero) · rettificato 22-08-26: capsula `SK-6` corretta con `amendment`; criterio revisori su `recorded_by.role` · ✅ **23-08-26 vista effettiva:** `query.mjs` delega `core.mjs::applyAmendmentsView()` · ✅ **23-08-26 P1:** `--fail` usa denominatori calcolati, non literal storici · revisioni/controlli: numero mobile → `npm run mss:query -- --verifica` · **Matteo ha dichiarato `SK-6` CHIUSO (`D16`)** |
+| S7 | `SK-7` — `mss:capsule` (generazione) | **`APERTO` — P0: fix dichiarato non recuperabile; D2/D3 vivi; nessuna chiusura `M3`** | ✅ attrezzo e report SK-7 esistono · ✅ `test:mss:tools` **23/23** · ⚠️ P0 23-08-26: ricerca commit/branch/stash/PR/transcript/patch del fix dichiarato → **assenza** (vedi [`Report-p0-sk7-assenza-fix-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Report-p0-sk7-assenza-fix-23-08-26.md)) · ⚠️ D2/D3 riprodotti a `46b8bca` · ⛔ niente reimplementazione senza nuova autorità · ⛔ **CHIUSO** solo Matteo (`M3`) |
+| S8 | `SK-8` — radice robusta della suite | **`IMPLEMENTATO, non dichiarato`** | `npm run test:mss` verde da profondità diverse (risoluzione da posizione file); manca prova registrata e promozione documentale |
 | S9 | `SK-9` — `mss:move` | `NON INIZIATO` | file spostato, riferimenti vivi, suite verde, costo misurato contro le 1 741 righe di riferimento |
-| S10 | `SK-10` — manuale utente + intervista di bootstrap | `NON INIZIATO` | un agente completa il bootstrap in una repo nuova senza intervento |
-| S11 | `SK-11` — test automatici degli attrezzi MSS | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `node --check` sui 6 `.mjs` SK-11 exit 0 · ✅ lint script zero warning · ✅ H-1 42 fixture + 32 gruppi exit 0 · ✅ tools 9/9 exit 0 · ✅ controprova revisore exit 1 (`1/9` rosso) e ripristino exit 0 (`9/9`), SHA-256 prima/dopo identico `97956F5B…CBB9` · ✅ `npm run validate` exit 0 · verifica stessa famiglia OpenAI registrata `self_report`, non `independently_verified` |
+| S10 | `SK-10` — manuale utente + intervista di bootstrap | **`IN CORSO — P2A manuale locale`** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ⛔ bootstrap repo nuova non provato (`P2B`) · ⛔ `R8` non chiuso |
+| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura e viste incomplete** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ⚠️ copertura insufficiente: privacy template, hook Claude, guard PROD · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
+
+### 4-ter. Rettifica tecnica dell'audit 23-08-26 — questa sezione prevale sulle celle stale sopra
+
+| Pacchetto | Stato operativo dopo audit | Cosa deve accadere prima di una nuova chiusura |
+|---|---|---|
+| `SK-4` | **APERTO**: B1–B3 restano veri; **P1 D1** ha allineato pre-commit e CI su `requireCapsule: true` (prove in suite H-1/tools). | Restano bypass non coperti e schema gate in prosa; chiusura formale solo Matteo. |
+| `SK-5` | **APERTO**: job MSS remoto esiste, ma la sua efficacia dipende da D1; `npm run validate` non include `test:mss` né `validate:docs`. | Scegliere e testare un gate locale/CI coerente, senza nascondere il rosso documentale. |
+| `SK-7` | **APERTO**: P0 ha cercato il fix dichiarato e **non l’ha trovato**; a `46b8bca` D2/D3 restano riprodotti. | Serve patch/commit/branch consegnabile **oppure** nuova autorità di Matteo per reimplementare (vietata la reimplementazione silenziosa). Poi privacy append-only + test D2/D3/privacy + conteggi dai run. |
+| `SK-8` | **IMPLEMENTATO, non dichiarato**: la suite gira già da una root diversa grazie alla risoluzione dalla posizione del file. | Registrare una prova riproducibile e promuovere lo stato documentale. |
+| `SK-11` | **APERTO**: suite verde; **P1 D5** ha rimosso numeri stale da §4-bis; copertura insufficiente. | Test per privacy template, hook Claude e guard PROD (P4); conteggi sempre da comando, non da owner. |
 
 Analisi, prove e motivazione dell'ordine:
 `docs/Sessioni di lavoro/21-08-26/STRATEGIA-scheletro-mss-21-08-26.md`.
@@ -495,6 +505,27 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 
 `WP-1` resta **NON INIZIATO** e **NO-GO** finché Matteo non lo apre in chat dedicata.
 H-1.3 è **PASS_CON_RISERVE** (non PASS pulito). `SEP-G5` **non** è PASS.
+
+**P0 (23-08-26) — CONCLUSO COME ASSENZA:** ricerca del fix `SK-7` dichiarato → **nessun** commit,
+branch, stash, PR o patch recuperabile; D2/D3 riprodotti su `46b8bca` (`parseCheckSpec` spezza al
+primo `:`; `--check "x::node --version"` può registrare `pass` falso). Codice capsule **non**
+reimplementato. Report:
+[`Report-p0-sk7-assenza-fix-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Report-p0-sk7-assenza-fix-23-08-26.md).
+
+**Prossimo task atomico — gate di Matteo:** (A) consegnare il patch/commit del fix dichiarato, oppure
+(B) autorizzare esplicitamente la reimplementazione di D2/D3 + privacy + test. Finché manca A o B,
+non ripartire «come se» il fix esistesse.
+
+**P1 (chiuso 23-08-26):** D1 parità pre-commit/CI su `requireCapsule: true`; D4 denominatori
+calcolati in `mss:query --fail`; D5 celle owner §4-bis/allineamento `mss:status`. Report:
+[`Report-p1-d1-d4-d5-23-08-26.md`](../Sessioni%20di%20lavoro/23-08-26/Report-p1-d1-d4-d5-23-08-26.md).
+
+**P2A (in corso):** manuale operativo + puntatori ingresso/viste — [`MANUALE_OPERATIVO_MSS_V0.md`](MANUALE_OPERATIVO_MSS_V0.md).
+Non implementa export motore né bootstrap in repo nuova.
+
+**P2B (prossimo):** export/bootstrap riproducibile del motore MSS; intervista iniziale; prova agente
+freddo fuori da questo albero. Restano fuori P2: D2/D3 (gate A/B), hook Claude, guard PROD,
+generatore viste (`D14`), P3 `mss:move`, P4 copertura sicurezza.
 
 **Storico di questa sezione, per non riaprire strade già chiuse:**
 

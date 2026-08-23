@@ -1,0 +1,228 @@
+{
+  "session_event": {
+    "intent_user": "eseguire P0: integrare e verificare il fix SK-7 dichiarato da altro esecutore; se non recuperabile, documentare assenza senza reimplementare",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "agente-esecutore-p0-mss",
+    "area": "MetaSkillSystem / integrazione SK-7 P0",
+    "environment": "workspace locale, branch env/test @ 46b8bca, Windows 11",
+    "authorization": {
+      "read": [
+        "docs/MetaSkillSystem/PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md",
+        "docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md",
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "docs/MetaSkillSystem/AUDIT_STATO_REALE_23-08-26.md",
+        "scripts/mss/capsule.mjs"
+      ],
+      "write": [
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md",
+        "docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md",
+        "docs/MetaSkillSystem/AUDIT_STATO_REALE_23-08-26.md",
+        "docs/Sessioni di lavoro/23-08-26/Report-p0-sk7-assenza-fix-23-08-26.md"
+      ],
+      "forbid": [
+        "WP-1",
+        "mss:move",
+        "dichiarare pacchetti CHIUSI / M3",
+        "reimplementare D2/D3 in silenzio",
+        "toccare D1 pre-commit SK-4",
+        "toccare D4/D5 status/query",
+        "git push",
+        "commit senza autorizzazione Matteo",
+        "riscrittura record final"
+      ]
+    },
+    "authorized_outputs": [
+      "Report-p0-sk7-assenza-fix-23-08-26.md",
+      "rettifica PLAN_V0 §4-ter/§15",
+      "viste ROADMAP/HANDOFF"
+    ],
+    "route": {
+      "chosen": "ricerca esaustiva del diff dichiarato (HEAD, origin, branch, stash, PR, transcript, patch); in assenza fermarsi e documentare",
+      "alternatives_or_conflicts": [
+        "scartata: reimplementare parseCheckSpec/privacy senza patch recuperabile — vietato dal prompt P0",
+        "scartata: dichiarare SK-7 chiuso o verde — M3 solo Matteo e bug D2/D3 ancora vivi"
+      ]
+    },
+    "observed_outcome": "fix SK-7 dichiarato non recuperabile; D2/D3 riprodotti a 46b8bca; P0 chiude come assenza documentata; prossimo lavoro P1 solo dopo nuova autorita su D2/D3 oppure consegna del patch",
+    "open_items": [
+      "serve patch/commit/branch del fix dichiarato, oppure nuova autorita di Matteo per reimplementare D2/D3+privacy+test",
+      "D2/D3 ancora aperti: parseCheckSpec spezza al primo colon; x::node --version produce pass falso",
+      "privacy append-only e test mirati privacy/D2/D3 non eseguiti perche fix assente",
+      "P1 residuo: requireCapsule true anche in pre-commit + numeri calcolati non cablati",
+      "M3 chiusura SK-7 resta di Matteo"
+    ],
+    "subject_runtime": {
+      "actor_id": "Matteo",
+      "provider": "non_applicabile: soggetto umano",
+      "model": "non_applicabile: soggetto umano",
+      "runtime": "non_applicabile: soggetto umano",
+      "surface": "Cursor chat"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "path del repo",
+        "esiti comandi",
+        "SHA commit",
+        "metriche aggregate"
+      ],
+      "prohibited_content": [
+        "materiale privato non registrabile",
+        "segreti",
+        "token di messaging"
+      ],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-plan",
+        "owner_id": "SYS-1",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "sezione 4-ter SK-7 + sezione 15 P0",
+        "revision_or_hash": "46b8bca",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "owner-audit",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/AUDIT_STATO_REALE_23-08-26.md",
+        "stable_anchor_or_event_id": "stato SK-7 e confine integrazione",
+        "revision_or_hash": "working tree",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-prompt-p0",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md",
+        "stable_anchor_or_event_id": "righe 1-32",
+        "revision_or_hash": "working tree",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-sk7-report",
+        "owner_id": "SK-7",
+        "uri_or_path": "docs/Sessioni di lavoro/23-08-26/Report-sk7-mss-capsule-23-08-26.md",
+        "stable_anchor_or_event_id": "report proprietario SK-7",
+        "revision_or_hash": "working tree",
+        "sensitivity": "internal"
+      }
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "Matteo ha consegnato il prompt P0 allegato senza aggiungere patch o branch del fix dichiarato",
+          "actor": "Matteo",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "source-prompt-p0",
+          "effect": "l esecutore ha cercato il diff e si e fermato all assenza",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-p0",
+        "role": "agente esecutore P0",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "unverified",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessuna valutazione Persona",
+        "criterion_ref": "source-prompt-p0",
+        "evidence_refs": ["source-prompt-p0"],
+        "notes": "singola seduta, non alza livelli"
+      }
+    },
+    "sistema": {
+      "delta": "verificato",
+      "assertions": [
+        {
+          "rule_id_version": "P0@AUDIT+PROMPT 23-08-26",
+          "trigger_event": "recupero fix SK-7 dichiarato ma non in HEAD/origin",
+          "decision_or_output_changed": "nessun codice capsule modificato; D2/D3 riprodotti; assenza documentata; PLAN/viste aggiornate con fatto negativo",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-p0",
+        "role": "agente esecutore P0",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-audit",
+        "evidence_refs": ["source-prompt-p0", "owner-plan"],
+        "notes": "parseCheckSpec ancora spezza al primo colon; test tools 23/23 senza casi D2/D3"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "mss-p0-assenza-fix-sk7",
+          "primary_type": "registro",
+          "canonical_version": "Report-p0-sk7-assenza-fix-23-08-26.md",
+          "recipient": "Matteo e prossimo esecutore MSS",
+          "problem_or_job": "decidere se autorizzare reimplementazione oppure recuperare patch esterno",
+          "intended_use": "bloccare reimplementazione silenziosa e fissare lo stato dopo ricerca fallita",
+          "conceived_by": "PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26",
+          "decided_by": "Matteo",
+          "directed_by": "prompt P0",
+          "authored_by": "cursor-composer-p0",
+          "verified_by": "non_osservato",
+          "acceptance_criterion": "assenza del fix dichiarata con prove di ricerca + D2/D3 riprodotti + nessun claim CHIUSO",
+          "verification_or_use_evidence": "riproduzione parseCheckSpec e mss:capsule no-op; ricerca branch/stash/PR/transcript negativa",
+          "verification_status": "self_report",
+          "owner_ref": "owner-plan",
+          "privacy_release": "internal",
+          "support_files": [
+            "docs/MetaSkillSystem/PLAN_V0.md",
+            "docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md",
+            "docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md"
+          ],
+          "relations_no_double_count": [
+            "non sostituisce Report-sk7-mss-capsule",
+            "non chiude SK-7"
+          ],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "fail",
+            "result": "not_eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-p0",
+        "role": "agente esecutore P0",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-plan",
+        "evidence_refs": ["source-prompt-p0"],
+        "notes": "quinto gate fail di proposito: nessun revisore indipendente"
+      }
+    }
+  }
+}

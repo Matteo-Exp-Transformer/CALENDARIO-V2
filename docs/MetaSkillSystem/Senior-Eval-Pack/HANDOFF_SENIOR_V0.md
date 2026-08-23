@@ -53,6 +53,59 @@ Non sostituisce:
 
 ### ⚠️ Rettifica di rotta — leggi questo prima del resto
 
+### Istantanea prevalente — P2A 23-08-26
+
+> Fonte: mandato P2A chat · owner: `../PLAN_V0.md` §4-bis `S10` / §15 · manuale:
+> [`../MANUALE_OPERATIVO_MSS_V0.md`](../MANUALE_OPERATIVO_MSS_V0.md).
+
+- **Fotografia Git:** `env/test`, HEAD e `origin/env/test` = `46b8bca`; working tree con modifiche
+  P1 + P2A non committate (preservate).
+- **P2A:** creato manuale operativo + puntatori in METASKILL/PLAN/ROADMAP/HANDOFF/AUDIT.
+  `SK-10` = **IN CORSO — P2A**; **non** chiuso; **non** bootstrap repo nuova provato.
+- **P1 / P0 / SK-7:** invariati — gate A/B Matteo; D2/D3 vivi; WP-1 NO-GO.
+- **Prossimo gate:** P2B export motore + checklist bootstrap; poi gate A/B SK-7 se Matteo apre.
+- **STOP invariati:** commit/push senza sì · reimplementazione SK-7 silenziosa · WP-1 · claim `R8`/`SK-10` chiusi.
+
+### Istantanea precedente — post-P1 23-08-26
+
+> Fonte: `../AUDIT_STATO_REALE_23-08-26.md` + `…/Report-p1-d1-d4-d5-23-08-26.md`;
+> owner di stato: `../PLAN_V0.md` §4-ter / §15.
+
+- **Fotografia Git:** `env/test`, HEAD e `origin/env/test` = `46b8bca` (working tree con P1 non committato).
+- **P1 D1/D4/D5:** chiusi in questa seduta — parità `requireCapsule`, denominatori calcolati,
+  owner §4-bis rettificato. Report: [`Report-p1-d1-d4-d5-23-08-26.md`](../../Sessioni%20di%20lavoro/23-08-26/Report-p1-d1-d4-d5-23-08-26.md).
+- **P0 / SK-7:** invariato — gate A/B Matteo; D2/D3 vivi; nessuna reimplementazione silenziosa.
+- **Prossimo gate:** P2B export/bootstrap; (A) patch SK-7 oppure (B) autorità reimplementazione.
+- **STOP invariati:** `WP-1` NO-GO; nessuna riscrittura `final`; nessun `CHIUSO`/`M3`/`R8` senza Matteo.
+
+### Istantanea precedente — post-P0 23-08-26
+
+> Conservata per traccia; prevale l’istantanea P2A sopra.
+
+- **Fotografia Git:** `env/test`, HEAD e `origin/env/test` = `46b8bca` (working tree con P1 non committato).
+- **P1 D1/D4/D5:** chiusi — parità `requireCapsule`, denominatori calcolati,
+  owner §4-bis rettificato. Report: [`Report-p1-d1-d4-d5-23-08-26.md`](../../Sessioni%20di%20lavoro/23-08-26/Report-p1-d1-d4-d5-23-08-26.md).
+- **P0 / SK-7:** invariato — gate A/B Matteo; D2/D3 vivi; nessuna reimplementazione silenziosa.
+- **Prossimo gate:** (A) patch SK-7 oppure (B) autorità reimplementazione; poi P2 discovery.
+- **STOP invariati:** `WP-1` NO-GO; nessuna riscrittura `final`; nessun `CHIUSO`/`M3` senza Matteo.
+
+### Istantanea precedente — audit reale 23-08-26 (pre-P0)
+
+> Conservata per traccia; prevale l’istantanea post-P0 sopra.
+
+- **Fotografia Git:** `env/test`, HEAD e `origin/env/test` = `46b8bca`; working tree pulito quando
+  verificato. Il fix SK-7 è stato dichiarato terminato dall’esecutore, ma non è presente in questo
+  riferimento: non attribuirgli esito verde finché commit/diff e test non sono disponibili.
+- **Fatti verdi:** H-1 42 fixture + 38 gruppi; tools 23/23; job MSS remoto esiste; reader e
+  generator sono eseguibili.
+- **Blocchi reali:** D1 pre-commit/CI non paritari; D2/D3 capsule può fabbricare prove false;
+  D4/D5 numeri stale; hook Claude non portabile né testato; guard PROD senza rete; D14 promesso ma
+  non implementato. Le chiusure D20 restano storiche, non sono un via libera tecnico.
+- **Prossimo task atomico (storico):** P0 = recuperare, integrare e verificare SK-7 —
+  **eseguito come assenza** (vedi istantanea prevalente).
+- **STOP invariati:** `WP-1` NO-GO; nessuna riscrittura di un record `final`; nessun move; nessun
+  claim `CHIUSO`/`M3` o commit/push senza decisione di Matteo.
+
 L'handoff precedente (21-08-2026) indicava come prossimo task atomico **«plan directory/export/
 sandbox»**. **Quel task è congelato.** La decisione `D15` di Matteo del 21-08-2026
 (`../PLAN_V0.md` §16.4) ha congelato `D6`–`D10` del plan directory su raccomandazione del

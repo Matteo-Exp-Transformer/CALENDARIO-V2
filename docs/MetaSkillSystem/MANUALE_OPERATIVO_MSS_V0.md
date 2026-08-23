@@ -1,0 +1,208 @@
+# Manuale operativo MSS v0 — agente freddo
+
+> **Scopo:** far lavorare un agente sul MetaSkillSystem **senza rileggere l’intero corpus**.
+> **Non è owner di stato:** i conteggi mobili e i gate vivono nei comandi e in `PLAN_V0.md`.
+> **Pacchetto:** `SK-10` — fase **P2A** (discovery + manuale locale). **Non** chiude `R8` né `SK-10`.
+
+---
+
+## 1. Cosa aprire (in ordine)
+
+| Bisogno | File | Ruolo |
+|---|---|---|
+| Ingresso e smistamento | [`METASKILL_SYSTEM_SKILL.md`](METASKILL_SYSTEM_SKILL.md) | Tabella di routing; punta al manuale e agli owner |
+| **Stato autoritativo** | [`PLAN_V0.md`](PLAN_V0.md) | Unico owner di `SYS-1`: gate, sequenza, §4-bis/§4-ter, §15 prossimo task |
+| Fotografia tecnica recente | [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md) | Rettifiche «dichiarato vs reale»; non sostituisce il plan |
+| Schema capsula | [`CONTRATTO_CAPSULA_SESSIONE_V0.md`](CONTRATTO_CAPSULA_SESSIONE_V0.md) | Coppia viva `0.1.1` / `freeze-2`; dove vive la capsula; `controls` obbligatori |
+| Chiusura report | [`../Comunicazione-Skill/CHIUSURA_SESSIONE.md`](../Comunicazione-Skill/CHIUSURA_SESSIONE.md) | Sezioni obbligatorie + Q1–Q6 per standard/deep |
+| Mandato P0/P1/P2 (se citato) | [`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`](PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md) | Task atomici audit; aggiornare o sostituire quando il plan §15 cambia |
+| Vista continuità senior | [`Senior-Eval-Pack/HANDOFF_SENIOR_V0.md`](Senior-Eval-Pack/HANDOFF_SENIOR_V0.md) | Puntatore operativo; **vince** `PLAN_V0.md` se divergono |
+| Vista sequenza SEP (parcheggiata) | [`Senior-Eval-Pack/ROADMAP_V0.md`](Senior-Eval-Pack/ROADMAP_V0.md) | Non è il fronte attivo; traccia `SK-*` come vista |
+
+**Regola owner vs vista:** un valore dinamico ha **un solo owner** (`PLAN_V0.md` per stato MSS). Roadmap, handoff, audit e questo manuale **rimandano**, non ricopiano conteggi.
+
+**Prima di agire:** `git rev-parse --abbrev-ref HEAD` → atteso `env/test` per lavoro MSS corrente; verifica HEAD vs `origin/env/test` e working tree (preserva modifiche altrui).
+
+---
+
+## 2. Comandi MSS (sola lettura salvo capsula)
+
+Tutti i comandi partono dalla **root del repo**. Exit code `0` = esecuzione ok (non sempre = gate PASS).
+
+### 2.1 `npm run mss:status`
+
+| | |
+|---|---|
+| **Legge** | `PLAN_V0.md`, `Senior-Eval-Pack/MASTERPLAN_V0.md`, git (branch, HEAD, dirty, tag `mss*`, stash) |
+| **Scrive** | nulla |
+| **Argomenti** | nessuno |
+| **Uso sicuro** | `npm run mss:status` — prima seduta o dopo lunga pausa |
+
+Stampa Git + tabella §4 derivata dal plan. **Non** sostituisce la lettura di §4-ter se il task tocca chiusure SK. Segnala assenza tag ripristino (`SK-1` aperto).
+
+### 2.2 `npm run mss:query -- --<domanda>`
+
+| | |
+|---|---|
+| **Legge** | Report/Verbali sotto `docs/Sessioni di lavoro/` (HEAD + working tree), catena `amendment` via `core.mjs` |
+| **Scrive** | nulla |
+| **Domande** | `--regole` · `--modelli` · `--verifica` · `--fail` · `--costo` · opzionale `--json` |
+| **Uso sicuro** | `npm run mss:query -- --verifica` · `npm run mss:query -- --fail` |
+
+I denominatori sono **calcolati dal corpus** al momento del run (mai copiati da un report). La vista **effettiva** applica gli `amendment` del contratto §6.
+
+### 2.3 `npm run validate:mss`
+
+| | |
+|---|---|
+| **Legge** | File indicato (report, jsonl, session log) + snapshot git per append-only |
+| **Scrive** | nulla |
+| **Argomenti obbligatori** | `--mode file|worktree|staged` e `--file <path>` |
+| **Opzioni** | `--kind report|jsonl|session_log` · `--require-capsule` · `--json` |
+| **Uso sicuro** | `npm run validate:mss -- --mode file --file "docs/Sessioni di lavoro/GG-MM-AA/Report-….md" --kind report --require-capsule` |
+
+Senza `--file` mostra usage ed esce `2` (intenzionale).
+
+### 2.4 `npm run mss:capsule`
+
+| | |
+|---|---|
+| **Legge** | `--judgments file.json`, env whitelisted, git porcelain, comandi `--check` |
+| **Scrive** | stdout JSONL; con `--append-to` modifica **solo** report senza capsula esistente |
+| **Obbligatori (generazione)** | `--model <modello>` · `--judgments <file>` (tre assi) |
+| **Opzioni** | `--template` · `--check "ID:comando"` · `--role` · `--tool` · `--package "id\|ver\|ref"` |
+| **Uso sicuro** | `npm run mss:capsule -- --template` · `npm run mss:capsule -- --help` |
+
+**Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. **Attenzione SK-7:** D2/D3 noti — `--check` può registrare `pass` falso su alcuni input; non usare per prove gate finché gate A/B Matteo.
+
+### 2.5 Suite e cancelli globali
+
+| Comando | Legge | Scrive | Quando |
+|---|---|---|---|
+| `npm run test:mss` | Fixture H-1 + integrazione | nulla | Dopo tocchi validator/core/adapter |
+| `npm run test:mss:tools` | Attrezzi query/status/capsule | nulla | Dopo tocchi `scripts/mss/*.mjs` |
+| `npm run validate:docs` | Path citati nei `.md` vivi | nulla | Dopo tocchi docs o link |
+| `npm run validate` | lint + typecheck + vitest + test:mss:tools | nulla | Sanity globale (non include `test:mss` intero né `validate:docs`) |
+
+### 2.6 Comandi **non** implementati (non inventarli)
+
+- `mss:move` (`SK-9`) — NON INIZIATO
+- `mss:review` (`SK-3`) — NON INIZIATO
+- Generatore ROADMAP/HANDOFF (`D14`) — promesso, assente
+
+---
+
+## 3. Flussi minimi per tipo di seduta
+
+### 3.1 Light (fix piccolo, una zona)
+
+1. Carica skill d’area da `APP_CONTEXT_SKILL.md` §0 — **non** questo manuale intero se il task è fuori Meta.
+2. Esegui il fix; **nessun** `Report-*.md`.
+3. Chiudi con JSONL in `docs/Sessioni di lavoro/GG-MM-AA/eventi-light/<record_id>.jsonl` + riga in `SESSION_LOG.md` (link, non capsula inline).
+4. Validazione: `validate:mss` sul file jsonl se tocchi schema.
+
+### 3.2 Standard / deep (Meta o lavoro sostanziale)
+
+1. `npm run mss:status` + leggi §15 di `PLAN_V0.md` (task autorizzato e STOP).
+2. Carica `METASKILL_SYSTEM_SKILL.md` + contratto capsula + skill area se applicabile.
+3. Dichiara perimetro: cosa è vietato (es. WP-1, commit, SK-7 reimplementazione silenziosa).
+4. Lavora; registra comandi reali per `controls[]`.
+5. Chiudi con `Report-*.md` completo (`CHIUSURA_SESSIONE.md` Parte A) + capsula `0.1.1`/`freeze-2`.
+6. Verifica obbligatoria:
+   - `npm run validate:mss -- --mode file --file "<report>" --kind report --require-capsule`
+   - se codice MSS: `npm run test:mss` e/o `npm run test:mss:tools`
+   - `git diff --check`
+7. Se Meta/deep: handoff §10-bis + Q1–Q6 §11 verbatim.
+
+### 3.3 Revisione (famiglia di modello diversa consigliata, non gate)
+
+1. Ricevi report + capsula + diff — **non** la narrativa completa del verdetto atteso.
+2. `npm run mss:query -- --verifica` e `--fail` per misure indipendenti.
+3. Riesegui comandi citati in `controls[]`; confronta hash/path (`git rev-parse HEAD:path`).
+4. Esito in report proprio + annotazioni `independently_verified` / `contradicted` via **`amendment`**, mai rewrite di record `final`.
+5. `validate:mss` sul report revisore.
+
+---
+
+## 4. Validare report e capsula
+
+### Report standard/deep
+
+Sezioni obbligatorie: cappello · fatto · file · test · skill §5 · comunicazione §6 · capsula §6-bis · analisi flusso · lettura agente · derivazione errori · resta · handoff (deep/Meta) · **domande §11**.
+
+### Capsula
+
+- Coppia **viva:** `schema_version: mss.session/0.1.1` + `system_revision: mss-v0.1-wp0.1-freeze-2`
+- `session_event` + tre `annotation` (Persona, Sistema, Output) salvo delta esplicitamente `nessuno`
+- `controls` obbligatorio: array di prove **o** `nessuno` dichiarato
+- Ogni controllo: `criterio`, `esito`, `numeratore`, `denominatore`, `esecutore`, `evidence_refs`
+
+### Gate meccanico
+
+```bash
+npm run validate:mss -- --mode file --file "docs/Sessioni di lavoro/GG-MM-AA/Report-….md" --kind report --require-capsule
+```
+
+Pre-commit (se committi): stesso perimetro `Report-*` / `Verbale-*` con `requireCapsule: true` — fixture H-1 escluse.
+
+---
+
+## 5. Limiti reali correnti (non riaprire da soli)
+
+| Limite | Stato | Cosa fare |
+|---|---|---|
+| **SK-7 D2/D3** | APERTO — prove false possibili in `mss:capsule` | Gate Matteo: (A) patch recuperabile o (B) autorità reimplementazione |
+| **WP-1** | **NO-GO** | Non aprire piloti reali |
+| **H-1.3** | `PASS_CON_RISERVE` | Non dichiarare PASS pulito |
+| **Tag ripristino** | Assente (`SK-1`) | Ripristino = SHA a memoria; nessun `mss/baseline-*` |
+| **Hook Claude** | Solo `settings.local.json` gitignored | Non coperti da CI né test (`P4`) |
+| **guard PROD** | Script presente, no test/CI | Verificare ambiente prima di scritture Supabase |
+| **SK-4 / SK-5 / SK-11** | APERTI post-audit | Chiusura formale solo Matteo; bypass residui in prosa |
+| **ROADMAP / HANDOFF generati** | `D14` non implementato | Allineamento manuale; controllare §4-ter |
+
+---
+
+## 6. Owner, viste, dati mobili
+
+| Tipo | Esempi | Regola |
+|---|---|---|
+| **Owner** | `PLAN_V0.md`, contratto capsula, `PARAMETRI_MACRO_V0.md` | Fonte autoritativa; si legge per gate e sequenza |
+| **Viste** | ROADMAP, HANDOFF, AUDIT, questo manuale, report | Rimandano all’owner; aggiornare dopo mutazioni provate |
+| **Dati mobili** | N° sedute, controlli, revisori, esiti `--fail` | **Solo da comando** (`mss:query`, `test:mss`, …) al momento del run |
+
+Se un report e `mss:query` divergono, vince il corpus letto dal comando + spiegazione dell’origine (HEAD vs working tree).
+
+---
+
+## 7. Bootstrap in altra repo (P2B — non provato)
+
+**P2A (questo manuale)** rende MSS **scopribile nella repo attuale**. **P2B** deve ancora:
+
+1. **Esportare il motore** — `scripts/mss/**`, fixture/tests, hook condivisi, `package.json` scripts — in pacchetto riusabile (decisioni `D6`–`D10` congelate: niente move prematuro).
+2. **Intervista iniziale** — non automatizzata; raccoglie owner locali, branch, path sessioni, segreti/PROD.
+3. **Checklist primo run** — `npm run test:mss`, `test:mss:tools`, `validate:docs`, `mss:status`, `mss:query -- --verifica`.
+4. **Documentazione minima da copiare** — contratto capsula, plan template o owner equivalente, ingresso tipo `METASKILL_SYSTEM_SKILL.md`.
+5. **Non dichiarare** bootstrap riuscito finché un agente freddo **non** completa il checklist in repo pulita **senza** questo albero `docs/MetaSkillSystem` pre-esistente.
+
+`R8` (bootstrap = procedura) resta **non soddisfatto** fino a P2B + prova registrata.
+
+---
+
+## 8. STOP globali (arresto obbligatorio)
+
+- Task richiede WP-1, move, o chiusura `SK-*` senza mandato in §15
+- Due owner si contraddicono → rileggi §4-ter del plan
+- Scrittura su PROD Supabase senza conferma (`rwuxgvld`)
+- Reimplementazione SK-7 senza gate A/B
+- Commit/push senza «sì» esplicito di Matteo
+- Completare campi capsula per plausibilità
+
+---
+
+## 9. Riferimenti rapidi post-P1
+
+- P0 SK-7 assenza: `docs/Sessioni di lavoro/23-08-26/Report-p0-sk7-assenza-fix-23-08-26.md`
+- P1 D1/D4/D5: `docs/Sessioni di lavoro/23-08-26/Report-p1-d1-d4-d5-23-08-26.md`
+- P2A manuale: `docs/Sessioni di lavoro/23-08-26/Report-p2a-manuale-mss-23-08-26.md`
+
+**Prossimo dopo P2A:** P2B export/bootstrap riproducibile — vedi `PLAN_V0.md` §15.

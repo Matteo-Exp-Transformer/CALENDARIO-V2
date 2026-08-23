@@ -279,6 +279,12 @@ Le assertion Sistema separano `rule_id/version`, evento attivante,
 `lettura dichiarata; applicazione non provata`. Violazioni, correzioni, guasti e recuperi restano
 assertion distinte e fontate.
 
+`G`, `O` ed `E` non sono punteggi inventabili dal writer: significano rispettivamente governance,
+osservazione ed enforcement e usano la scala definita in
+[`PARAMETRI_MACRO_V0.md` §5](PARAMETRI_MACRO_V0.md#5-validazione-delle-regole-tre-misure-indipendenti).
+Per una regola critica vale il valore più debole; se la misura non è stata osservata va dichiarata,
+non stimata per plausibilità.
+
 ### Output e quinto gate canonico
 
 Ogni entità Output ha un solo tipo primario e ID stabile:

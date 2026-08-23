@@ -58,7 +58,24 @@
 | `SK-11` | test sugli attrezzi `mss:*` | **`A1–A4 IMPLEMENTATI` 23-08-26** — suite tools estesa (16 post-Fase B); **in attesa revisione integrata E**. Owner: `PLAN_V0.md` §4-bis `S11` |
 | `SK-5` / D1-A | controlli MSS in CI | **`implementazione self_report` (Fase C)** — job `mss` separato da `ci`; simulazione locale verde; **GA remota non osservata**; revisione E |
 | `SK-7` | `mss:capsule` — lo **scrittore** | `NON INIZIATO` — **non** prossimo passo immediato (dopo E + push, non prima) |
-| `SK-1`·`SK-2`·`SK-3`·`SK-8`·`SK-9`·`SK-10` | ripristino · path · `mss:review` · radice suite · `mss:move` · … | `NON INIZIATO` |
+| `SK-1`·`SK-2`·`SK-3`·`SK-8`·`SK-9` | ripristino · path · `mss:review` · radice suite · `mss:move` | `SK-2`/`SK-8` implementati non allineati · resto `NON INIZIATO` |
+| `SK-10` | manuale + bootstrap | **`IN CORSO — P2A`** — vedi [`../MANUALE_OPERATIVO_MSS_V0.md`](../MANUALE_OPERATIVO_MSS_V0.md); P2B export non provato |
+
+### Rettifica di stato — audit tecnico 23-08-26
+
+La tabella appena sopra è una fotografia precedente all’audit e non va usata per avviare lavoro.
+La vista attuale è `../PLAN_V0.md` §4-ter, con fonte
+[`../AUDIT_STATO_REALE_23-08-26.md`](../AUDIT_STATO_REALE_23-08-26.md):
+
+- `SK-4` e `SK-5` sono **aperti**, non chiusi: D1 rende il pre-commit più debole della CI.
+- `SK-7` è **aperto**: P0 ha documentato l’**assenza** del fix dichiarato (nessun artefatto
+  recuperabile); D2/D3 restano vivi a `46b8bca`. Non è “non iniziato” e non è verificato verde.
+- `SK-8` è implementato ma mai dichiarato, `SK-2` esiste ma riporta stato stale, `SK-11` ha 23
+  test verdi ma copertura insufficiente e numeri sbagliati in documentazione/output.
+- **Ordine operativo aggiornato:** P0 (assenza) → **gate Matteo A/B** → ~~P1 D1/D4/D5~~ **P1 chiuso**
+  → **P2A** manuale locale (**in corso**) → **P2B** export/bootstrap → P3 → P4.
+  Manuale: [`../MANUALE_OPERATIVO_MSS_V0.md`](../MANUALE_OPERATIVO_MSS_V0.md) · Report P1:
+  `../../Sessioni di lavoro/23-08-26/Report-p1-d1-d4-d5-23-08-26.md`.
 
 **Perché questo ordine, in una riga ciascuno.** `SK-4` per primo perché il 22-08 tre dei suoi
 bypass sono stati **incontrati lavorando**, e uno di essi nasconde una **seduta di revisione**: il
