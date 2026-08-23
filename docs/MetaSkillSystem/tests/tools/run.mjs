@@ -20,8 +20,10 @@ import {
   recordsToJsonl,
   runCapsule,
   runChecks,
+  parseCheckSpec,
   collectGitContext,
   buildSourceRefsFromGit,
+  buildJudgmentsTemplate,
 } from '../../../../scripts/mss/capsule.mjs'
 import { validateMss } from '../../../../scripts/mss/core.mjs'
 import { REVISION_CURRENT } from '../../../../scripts/mss/rules.mjs'
@@ -578,10 +580,11 @@ const tests = [
   ['capsule: git — i file cancellati non diventano source_refs irrisolvibili', () => {
     withTempGitRepo(({ repo }) => {
       writeRepoFile(repo, 'docs/da-cancellare.md', '# temporaneo\n')
-      runGit(repo, 'add', '--', 'docs/da-cancellare.md')
+      writeRepoFile(repo, 'docs/resta.md', '# resta\n')
+      runGit(repo, 'add', '--', 'docs/da-cancellare.md', 'docs/resta.md')
       runGit(repo, 'commit', '-m', 'aggiunge file')
       rmSync(join(repo, 'docs', 'da-cancellare.md'))
-      writeRepoFile(repo, 'docs/resta.md', '# resta\n')
+      writeRepoFile(repo, 'docs/resta.md', '# resta modificato\n')
 
       const context = collectGitContext(repo)
       assert.ok(context.changedFiles.includes('docs/da-cancellare.md'), 'git deve vedere la cancellazione')
@@ -589,10 +592,125 @@ const tests = [
       const refs = buildSourceRefsFromGit(context.changedFiles, context.headShort, { root: repo })
       const paths = refs.map((r) => r.uri_or_path)
       assert.equal(paths.includes('docs/da-cancellare.md'), false, 'il file cancellato non e referenziabile')
-      assert.ok(paths.includes('docs/resta.md'), 'il file presente resta referenziato')
+      assert.ok(paths.includes('docs/resta.md'), 'il file tracked presente resta referenziato')
       // I ref_id restano una numerazione densa anche dopo lo scarto.
       assert.deepEqual(refs.map((r) => r.ref_id), refs.map((_, i) => `source-git-${i + 1}`))
     })
+  }],
+  ['capsule: git — source_refs solo path indexed (tracked/modificato sì, untracked e cancellati no)', () => {
+    withTempGitRepo(({ repo }) => {
+      writeRepoFile(repo, 'docs/tracked-mod.md', 'v1\n')
+      writeRepoFile(repo, 'docs/to-delete.md', 'bye\n')
+      runGit(repo, 'add', '--', 'docs/tracked-mod.md', 'docs/to-delete.md')
+      runGit(repo, 'commit', '-m', 'aggiunge tracked')
+
+      writeRepoFile(repo, 'docs/tracked-mod.md', 'v2\n')
+      writeRepoFile(repo, 'docs/untracked-new.md', 'solo working tree\n')
+      rmSync(join(repo, 'docs', 'to-delete.md'))
+
+      const context = collectGitContext(repo)
+      assert.ok(context.changedFiles.includes('docs/tracked-mod.md'), 'diagnostica: tracked modificato')
+      assert.ok(context.changedFiles.includes('docs/untracked-new.md'), 'diagnostica: untracked resta in changedFiles')
+      assert.ok(context.changedFiles.includes('docs/to-delete.md'), 'diagnostica: cancellato resta in changedFiles')
+
+      const refs = buildSourceRefsFromGit(context.changedFiles, context.headShort, { root: repo })
+      const paths = refs.map((r) => r.uri_or_path)
+      assert.ok(paths.includes('docs/tracked-mod.md'), 'tracked modificato → source_ref')
+      assert.equal(paths.includes('docs/untracked-new.md'), false, 'untracked ?? → escluso')
+      assert.equal(paths.includes('docs/to-delete.md'), false, 'cancellato → escluso')
+      assert.deepEqual(refs.map((r) => r.ref_id), refs.map((_, i) => `source-git-${i + 1}`))
+    })
+  }],
+  ['capsule: parseCheckSpec — forma canonica conserva ID e comando', () => {
+    const parsed = parseCheckSpec('test:mss=>npm run test:mss')
+    assert.equal(parsed.control_id, 'test:mss')
+    assert.equal(parsed.command, 'npm run test:mss')
+  }],
+  ['capsule: parseCheckSpec — comando con ulteriori => (arrow function) resta integro', () => {
+    const raw = 'arrow=>node -e "const f = x => x; process.exit(f(0))"'
+    const parsed = parseCheckSpec(raw)
+    assert.equal(parsed.control_id, 'arrow')
+    assert.equal(parsed.command, 'node -e "const f = x => x; process.exit(f(0))"')
+  }],
+  ['capsule: runChecks — comando con arrow function => passa exit 0', () => {
+    const [check] = runChecks([
+      {
+        control_id: 'CTRL-ARROW',
+        command: 'node -e "const f = x => x; process.exit(f(0))"',
+      },
+    ], { cwd: REPO_ROOT })
+    assert.equal(check.esito, 'pass', check.esecutore)
+    assert.equal(check.numeratore, 1)
+    assert.match(check.esecutore, /\(exit 0\)$/)
+  }],
+  ['capsule: parseCheckSpec — legacy semplice con un solo colon resta valido', () => {
+    const parsed = parseCheckSpec('SK7:npm --version')
+    assert.equal(parsed.control_id, 'SK7')
+    assert.equal(parsed.command, 'npm --version')
+  }],
+  ['capsule: parseCheckSpec — D3 storico ambiguo rifiutato', () => {
+    assert.throws(
+      () => parseCheckSpec('test:mss:npm run test:mss'),
+      (error) => error.message.includes('ambiguo') && error.message.includes('=>'),
+    )
+  }],
+  ['capsule: parseCheckSpec — D2 storico ambiguo rifiutato', () => {
+    assert.throws(
+      () => parseCheckSpec('x::node --version'),
+      (error) => error.message.includes('ambiguo'),
+    )
+  }],
+  ['capsule: CLI — check ambiguo exit 2 e nessuna capsula', () => {
+    const result = runCapsule([
+      process.argv[0],
+      'capsule.mjs',
+      '--judgments', JUDGMENTS_MINIMAL,
+      '--model', 'fixture-model',
+      '--check', 'test:mss:npm run test:mss',
+    ], { root: REPO_ROOT, env: { TERM_PROGRAM: 'cursor' } })
+    assert.equal(result.exitCode, 2, result.stderr)
+    assert.match(result.stderr, /ambiguo/)
+    assert.equal(result.stdout, '')
+  }],
+  ['capsule: runChecks — comando vuoto non eseguito e mai pass', () => {
+    const [empty, whitespace] = runChecks([
+      { control_id: 'CTRL-EMPTY', command: '' },
+      { control_id: 'CTRL-WS', command: '   ' },
+    ], { cwd: REPO_ROOT })
+    for (const check of [empty, whitespace]) {
+      assert.notEqual(check.esito, 'pass', check.esecutore)
+      assert.equal(check.numeratore, 0)
+      assert.match(check.esecutore, /non eseguito|non valido/)
+    }
+  }],
+  ['capsule: template — nessun path privato concreto, categoria generica presente', () => {
+    const template = buildJudgmentsTemplate()
+    const serialized = JSON.stringify(template)
+    assert.doesNotMatch(serialized, /docs\/_lavoro/)
+    assert.match(serialized, /materiale privato non registrabile/)
+  }],
+  ['capsule: privacy — categorie generiche in prohibited_content non bloccano', () => {
+    const judgments = readJson(JUDGMENTS_MINIMAL)
+    judgments.session_event.privacy.prohibited_content = [
+      'materiale privato non registrabile',
+      'segreti',
+    ]
+    const records = buildCapsuleBundle(goldenCapsuleOptions({ judgments }))
+    assert.ok(records.length >= 4)
+    const jsonl = recordsToJsonl(records)
+    assert.match(jsonl, /session_event/)
+  }],
+  ['capsule: privacy — sentinella in env non whitelisted assente dal JSONL', () => {
+    const FAKE_SENTINEL = 'FAKE_MSS_SENTINEL_XYZ_NOT_REAL'
+    const records = buildCapsuleBundle(goldenCapsuleOptions({
+      env: {
+        TERM_PROGRAM: 'cursor',
+        CURSOR_AGENT: 'fixture-agent',
+        FAKE_MSS_SENTINEL_ENV: FAKE_SENTINEL,
+      },
+    }))
+    const jsonl = recordsToJsonl(records)
+    assert.doesNotMatch(jsonl, new RegExp(FAKE_SENTINEL))
   }],
 ]
 

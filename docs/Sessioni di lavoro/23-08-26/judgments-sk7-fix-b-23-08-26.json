@@ -1,0 +1,204 @@
+{
+  "session_event": {
+    "intent_user": "fix B autorizzato: chiudere D2/D3 parseCheckSpec/runChecks, rettifica privacy append-only, test e prove ripetibili; SK-7 non chiuso (M3 pendente)",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "agente-esecutore-sk7-fix-b",
+    "area": "MetaSkillSystem / attrezzo mss:capsule",
+    "environment": "branch env/test; HEAD allineato a origin/env/test; Windows 11",
+    "authorization": {
+      "read": [
+        "docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md",
+        "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "docs/Sessioni di lavoro/23-08-26/Report-sk7-mss-capsule-23-08-26.md"
+      ],
+      "write": [
+        "scripts/mss/capsule.mjs",
+        "docs/MetaSkillSystem/tests/tools/run.mjs",
+        "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "docs/Sessioni di lavoro/23-08-26/judgments-sk7-report-23-08-26.json",
+        "docs/Sessioni di lavoro/23-08-26/Report-sk7-mss-capsule-23-08-26.md",
+        "docs/Sessioni di lavoro/23-08-26/Report-fix-sk7-timbri-23-08-26.md"
+      ],
+      "forbid": [
+        "src/**",
+        "supabase/**",
+        "scripts/mss/query.mjs",
+        "scripts/mss/core.mjs",
+        "scripts/mss/rules.mjs",
+        "scripts/mss/adapter.mjs",
+        "commit",
+        "push"
+      ]
+    },
+    "authorized_outputs": [
+      "patch parseCheckSpec ID=>comando",
+      "test:mss:tools +9 test D2/D3/privacy",
+      "amendment privacy report SK-7",
+      "Report-fix-sk7-timbri-23-08-26.md"
+    ],
+    "route": {
+      "chosen": "gate B Matteo: reimplementazione D2/D3 + privacy append-only + prove; sintassi canonica CONTROL_ID=>comando",
+      "alternatives_or_conflicts": "nessuno"
+    },
+    "observed_outcome": "parseCheckSpec canonico e legacy sicuro; ambigui D2/D3 rifiutati exit 2; comando puo contenere ulteriori =>; runChecks non passa comandi vuoti; template e judgments privacy minimizzati; amendment privacy append-only su report SK-7; test tools verdi inclusi arrow",
+    "open_items": [
+      "M3 chiusura SK-7 spetta a Matteo",
+      "revisione indipendente D17 consigliata non eseguita"
+    ],
+    "subject_runtime": {
+      "actor_id": "Matteo",
+      "provider": "non_applicabile: soggetto umano",
+      "model": "non_applicabile: soggetto umano",
+      "runtime": "non_applicabile: soggetto umano",
+      "surface": "Cursor chat"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "path del repo",
+        "esiti comandi",
+        "metriche aggregate test"
+      ],
+      "prohibited_content": [
+        "materiale privato non registrabile",
+        "segreti",
+        "token di autenticazione"
+      ],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-plan",
+        "owner_id": "SYS-1",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "sezione 4-bis S7",
+        "revision_or_hash": "working tree",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-sk7-report",
+        "owner_id": "SK-7",
+        "uri_or_path": "docs/Sessioni di lavoro/23-08-26/Report-sk7-mss-capsule-23-08-26.md",
+        "stable_anchor_or_event_id": "capsula session_event",
+        "revision_or_hash": "working tree",
+        "sensitivity": "internal"
+      }
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "Matteo ha autorizzato esplicitamente fix B (reimplementazione D2/D3 + privacy) dopo P0 assenza",
+          "actor": "Matteo",
+          "assistance": "guidato",
+          "origin": "naturale",
+          "source_ref": "source-sk7-report",
+          "effect": "perimetro esecutivo chiaro: no commit, no M3 automatico",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-sk7-fix-b",
+        "role": "agente esecutore SK-7 fix B",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "unverified",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessuna valutazione Persona",
+        "criterion_ref": "non_applicabile:non ancora verificato",
+        "evidence_refs": [],
+        "notes": "nessuna osservazione aggiuntiva"
+      }
+    },
+    "sistema": {
+      "delta": "modificato",
+      "assertions": [
+        {
+          "rule_id_version": "SK-7 fix B@mss.session/0.1.1",
+          "trigger_event": "parseCheckSpec spezzava al primo colon; runChecks passava no-op",
+          "decision_or_output_changed": "sintassi canonica ID=>comando; legacy un solo colon; ambigui rifiutati; guardia comando vuoto in runChecks; CLI exit 2 senza stack",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-sk7-fix-b",
+        "role": "agente esecutore SK-7 fix B",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-plan",
+        "evidence_refs": ["source-sk7-report"],
+        "notes": "34 test test:mss:tools"
+      }
+    },
+    "output": {
+      "delta": "modificato",
+      "assertions": [
+        {
+          "output_id": "mss-capsule-v0-fix-b",
+          "primary_type": "prodotto",
+          "canonical_version": "scripts/mss/capsule.mjs parseCheckSpec/runChecks fix B",
+          "recipient": "agenti MSS e Matteo",
+          "problem_or_job": "prove false D2/D3 e privacy template con path privato",
+          "intended_use": "controlli misurabili affidabili e privacy minimizzata",
+          "conceived_by": "audit P0 + mandato fix B",
+          "decided_by": "Matteo",
+          "directed_by": "prompt fix B 23-08-26",
+          "authored_by": "cursor-composer-sk7-fix-b",
+          "verified_by": "test:mss:tools + validate:mss",
+          "acceptance_criterion": "D2/D3 rossi pre-fix verdi post-fix; amendment privacy; test obbligatori verdi",
+          "verification_or_use_evidence": "npm run test:mss:tools 34/34; validate:mss su report fix",
+          "verification_status": "self_report",
+          "owner_ref": "owner-plan",
+          "privacy_release": "internal",
+          "support_files": [
+            "docs/MetaSkillSystem/tests/tools/run.mjs",
+            "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md"
+          ],
+          "relations_no_double_count": [
+            "amends privacy capsula report SK-7 via amendment append-only"
+          ],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "fail",
+            "result": "not_eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "cursor-composer-sk7-fix-b",
+        "role": "agente esecutore SK-7 fix B",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-plan",
+        "evidence_refs": [],
+        "notes": "M3 non dichiarato"
+      }
+    }
+  }
+}

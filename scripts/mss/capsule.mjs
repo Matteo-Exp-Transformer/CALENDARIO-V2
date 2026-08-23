@@ -159,13 +159,26 @@ export function collectGitContext(root = ROOT) {
 }
 
 /**
+ * Path presente nell'index Git (HEAD o già `git add`): pubblicabile dopo commit selettivo.
+ * Gli untracked `??` falliscono qui — esistono sul disco ma non nel repository pubblicato.
+ */
+export function isGitIndexedPath(uri, root = ROOT) {
+  const listed = git(['ls-files', '--error-unmatch', '--', uri], root)
+  return listed !== null
+}
+
+/**
  * I file cancellati sono cambiamenti veri ma NON riferimenti risolvibili: emetterli
  * produce `MSS-REF-UNRESOLVABLE` e fa rifiutare la capsula. La cancellazione resta
- * comunque leggibile nel diff, quindi qui si esclude senza perdere informazione.
+ * comunque leggibile nel diff / in `changedFiles`, quindi qui si esclude senza perdere
+ * informazione diagnostica.
+ *
+ * Gli untracked `??` restano in `collectGitContext().changedFiles` per diagnostica, ma
+ * non diventano `source_refs`: non sono riproducibili finché non entrano in index/HEAD.
  */
 export function buildSourceRefsFromGit(changedFiles, headShort, { root = ROOT } = {}) {
   return changedFiles
-    .filter((uri) => existsSync(resolve(root, uri)))
+    .filter((uri) => existsSync(resolve(root, uri)) && isGitIndexedPath(uri, root))
     .map((uri, index) => ({
       ref_id: `source-git-${index + 1}`,
       owner_id: 'git-working-tree',
@@ -176,15 +189,70 @@ export function buildSourceRefsFromGit(changedFiles, headShort, { root = ROOT } 
     }))
 }
 
+const CHECK_CANONICAL_SEP = '=>'
+
+/** Errore di parsing --check: messaggio pulito, nessuno stack trace in CLI. */
+export class ParseCheckSpecError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'ParseCheckSpecError'
+  }
+}
+
+function assertNonEmptyCommand(command, raw) {
+  if (!command || !/\S/.test(command)) {
+    throw new ParseCheckSpecError(
+      `Formato --check invalido "${raw}": il comando deve contenere almeno un carattere non whitespace`,
+    )
+  }
+}
+
+/**
+ * Canonico: CONTROL_ID=>comando — si divide solo sul primo `=>`;
+ * l'ID può contenere `:`; il comando può contenere ulteriori `=>` (es. arrow function).
+ * Legacy: CONTROL_ID:comando solo con esattamente un `:` e entrambi i lati non vuoti.
+ * Più `:` senza `=>` → ambiguo, rifiutato esplicitamente.
+ */
 export function parseCheckSpec(raw) {
-  const idx = raw.indexOf(':')
-  if (idx <= 0) {
-    throw new Error(`Formato --check invalido "${raw}": atteso "CONTROL_ID:comando"`)
+  if (typeof raw !== 'string' || !raw.trim()) {
+    throw new ParseCheckSpecError('Formato --check invalido: stringa vuota')
   }
-  return {
-    control_id: raw.slice(0, idx).trim(),
-    command: raw.slice(idx + 1).trim(),
+
+  const arrowIdx = raw.indexOf(CHECK_CANONICAL_SEP)
+  if (arrowIdx !== -1) {
+    const control_id = raw.slice(0, arrowIdx).trim()
+    const command = raw.slice(arrowIdx + CHECK_CANONICAL_SEP.length).trim()
+    if (!control_id) {
+      throw new ParseCheckSpecError(
+        `Formato --check invalido "${raw}": CONTROL_ID mancante prima di "=>"`,
+      )
+    }
+    assertNonEmptyCommand(command, raw)
+    return { control_id, command }
   }
+
+  const colonCount = (raw.match(/:/g) || []).length
+  if (colonCount === 1) {
+    const idx = raw.indexOf(':')
+    const control_id = raw.slice(0, idx).trim()
+    const command = raw.slice(idx + 1).trim()
+    if (!control_id) {
+      throw new ParseCheckSpecError(`Formato --check invalido "${raw}": CONTROL_ID mancante`)
+    }
+    assertNonEmptyCommand(command, raw)
+    return { control_id, command }
+  }
+
+  if (colonCount > 1) {
+    throw new ParseCheckSpecError(
+      `Formato --check ambiguo "${raw}": più ":" senza "=>". ` +
+      'Usa la forma canonica "CONTROL_ID=>comando" (es. "test:mss=>npm run test:mss")',
+    )
+  }
+
+  throw new ParseCheckSpecError(
+    `Formato --check invalido "${raw}": atteso "CONTROL_ID=>comando" o legacy "CONTROL_ID:comando" con un solo ":"`,
+  )
 }
 
 /**
@@ -205,7 +273,19 @@ export function spawnCheckCommand(command, cwd) {
 
 export function runChecks(checkSpecs, { cwd = ROOT, executor = 'mss:capsule' } = {}) {
   return checkSpecs.map(({ control_id, command }) => {
-    const result = spawnCheckCommand(command, cwd)
+    const trimmed = (command ?? '').trim()
+    if (!trimmed || !/\S/.test(trimmed)) {
+      return {
+        control_id,
+        criterio: command ?? '',
+        esito: 'non_noto',
+        numeratore: 0,
+        denominatore: 1,
+        esecutore: `${executor}: comando vuoto o non valido — non eseguito`,
+        evidence_refs: [],
+      }
+    }
+    const result = spawnCheckCommand(trimmed, cwd)
     // Un comando che non è partito NON è un comando fallito: registrarlo `fail`
     // sarebbe una prova falsa. Il contratto ha `non_noto` proprio per questo.
     if (result.error || result.status === null) {
@@ -282,7 +362,7 @@ export function buildJudgmentsTemplate() {
         classification: 'internal',
         capture_basis: 'operational_need',
         allowed_content: [],
-        prohibited_content: ['dati personali', 'segreti', 'docs/_lavoro/'],
+        prohibited_content: ['dati personali', 'segreti', 'materiale privato non registrabile'],
         redactions: 'nessuno',
         external_release: 'requires_confirmation',
         retention: 'undecided_wp0.1',
@@ -640,14 +720,23 @@ export function parseCapsuleArgs(argv) {
 
 export function runCapsule(argv = process.argv, options = {}) {
   const root = options.root ?? ROOT
-  const args = parseCapsuleArgs(argv)
+  let args
+  try {
+    args = parseCapsuleArgs(argv)
+  } catch (error) {
+    return {
+      exitCode: 2,
+      stdout: '',
+      stderr: `${error.message}\n`,
+    }
+  }
 
   if (args.help) {
     return {
       exitCode: 0,
       stdout:
         'Usage: npm run mss:capsule -- [--template] [--judgments file.json] --model <modello> ' +
-        '[--role ...] [--actor-id ...] [--check "ID:comando"] [--tool ...] [--package "id|ver|ref"] ' +
+        '[--role ...] [--actor-id ...] [--check "ID=>comando"] [--tool ...] [--package "id|ver|ref"] ' +
         '[--append-to report.md]\n',
       stderr: '',
     }

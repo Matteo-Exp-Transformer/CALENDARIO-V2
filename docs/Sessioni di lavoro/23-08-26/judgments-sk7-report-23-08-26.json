@@ -75,9 +75,9 @@
         "SHA commit prompt"
       ],
       "prohibited_content": [
-        "docs/_lavoro/",
+        "materiale privato non registrabile",
         "segreti",
-        "CLAUDE_CODE_MESSAGING_TOKEN"
+        "token di autenticazione"
       ],
       "redactions": "nessuno",
       "external_release": "requires_confirmation",

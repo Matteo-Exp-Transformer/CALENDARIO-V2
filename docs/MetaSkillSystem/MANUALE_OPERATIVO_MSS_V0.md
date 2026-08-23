@@ -70,7 +70,7 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 | **Legge** | `--judgments file.json`, env whitelisted, git porcelain, comandi `--check` |
 | **Scrive** | stdout JSONL; con `--append-to` modifica **solo** report senza capsula esistente |
 | **Obbligatori (generazione)** | `--model <modello>` · `--judgments <file>` (tre assi) |
-| **Opzioni** | `--template` · `--check "ID:comando"` · `--role` · `--tool` · `--package "id\|ver\|ref"` |
+| **Opzioni** | `--template` · `--check "ID=>comando"` (legacy: un solo `:`) · `--role` · `--tool` · `--package "id\|ver\|ref"` |
 | **Uso sicuro** | `npm run mss:capsule -- --template` · `npm run mss:capsule -- --help` |
 
 **Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. **Attenzione SK-7:** D2/D3 noti — `--check` può registrare `pass` falso su alcuni input; non usare per prove gate finché gate A/B Matteo.
