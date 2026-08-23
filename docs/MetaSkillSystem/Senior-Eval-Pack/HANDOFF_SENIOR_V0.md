@@ -48,69 +48,121 @@ Non sostituisce:
 
 ## 3. Handoff attivo
 
-> Questa sezione è una vista sostituibile. Deve riportare sempre fonte e revisione. Non promuove
+> Questa sezione e una vista sostituibile. Deve riportare sempre fonte e revisione. Non promuove
 > autonomamente alcuno stato. In caso di divergenza con `MASTERPLAN_V0.md`, vince il masterplan.
 
-- **Aggiornato il:** 21-08-2026.
-- **Sessione:** `SEP-SES-20260821-037` (chiusura documentale append-only della preparazione `036`).
-- **Autore:** OpenAI Codex, ruolo Meta documentation closure.
-- **Configurazione:** sessione Codex corrente, non catalogata come configurazione eval.
-- **Metodo:** foto Git → confronto report/owner/viste → correzione riferimenti superati → report e capsula → validazione → handoff ultimo.
-- **Tipo di evidenza:** commit tecnico `ee0ab39` + report track `035` + prompt `036` + report chiusura `037`.
-- **Verifica:** `env/test` sync a F0; `validate:mss` OK su report/capsula e SESSION_LOG;
-  `git diff --check` OK; zero riferimenti operativi superati; zero codice/move/F5/sandbox.
+### ⚠️ Rettifica di rotta — leggi questo prima del resto
+
+L'handoff precedente (21-08-2026) indicava come prossimo task atomico **«plan directory/export/
+sandbox»**. **Quel task è congelato.** La decisione `D15` di Matteo del 21-08-2026
+(`../PLAN_V0.md` §16.4) ha congelato `D6`–`D10` del plan directory su raccomandazione del
+consulente esterno: riordinare l'albero prima di avere gli attrezzi ripeterebbe il costo misurato
+del primo move. Un senior che avesse seguito l'handoff precedente avrebbe eseguito **esattamente
+ciò che era stato fermato**.
+
+**La traccia viva non è più `SEP-*`: è `SK-*`** (`../PLAN_V0.md` §4-bis, target in §16). Il
+Senior-Eval-Pack è **parcheggiato, non annullato**: `SEP-G5` **non** PASS, `WP-1` **NO-GO**,
+`H-1.3` `PASS_CON_RISERVE`. Nessuno di quegli stati è cambiato — semplicemente non sono il fronte.
+
+### Istantanea
+
+- **Aggiornato il:** 22-08-2026 (sera).
+- **Sedute coperte:** `mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e` (`SK-6` costruzione) ·
+  `mss-ses-01a02b3b-20bd-7400-82d6-54e73e38192e` (fix post-revisione) ·
+  `mss-ses-01a02b3d-5028-76f9-bd88-82eae5366f7d` (revisione indipendente OpenAI).
+- **Autori:** Anthropic Claude Opus 5 (costruzione + supervisione) · Anthropic Claude Sonnet 5
+  (esecuzione fix) · **OpenAI Codex** (revisione indipendente, famiglia di modello diversa).
+- **Metodo:** costruire il **lettore** prima dello scrittore; dichiarare in output il criterio usato,
+  così che chi legge possa rifiutarlo; far rimisurare gli stessi numeri a una famiglia di modello
+  diversa, con **fotografia dell'hash del file sotto esame** per non misurare un bersaglio mobile.
+- **Tipo di evidenza:** comandi eseguiti con exit code reali + censimento indipendente riprodotto da
+  un parser scritto fuori dal repository, che non importa `scripts/mss/query.mjs`.
 - **Comparabilità:** `non_comparabile`.
-- **Masterplan letto:** `MASTERPLAN_V0.md` — `SEP-G1_PASS_CON_RISERVE`; `SEP-10` chiuso;
-  `SEP-11` = **`IN_CORSO`**; H-1.3 = **`PASS_CON_RISERVE`**; **prossimo = plan directory**; **SEP-G5 non PASS**; WP-1 **NO-GO**.
-- **Ultimo report:**
-  `docs/Sessioni di lavoro/21-08-26/Report-chiusura-documentale-preparazione-036-21-08-26.md`.
-- **Prompt prossimo task:**
-  `docs/Sessioni di lavoro/10-08-26/Prompt-plan-directory-export-sandbox-mss-10-08-26.md`
-  (solo plan; zero move).
-- **Catena prove:** chiusura `037` ← prepara `036` ← track `035` @ `ee0ab39` ← review PASS_CON_RISERVE `034` ← remediation ← review FAIL ← `033` F4-doc ← …
-- **Git:** baseline tecnica `ee0ab39` su `env/test`; chiusura `037` preparata nel WT e non pubblicata; stash@{0} intatto; **nessun claim PASS pulito**.
-
-### Quadro generale (per ripartenza senior — MSS)
-
-1. **Due owner:** pack → `MASTERPLAN_V0`; SYS-1 → `PLAN_V0` (H-1.3 = PASS_CON_RISERVE, non PASS pulito).
-2. **Onda:** SEP-10 → F1–F4-doc → remediation H13 → review PASS_CON_RISERVE → **track L5** → plan directory.
-3. **Freeze:** L6; stub D5; F5 fuori finché plan; Comunicazione stash non auto-trackata.
-4. **Gate:** G1 con riserve; G5 **non** PASS; H-1.3 **PASS_CON_RISERVE** (H13-POST-L01); WP-1 **NO-GO**.
-5. **Dedicati vivi:** ~~track L5 `ee0ab39`~~ → **plan directory** (prompt `036`) → F5 solo dopo approvazione.
+- **Ultimi report:** `docs/Sessioni di lavoro/22-08-26/Report-sk6-mss-query-22-08-26.md` ·
+  `…/Report-fix-sk6-22-08-26.md` · `…/Report-revisione-indipendente-sk6-codex-22-08-26.md`.
 
 ### Fatto osservato
 
-Review indipendente post-remediation: controprove R01–R03 tengono; suite 41+32 verde; verdetto PASS_CON_RISERVE. Track whitelist L5+2 hook+report autorizzato (path invariati).
+Esiste `npm run mss:query`: sola lettura, interroga le capsule già scritte e risponde a cinque
+domande. **Le capsule, interrogate per la prima volta, hanno prodotto dati veri.** Il principale:
+in 43 sedute `independently_verified` non era **mai** comparso e `verified_by` era vuoto in tutte
+le annotazioni — **eppure le review indipendenti erano state fatte davvero**. Il divario non era fra
+lavoro fatto e non fatto, ma fra ciò che i report raccontano in prosa e ciò che la capsula registra.
+
+La revisione indipendente ha rimisurato sette affermazioni: **sei confermate, una contraddetta**.
 
 ### Effetto prodotto
 
-- punto di ripristino Git della baseline H-1.3 revisionata e già pubblicata (`ee0ab39`);
-- narrativa owner allineata: PASS_CON_RISERVE; WP-1 chiuso; prossimo = plan directory.
+- Il criterio di riconoscimento dei revisori è passato da `controls[].esecutore` (testo libero che
+  contiene anche stringhe di comando) a `recorded_by.role` (campo con semantica propria). Il numero
+  misurato è cresciuto di circa un fattore 4. **Verificato che è un soprainsieme stretto: zero
+  controlli persi.** Il numero esatto è mobile — cresce a ogni seduta di revisione: chiedilo al comando.
+- La capsula del report `SK-6` è stata **rettificata con un `amendment`**, non riscritta.
+- **Primo uso reale del meccanismo di rettifica in tutta la storia del sistema:** il revisore
+  indipendente ha marcato un'annotazione `independently_verified` e una `contradicted`.
 
 ### Problema strutturale corrente
 
-Riserva H13-POST-L01 (encoding hash `previous`); bypass E2/`--no-verify`/no-CI dichiarati; G5 non PASS; directory/export ancora da pianificare.
+1. ⚠️ **Il sistema sa registrare cose che non sa rileggere.** `mss:query` legge gli stati **grezzi**
+   e **non applica gli amendment**, mentre il contratto §6 prescrive una vista che applichi la catena
+   per `effective_at`. Risultato: la prima rettifica indipendente della storia del sistema **è
+   invisibile al lettore costruito per trovarla**. Mitigato il 22-08 dichiarando il limite in output;
+   **non risolto**.
+2. **Tre bypass dell'enforcement, provati** (→ `SK-4`): la coppia schema legacy rende **opzionale**
+   il campo `controls`; un report in **sotto-cartella** esce dal perimetro del pre-commit; basta
+   cambiare il **prefisso del nome**. Il secondo non è cosmetico: fra i 22 report esclusi c'è una
+   **seduta di revisione** — il buco nasconde proprio le prove che il sistema esiste per raccogliere.
+3. **Nessun attrezzo `mss:*` ha un solo test.** `npm run lint` gira su `--ext ts,tsx` e ignora
+   `scripts/`; `test:mss` esercita il validator, non il lettore. `npm run validate` verde **non dice
+   nulla** su questi file.
+4. `rule_id_version` è **testo libero**, non un identificatore: non esiste alcun campo strutturato
+   per i **gate** né per i **file toccati**.
+5. Gli **hook** vivono in un file **escluso da git**: quell'enforcement non esiste per nessun altro.
 
 ### Cosa non è dimostrato
 
-- H-1.3 PASS *pulito*; G5 PASS; WP-1; cutover; F5 relocate; continuità globale cattura.
+- Che gli attrezzi `mss:*` siano corretti: **nessun test li copre**. Nella stessa giornata la
+  **stessa classe di difetto** (colonna di output troppo stretta) è comparsa **tre volte**.
+- Che le capsule scritte a mano dicano il vero: durante la costruzione un generatore ha registrato
+  `fail` su comandi che in realtà **passavano** (su Windows `npm` è `npm.cmd`). Un controllo falso
+  invalida la raccolta quanto uno omesso.
+- Che `SEP-G5`, `WP-1`, `H-1.3` pulito o il cutover siano avanzati: **non lo sono**.
 
 ### Prossimo task atomico derivato
 
-**Plan directory/export/sandbox** (chat Meta dedicata; zero move). Non WP-1.
+**Nessuno è autorizzato: apre Matteo.** La raccomandazione di chi scrive, con l'argomento:
+
+1. **Chiudere il divario «registra ma non rilegge»** — cioè `SK-4` insieme alla vista che applica
+   gli amendment. Sono lo **stesso** problema: il sistema accetta record che poi non sa mostrare.
+   Va per primo perché ogni seduta futura ci scrive dentro, e perché tre di quei bypass sono stati
+   **incontrati lavorando**, non trovati cercandoli.
+2. **`SK-11` + `SK-5`: test sugli attrezzi, poi CI.** Argomento empirico, non di principio: la
+   stessa classe di bug è ricomparsa tre volte in un giorno. **Il ripetersi di un difetto identico
+   misura l'assenza di test, non la disattenzione di chi scrive.**
+3. **`SK-7` (`mss:capsule`) dopo, non prima.** Un generatore che scrive in un archivio non
+   presidiato e non rileggibile **moltiplica** il problema invece di risolverlo. La sequenza `D12`
+   — prima il lettore, poi lo scrittore — ha già pagato: costruire il lettore per primo è ciò che ha
+   reso visibili tutti i difetti elencati qui sopra.
+
+### Dato nuovo per `D13` (indipendenza del revisore)
+
+`D13` ha reso la regola **avviso, non blocco**, ed è una decisione legittima di Matteo che resta in
+piedi. Va però registrato il primo dato reale: il 22-08 una famiglia di modello **diversa** (OpenAI)
+ha revisionato un lavoro di autore Anthropic e **ha trovato difetti che l'autore non aveva visto** —
+incluso quello strutturale al punto 1. È un'osservazione, non una richiesta di riaprire `D13`.
 
 ### Gate
 
-- STOP: claim PASS pulito; G5 PASS; WP-1; F5/move; `_lavoro`; stash pop/drop senza Sì; Comunicazione dallo stash.
-- Aperte: pubblicazione della sola chiusura documentale con comando dedicato; poi plan directory.
-`SEP-G1` = `PASS_CON_RISERVE`. `SEP-G5` **non** PASS. H-1.3 = `PASS_CON_RISERVE`.
+Invariati e **non toccati** da queste sedute: `SEP-G1` = `PASS_CON_RISERVE` · `SEP-G5` **non** PASS ·
+`H-1.3` = `PASS_CON_RISERVE` (non PASS pulito) · `WP-1` **NO-GO**.
 
 ### STOP e decisioni di Matteo
 
-- STOP: WP-1; F5; directory exec in questa chat; G5 PASS; stash drop senza Sì.
-- Chiuse: review H-1.3 accettata PASS_CON_RISERVE; track autorizzato; WP-1 esplicitamente chiuso per questa onda.
-- Aperte: chat plan directory; pubblicazione della chiusura documentale solo con comando dedicato;
-  SEP-5 solo con freeze.
+- **Aperte:** chiusura di `SK-6` (l'attrezzo esiste e i cancelli sono verdi, ma **chiude Matteo**) ·
+  quale pacchetto aprire dopo · se `mss:query` debba applicare le catene di amendment · se il
+  vincolo di cambio-famiglia di `PLAN_V0` §16.3 vada approvato o resti **proposta**.
+- **STOP invariati:** `WP-1` · `F5`/move · claim di PASS pulito · `docs/_lavoro/` · `stash drop`
+  senza sì esplicito · `adapter.mjs` (è `SK-4`).
 
 ## 4. Chiusura obbligatoria di ogni sessione senior
 
@@ -184,6 +236,10 @@ Non copiare nel handoff intere narrative, capsule o dati privati: usare puntator
 | `SEP-SES-20260810-035` | 10-08-2026 | Meta writer track L5 · `SEP-AGC-xai-cursor-001` | track/commit baseline H-1.3 | L5+2 hook+report staged; path invariati; prossimo=plan directory; G5 non PASS | `test:mss` + validate:mss + diff-check | `non_comparabile` | `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` |
 | `SEP-SES-20260810-036` | 10-08-2026 | Meta prepara · `SEP-AGC-xai-cursor-001` | prompt plan directory/export/sandbox | prompt pronto; zero move/F5; allineo parziale rimasto nel WT | fonte prompt + Git | `non_comparabile` | `Prompt-plan-directory-export-sandbox-mss-10-08-26.md` |
 | `SEP-SES-20260821-037` | 21-08-2026 | Meta documentation closure · Codex | chiusura append-only preparazione `036` | riferimenti superati corretti; roadmap/handoff allineati; prossimo=plan directory; zero F5/sandbox | validate:mss + diff-check + ricerca riferimenti | `non_comparabile` | `Report-chiusura-documentale-preparazione-036-21-08-26.md` |
+| `RETTIFICA` → `037` | 22-08-2026 | supervisione · Anthropic Claude Opus 5 | `amends` prossimo-task | prima: «prossimo = plan directory/export/sandbox»; dopo: quel task e **congelato da `D15`** (21-08, `PLAN_V0` §16.4) e la traccia viva e `SK-*`, non `SEP-*`. L'handoff dirigeva il prossimo senior su lavoro fermato | rettifica documentale; gate invariati | `non_comparabile` | `Report-fix-sk6-22-08-26.md` |
+| `mss-ses-01a0294a-…-e8583922a38e` | 22-08-2026 | esecutore `SK-6` · Anthropic Claude Opus 5 | costruire il **lettore** prima dello scrittore (`D12`) | `npm run mss:query` (sola lettura, 5 domande). Scoperto: `independently_verified` **mai** usato in 43 sedute e `verified_by` sempre vuoto, **ma le review erano state fatte davvero**. `SK-6` **non** dichiarato chiuso | `test:mss` exit 0 · `validate:mss` OK · tre affermazioni tracciate ai report d'origine | `non_comparabile` | `Report-sk6-mss-query-22-08-26.md` |
+| `mss-ses-01a02b3d-…-82eae5366f7d` | 22-08-2026 | **revisore indipendente · OpenAI Codex** (famiglia diversa) | censimento con parser scritto **fuori dal repo**, che non importa `query.mjs`; hash del bersaglio fotografato 3 volte | **6 affermazioni confermate su 7, 1 contraddetta** (conteggio revisori). Trovato difetto nuovo: `mss:query` **non applica gli amendment**. **Primo uso reale del meccanismo di rettifica** in tutta la storia del sistema | `validate:mss` OK sulla sua capsula; misure riprodotte in modo indipendente | `non_comparabile` | `Report-revisione-indipendente-sk6-codex-22-08-26.md` |
+| `mss-ses-01a02b3b-…-54e73e38192e` | 22-08-2026 | esecutore fix · Anthropic Claude Sonnet 5 | rettifica **append-only**, mai riscrittura di record `final` | criterio revisori da `controls[].esecutore` a `recorded_by.role` (soprainsieme stretto, **0 controlli persi**); capsula `SK-6` corretta con `amendment`; specchio `PLAN_V0` riallineato; limite «vista grezza, non effettiva» **dichiarato in output** | `test:mss` exit 0 · `validate:mss` OK su 2 report · `node --check` exit 0 · elenco attori ispezionato: **0 falsi positivi** | `non_comparabile` | `Report-fix-sk6-22-08-26.md` |
 
 Il registro dimostra soltanto che il passaggio è stato dichiarato e documentato. La verifica si
 legge nel report collegato e nel successivo eventuale record di review.

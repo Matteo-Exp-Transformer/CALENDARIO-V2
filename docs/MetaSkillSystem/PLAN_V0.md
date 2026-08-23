@@ -95,7 +95,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S3 | `SK-3` — `mss:review` (sola lettura) | `NON INIZIATO` | su una seduta con violazione nota la trova; su una pulita non inventa nulla |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | `NON INIZIATO` | i tre attacchi documentati (schema legacy · sotto-cartella · prefisso nome) vengono respinti |
 | S5 | `SK-5` — controlli MSS in CI su `env/test` | `NON INIZIATO` | una PR con capsula non valida rende la CI rossa |
-| S6 | `SK-6` — `mss:query` (sola lettura) | `NON INIZIATO` | risponde a 3 domande reali sulle capsule **già esistenti** |
+| S6 | `SK-6` — `mss:query` (sola lettura) | **`ESISTE, ATTREZZO FUNZIONANTE — chiusura non decisa`** (decide Matteo) | ✅ `npm run mss:query -- --regole/--modelli/--verifica` rispondono, provate a campione risalendo ai report d'origine · ✅ `npm run test:mss` **exit 0** (41 fixture + 32 gruppi) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ nessun test automatico copre `mss:query`: ESLint gira `--ext ts,tsx` e ignora `scripts/`, `test:mss` esercita il validator non il lettore · rettificato 22-08-26: capsula `SK-6` corretta con `amendment` (non riscritta) per il secondo segmento della seduta; criterio revisori spostato da `controls[].esecutore` a `recorded_by.role` (fatto stabile — non decade). Il conteggio che ne esce **cresce a ogni seduta di revisione registrata**: misurato **19/5** alle 22:44 del 22-08-26, **24/6** poco dopo (è atterrata la seduta del revisore Codex). Non è un numero da fissare qui: per il valore di oggi lancia `npm run mss:query -- --verifica` · ⚠️ **22-08-26, seconda tornata:** `mss:query` non applica la catena degli `amendment` (contratto §6) — legge stati grezzi, non la vista effettiva; dichiara ora il limite in output (conta gli `amendment` nel corpus e quelli che correggono `verification.status`) invece di affermare `independently_verified`/`contradicted` «mai usato» quando un `amendment` valido li usa già altrove |
 | S7 | `SK-7` — `mss:capsule` (generazione) | `NON INIZIATO` | capsula con secondi reali e `controls` con codici di uscita veri |
 | S8 | `SK-8` — radice robusta della suite | `NON INIZIATO` | `npm run test:mss` verde da una profondità di cartelle diversa |
 | S9 | `SK-9` — `mss:move` | `NON INIZIATO` | file spostato, riferimenti vivi, suite verde, costo misurato contro le 1 741 righe di riferimento |
@@ -484,21 +484,60 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 | 21-08-26 | **Target dello scheletro** acquisito da Matteo in §16; aperti `SK-0`…`SK-10` in §4-bis; intestazione di questo file rettificata (era ferma a `H-1.1`) | `STRATEGIA-scheletro-mss-21-08-26.md` · decisione Matteo in chat 21-08-26 |
 | 21-08-26 | **Decisioni `D11`–`D15`** prese da Matteo e registrate in §16.4 | `Report-consulenza-esterna-fable-mss-21-08-26.md` |
 | 21-08-26 | **`SK-0` CHIUSO E OSSERVATO** — 3 righe di configurazione (`.eslintrc.cjs`, `vitest.config.ts`, `scripts/check-doc-paths.mjs`). `npm run validate` **exit 0 per la prima volta**; lint da 363 problemi a 0; test 1346/1346; link rotti da 3 886 a 17. Rettificata la diagnosi di §6 («debito di discovery da pacchetto workspace separato») | prove eseguite in seduta `039` |
+| 22-08-26 | **`SK-6` costruito** (`mss:query`, sola lettura, 941 righe): interroga le 42/43 capsule esistenti, risponde alle tre domande di chiusura. Risultato principale: `independently_verified` mai usato in 42 sedute, ma review indipendenti risultano davvero eseguite (6 controlli/3 sedute col criterio iniziale). Non dichiarato chiuso: decisione di Matteo | `Report-sk6-mss-query-22-08-26.md` |
+| 22-08-26 | **Revisione trova 2 difetti in `SK-6`, entrambi rettificati** senza riscrivere record `final`: (1) la capsula del report dichiarava la seduta chiusa alle 13:45:54 mentre il report è stato esteso alle 22:16 con un secondo segmento — corretto con un record `amendment` in coda alla capsula, non una riscrittura; (2) il criterio revisori leggeva solo `controls[].esecutore` e perdeva un revisore la cui stringa finiva in `-review` — spostato su `recorded_by.role` (campo con semantica sua, mai una stringa di comando): misura del 22-08-26 ~22:44, il numero passa da **6 controlli/3 sedute** a **19 controlli/5 sedute** — numero mobile (cresce a ogni seduta), non un valore fisso; zero falsi positivi verificati stampando l'elenco completo degli attori catturati | `Report-fix-sk6-22-08-26.md` |
+| 22-08-26 | **Contro-revisione indipendente (Codex) su `SK-6` atterra nel working tree**, con 3 `amendment` propri: conferma 5/6 affermazioni della prima rettifica, ne contraddice 1 (il criterio di quel momento, poi già superato), e marca due annotazioni della capsula `SK-6` `independently_verified`/`contradicted`. Trova che questa marcatura resta invisibile a `mss:query` (il lettore non applica la catena degli `amendment`, mostra 0/0 dove la vista effettiva è 1/1) e che il numero «19/5» era già stato congelato in questo file come presente — **entrambi rettificati**: la riga `SK-6` sopra non fissa più il numero, e `mss:query -- --verifica` ora conta gli `amendment` nel corpus e dichiara il limite invece di dire «mai usato» su valori che un `amendment` già usa. Corretta anche una colonna troppo stretta (id di 36 caratteri attaccato al numero, stessa classe del bug `nessuno4` di `--costo`) con una larghezza calcolata sui dati, non a memoria | `Report-fix-sk6-22-08-26.md` · `Report-revisione-indipendente-sk6-codex-22-08-26.md` |
 
 ## 15. Prossimo task atomico
 
 `WP-1` resta **NON INIZIATO** e **NO-GO** finché Matteo non lo apre in chat dedicata.
-H-1.3 è **PASS_CON_RISERVE** (non PASS pulito).
+H-1.3 è **PASS_CON_RISERVE** (non PASS pulito). `SEP-G5` **non** è PASS.
 
-**Aggiornamento 21-08-26.** Il plan directory/export/sandbox è **stato prodotto** (seduta `038`,
-zero move) e la consulenza esterna lo ha esaminato. Il prossimo atomo **non** è più quello:
-è la decisione di Matteo su **`SK-0`** (§4-bis), cioè se sbloccare i tre cancelli globali prima di
-qualunque altra cosa. Le decisioni `D6`, `D7`, `D8`, `D10` del plan directory restano **aperte e
-congelate**: riordinare l'albero prima di avere gli attrezzi ripeterebbe il costo misurato del primo
-move (≈1 741 righe per un file).
+**Storico di questa sezione, per non riaprire strade già chiuse:**
 
-**Gate del prossimo task:** nessun move · nessun path rewrite · nessuna sovradichiarazione
-`SEP-G5`/`WP-1`/`H-1.3` pulito · nessun push senza sì esplicito.
+- ~~plan directory/export/sandbox~~ → prodotto (seduta `038`, zero move), poi **congelato** da
+  `D15`: le decisioni `D6`, `D7`, `D8`, `D10` restano **aperte e congelate**, perché riordinare
+  l'albero prima di avere gli attrezzi ripeterebbe il costo misurato del primo move (≈1 741 righe
+  per un file).
+- ~~decisione di Matteo su `SK-0`~~ → **presa ed eseguita** il 21-08-26. `SK-0` è `CHIUSO E
+  OSSERVATO`: erano tre righe di configurazione, e `npm run validate` è andato **exit 0 per la
+  prima volta**.
+- ~~`SK-6` (`mss:query`)~~ → **costruito e revisionato** il 22-08-26, da due famiglie di modello
+  diverse. **Non dichiarato chiuso: la chiusura è di Matteo** (vedi decisione 1 qui sotto).
+
+### Le decisioni aperte, in ordine di urgenza
+
+**1. `SK-6` è chiuso?** L'attrezzo esiste, i cancelli sono verdi, una revisione indipendente di
+famiglia diversa lo ha esaminato e i due difetti che ha trovato sono stati rettificati. Manca solo
+la dichiarazione, che non spetta a un agente.
+
+**2. Quale pacchetto si apre dopo.** Raccomandazione di chi scrive, con l'argomento accanto —
+non è una decisione, è una proposta con le prove sotto:
+
+| Ordine | Pacchetto | Perché proprio questo, proprio adesso |
+|---|---|---|
+| 1° | **`SK-4`** + la vista che applica gli `amendment` | Sono **lo stesso problema**: il sistema **sa registrare cose che non sa rileggere**. I tre bypass sono stati **incontrati lavorando** il 22-08, non trovati cercandoli; e uno di essi — il report in sotto-cartella — nasconde una **seduta di revisione**, cioè copre proprio le prove che il sistema esiste per raccogliere. Intanto la **prima rettifica indipendente della storia del sistema** è invisibile al lettore costruito per trovarla |
+| 2° | **`SK-11`** (test sugli attrezzi) poi **`SK-5`** (CI) | Argomento empirico, non di principio: il 22-08 la **stessa classe di difetto** — una colonna di output troppo stretta — è comparsa **tre volte in un giorno**, su tre file diversi, scritta da agenti diversi. Un difetto identico che si ripete misura l'**assenza di test**, non la disattenzione di chi scrive. Oggi `npm run lint` gira `--ext ts,tsx` e ignora `scripts/`: `validate` verde **non dice nulla** su questi file |
+| 3° | **`SK-7`** (`mss:capsule`) | Ha già un mandato pronto, e va **comunque dopo**. Un generatore che scrive in un archivio non presidiato e non rileggibile **moltiplica** il problema invece di risolverlo. Che la sequenza «prima il lettore, poi lo scrittore» (`D12`) sia giusta è ormai **misurato**: costruire il lettore per primo è ciò che ha reso visibili tutti i difetti elencati qui sopra |
+
+**3. `mss:query` deve applicare le catene di `amendment`?** Oggi **no**, e il limite è **dichiarato
+in output** invece che nascosto. Il contratto §6 prescrive però una vista che applichi la catena per
+`effective_at`. Va deciso se rientra in `SK-4` o merita un pacchetto suo — non se farlo.
+
+**4. Il vincolo di cambio-famiglia di §16.3 va approvato o resta proposta?** Oggi il file lo
+etichetta testualmente «**proposto, da approvare**», e `D13` ha reso la regola **avviso, non
+blocco**. Nessun mandato dovrebbe citarlo come regola già chiusa finché resta tale.
+
+### Un dato nuovo da mettere agli atti (non una richiesta di riaprire `D13`)
+
+Il 22-08-26 una famiglia di modello **diversa** (OpenAI Codex) ha revisionato un lavoro di autore
+Anthropic e **ha trovato difetti che l'autore non aveva visto**, incluso quello strutturale del
+punto 3. Su cinque review condotte prima di quella, **una sola** aveva davvero cambiato famiglia.
+È la prima misura reale di quanto vale il vincolo che `D13` ha lasciato come avviso.
+
+**Gate del prossimo task, invariati:** nessun move · nessun path rewrite · nessuna
+sovradichiarazione `SEP-G5`/`WP-1`/`H-1.3` pulito · nessun push senza sì esplicito ·
+`scripts/mss/adapter.mjs` non si tocca fuori da `SK-4`.
 
 ---
 

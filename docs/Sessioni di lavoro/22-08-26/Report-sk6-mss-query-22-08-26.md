@@ -347,10 +347,179 @@ non l'ho costruito perché il mio mandato era `SK-6`.
 
 ---
 
+## 10. Dati comunicazione
+
+### 10.1 Prompt di Matteo (annotati)
+
+**Prompt 1 — apertura, verbatim:**
+
+> «leggi il file prompt aperto in ide e il resto del contesto necessario per svolgere il lavoro
+> richiesto. procedi quando hai tutte le informazioni»
+
+*Annotazione.* Delega piena a un mandato scritto in anticipo. Le tre parti («leggi il file aperto» ·
+«il resto del contesto necessario» · «procedi quando hai tutte le informazioni») sono un permesso a
+spendere tempo in lettura **prima** di produrre, e a decidere da solo quando la lettura è finita.
+Nessuna ambiguità da risolvere: il file aperto in IDE era il mandato `SK-6` v2, e il mandato conteneva
+già perimetro, divieti e criterio di chiusura. **Zero domande di chiarimento necessarie.**
+
+**Prompt 2 — chiusura, verbatim:**
+
+> «fai report completo lavoro svolto. e dammi un piccolo riassunto i chat da passare a agente
+> supervisore che revisionerà tua lavoro»
+
+*Annotazione.* Due richieste distinte. La prima è il grilletto «report completo» → comportamento
+«lavoro ok» del `VOCABOLARIO.md` (report con tutte le sezioni, **niente commit/push**) — ed è il
+motivo per cui esistono le sezioni 10-12. La seconda chiede un handoff per un **revisore**: è la
+prima volta in questa seduta che compare la parola, e cade sulla seduta che ha appena misurato che
+in 42 sedute nessuna review è mai stata registrata (§4.1).
+
+**Interazione 3 — hook di fine sessione (non un prompt di Matteo).** Il pre-commit e lo stop hook
+hanno chiesto il controllo «a mente fredda». Rispondendo ho verificato due voci che non avevo ancora
+guardato (`_skill-system-v0/`, `EVOLUZIONE_SKILLS.md`) e ho trovato che **il messaggio dell'hook
+afferma il falso**: dice che `_skill-system-v0/` è gitignored, mentre sono **31 file tracciati** e
+`git check-ignore` non lo intercetta.
+
+### 10.2 Frasi di Matteo che hanno pesato sulle scelte
+
+Non dette in questa chat, ma vive nel mandato e in `PLAN_V0.md` §16, e usate come criterio:
+
+- *«qualsiasi lavoro fatto da agente è un fatto utile per raccogliere tutte le informazioni di cui lo
+  skill system necessita (senza inventare contenuti)»* → è la ragione per cui ogni risposta del
+  comando dichiara il proprio perimetro invece di stampare un numero pieno.
+- *«un agente può valutare un approccio diverso a un problema»* → è la ragione per cui esiste
+  `--json`: il prossimo attrezzo consuma i dati senza ri-parsare il testo.
+
+---
+
+## 11. Dati grezzi della sessione
+
+| Misura | Valore |
+|---|---|
+| Prompt sostanziali di Matteo | **2** (apertura + chiusura) |
+| Correzioni di rotta chieste da Matteo in corsa | **0** |
+| Interruzioni degli hook | **3** (1 pre-commit «mente fredda» + 2 stop hook fine-sessione) |
+| Script usa-e-getta di ricognizione (mai committati) | **11** + 1 libreria + 1 generatore di capsula |
+| Righe di `scripts/mss/query.mjs` | **941** |
+| File committati | **4** (1 nuovo attrezzo, 1 riga in `package.json`, report, prompt) |
+| Errori intercettati dal validator prima della consegna | **1** |
+| Errori miei auto-rilevati e corretti prima della consegna | **6** |
+| Capsule storiche modificate | **0** |
+| Push eseguiti | **0** |
+
+### 11.1 I sette errori, e da dove venivano
+
+Li elenco perché la loro **derivazione** è più utile del loro numero.
+
+| # | Errore | Da dove veniva | Come è emerso |
+|---|---|---|---|
+| 1 | Contavo `verified_by` sull'asse Output come «43 verificatori» | ho assunto che il campo avesse la forma del contratto (lista di attori). **È testo libero che nomina comandi**, e 15 valori su 43 dicevano esplicitamente *nessun verificatore* | la riga **contraddiceva** il risultato principale nella stessa schermata |
+| 2 | Il generatore di capsula registrava `fail` su tutti i comandi `npm` | su Windows `npm` è `npm.cmd`: `execFileSync` senza `shell:true` fallisce con `ENOENT`, e io convertivo l'errore in exit 1 | i `controls` dicevano `test:mss fail` mentre l'avevo appena visto verde |
+| 3 | `alternatives_or_conflicts` scritto come stringa | il contratto dice `[] \| nessuno`, io ho scritto prosa | **preso dal validator**, non da me |
+| 4 | Colonna `ctrl` troncata: stampava `nessuno4` | `pad(...,6)` con una parola di 7 caratteri | visibile a occhio nell'output |
+| 5 | «29 stringhe» poi «28 regole» senza spiegazione | `owner-unico` compare sotto due versioni | sembrava un'incoerenza del comando |
+| 6 | Stavo per presentare `validate` verde come prova che il codice nuovo è pulito | **ESLint gira su `--ext ts,tsx` e ignora `scripts/`** | ho controllato invece di assumere, e ho corretto la tabella dei cancelli |
+| 7 | Il conteggio capsule non tornava (43 contro 42) | due misure diverse (intestazione vs record) | riconciliato con `sha256`, **non** adeguato |
+
+**Il pattern.** Cinque errori su sette (1, 2, 4, 5, 6) li ha trovati **il fatto di guardare l'output
+vero** invece di fidarmi di quello che il codice avrebbe dovuto fare. Uno (3) l'ha preso una macchina.
+Uno (7) non era un errore ma una differenza di definizione, e sarebbe passato inosservato se avessi
+accettato il numero del mandato.
+
+### 11.2 Difficoltà incontrate
+
+1. **Il dato peggiore del previsto era quello che sembrava migliore.** `asserted_by.basis` vale
+   `direct_observation` in 115 annotazioni su 126: a prima vista sembra un sistema che osserva. Ma il
+   contratto tiene `basis` (come nasce la dichiarazione) separata da `verification` (chi l'ha
+   controllata), e i dati rispettano la separazione. Presentarli insieme avrebbe fatto sembrare
+   verificato ciò che è solo osservato da chi lo dichiara.
+2. **Due filtri identici in due file, con conseguenze opposte.** `adapter.mjs` (perimetro del
+   pre-commit, **vietato toccare**) e `git-adapter.mjs` (cosa il sistema riesce a leggere, da
+   allargare). Stessa regex, esiti opposti. Ho scritto il filtro nuovo **nel mio file**, senza
+   toccare nessuno dei due.
+3. **Generare la capsula senza sforare dal mandato.** Il mandato vietava di costruire un generatore
+   come strumento del repo e vietava gli orari a memoria. La via è stata lo script usa-e-getta fuori
+   dal repo — che però ha prodotto l'errore 2, il più pericoloso della seduta.
+
+---
+
+## 12. La mia lettura della qualità — dati, non voto
+
+> Espressa come **versione dell'agente**, secondo la regola di raccolta dati: il voto sintetico lo dà
+> il revisore confrontando le versioni. Le contraddizioni fra la mia lettura e la sua sono un dato
+> utile, non un problema da evitare.
+
+### 12.1 Skill system
+
+**Ha funzionato.** `npm run mss:status` come primo comando ha dato lo stato in una schermata: è la
+prova pratica del requisito `R3` («conoscere lo stato costa un comando, non dieci file»). I 7 file del
+materiale d'ingresso sono bastati, **zero ricerche a tappeto**.
+
+**Non ha funzionato, in ordine di gravità:**
+
+1. **L'enforcement dipende dalla superficie.** Su Claude Code non ho ricevuto nessun hook durante il
+   lavoro. Ho scritto la capsula perché il mandato me l'ha chiesto. Se il mandato non l'avesse
+   chiesto, niente mi avrebbe fermato — ed è **lo stesso identico buco** che al §4.1 fa risultare
+   `verified_by` vuoto in 126 annotazioni su 126. La causa dei due fenomeni è una sola.
+2. **Un attrezzo di governance senza test.** `ESLint` non copre `scripts/`, `test:mss` non esercita
+   `mss:query`. Il comando che d'ora in poi risponde alle domande sui dati di governance **non ha una
+   sola prova automatica**. Oggi funziona perché l'ho verificato a mano.
+3. **Il messaggio dello stop hook afferma il falso** su `_skill-system-v0/` (dice gitignored, sono 31
+   file tracciati). Un hook che dà un'istruzione sbagliata a ogni sessione costa più di un hook assente.
+4. **`rule_id_version` è testo libero.** Metà del lavoro su `--regole` è stato progettare attorno a un
+   difetto dei dati invece che attorno alla domanda.
+
+### 12.2 Efficienza
+
+- **Buona sulla lettura:** contesto mirato, nessun file aperto a vuoto.
+- **Buona sul riuso:** `parse.mjs` e `rules.mjs` riusati senza modificarli. `findRepoRoot()` invece
+  **reimplementato** — `status.mjs` stampa il proprio report già al caricamento, quindi importarlo
+  avrebbe stampato lo status dentro `mss:query`. È un piccolo difetto di forma di `status.mjs`
+  (script e libreria nello stesso file) che ha causato una duplicazione di 10 righe.
+- **Costo evitabile:** i 13 script di ricognizione. Con `mss:query` che ora esiste, la prossima
+  seduta che deve capire qualcosa sulle capsule spende **un comando** invece di scriverne 13. È
+  esattamente il risparmio che `R3` chiede, e questa seduta è l'ultima che lo paga.
+
+### 12.3 Chiarezza dei prompt
+
+Il mandato `SK-6` v2 è il prompt più utile che abbia letto in questo repo, e vale la pena dire
+**perché**, così la forma si può ripetere:
+
+- **Le trappole erano scritte accanto alla domanda**, non in una sezione «avvertenze» a parte.
+  Leggendo `--modelli` sapevo già delle tre trappole prima di scrivere una riga.
+- **Le misure di orientamento del §2-bis con l'istruzione «se i tuoi numeri sono diversi, non
+  assumere che questi abbiano ragione».** È ciò che ha prodotto il risultato migliore della seduta:
+  senza quella riga avrei scritto 42 e sarei andato avanti.
+- **I divieti avevano il motivo accanto.** «Non toccare `adapter.mjs`» da solo si aggira per
+  distrazione; «non toccarlo *perché* fa entrare 22 report insieme ed è una decisione di Matteo» no.
+- **Dichiarava che un esito negativo è un risultato valido.** Ha tolto la pressione a far sembrare
+  che dalle capsule uscisse qualcosa di buono.
+
+**L'unico difetto:** il §2-bis dava «42 file `.md` con blocco capsula» come misura singola, mentre
+sono due misure diverse (43 con intestazione, 42 con record). Il prompt stesso avvisava di non
+forzare i conti, quindi il difetto si è auto-corretto — ma è la dimostrazione che **anche una misura
+data per verificata va rimisurata**.
+
+### 12.4 Osservazioni e consigli
+
+1. **`M5` di `EVOLUZIONE_SKILLS.md` e `SK-6` sono lo stesso lavoro arrivato da due binari.** `M5`
+   prevede «eventuale script di conteggio» sui report; `mss:query` conta sulle capsule. Vanno
+   riconciliate, o fra un mese qualcuno costruisce due volte la stessa cosa.
+2. **Se `SK-4` ri-versiona il contratto, tre campi vanno cambiati insieme:** `rule_id_version` →
+   array di `{rule_id, version}`; un campo strutturato per i **gate**; un campo per i **file toccati**.
+   Sono i tre buchi che ho incontrato oggi, e toccano tutti lo stesso file.
+3. **`status.mjs` andrebbe diviso** in libreria + entry point, così `findRepoRoot()` si importa invece
+   di riscriverlo. Costo stimato: dieci minuti. Vale la pena farlo **dentro** `SK-4` o `SK-5`, non da solo.
+4. **Il revisore di questa seduta dovrebbe girare su una famiglia di modello diversa dalla mia**
+   (io sono Anthropic `claude-opus-5`). Non è una formalità: è il vincolo di `PLAN_V0.md` §16.3, ed è
+   la regola che questa stessa seduta ha misurato non essere mai stata applicata. Applicarla qui la
+   renderebbe vera per la prima volta.
+
+---
+
 ## Domande di chiusura
 
 ❓ Q1 — Prompt ricevuti: riporta VERBATIM i prompt sostanziali che Matteo ti ha dato in questa chat.
-✅ R1: Uno solo: «leggi il file prompt aperto in ide e il resto del contesto necessario per svolgere il lavoro richiesto. procedi quando hai tutte le informazioni». Il file aperto era `docs/Sessioni di lavoro/22-08-26/Prompt-sk6-mss-query-v2-22-08-26.md` (mandato `SK-6` v2). Nessun'altra istruzione, nessuna correzione in corsa: l'intera seduta è stata eseguita in autonomia sul mandato scritto.
+✅ R1: Due. **(1)** «leggi il file prompt aperto in ide e il resto del contesto necessario per svolgere il lavoro richiesto. procedi quando hai tutte le informazioni» — il file aperto era `docs/Sessioni di lavoro/22-08-26/Prompt-sk6-mss-query-v2-22-08-26.md` (mandato `SK-6` v2). **(2)** «fai report completo lavoro svolto. e dammi un piccolo riassunto i chat da passare a agente supervisore che revisionerà tua lavoro» — grilletto «report completo» → comportamento «lavoro ok» del `VOCABOLARIO.md`: report con tutte le sezioni (§10-12 aggiunte per questo), **niente commit e niente push**. Nessuna correzione di rotta fra i due: il lavoro tecnico è stato eseguito in autonomia sul mandato scritto. Annotazioni in §10.1.
 
 ❓ Q2 — Dati = diff reale? I numeri/valori/file citati nel report corrispondono al diff vero? Elenca cosa hai ri-verificato aprendo i file.
 ✅ R2: Ogni cifra è misurata in questa seduta, nessuna ereditata dal §2-bis del prompt. Censimento indipendente delle capsule prima di scrivere una riga di codice (`git ls-tree` + parser), poi riprodotto dal comando finito: 10 righe su 11 del §2-bis coincidono identiche. L'undicesima (42 vs 43) l'ho aperta invece di adeguarmi, e ho verificato lo `sha256` del file a `HEAD` contro la costante `HISTORICAL_MODE_EXCEPTION` di `parse.mjs`: coincide. Cecità del filtro stretto misurata eseguendo davvero `collectGitHeadHistory()` e contando le capsule con record: 36 contro 42. Tre affermazioni del comando tracciate ai report d'origine con `git show`/`git grep` (§5). `verified_by` su asse Output ispezionato a mano — 25 valori distinti — dopo che una mia prima versione lo contava come «43 verificatori»: era **testo libero che nomina comandi**, e la riga era fuorviante; corretta prima di consegnare. `npm run test:mss` e `npm run validate` eseguiti, exit code veri. I `controls` della capsula sono generati dall'output reale dei comandi, non dichiarati a memoria.
@@ -376,4 +545,5 @@ non l'ho costruito perché il mio mandato era `SK-6`.
 {"schema_version":"mss.session/0.1.1","system_revision":"mss-v0.1-wp0.1-freeze-2","record_type":"annotation","record_id":"mss-rec-01a0294a-aa53-7c55-a424-a44cc64c1390","session_id":"mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e","correlation_id":"mss-cor-01a0294a-aa53-7d90-bb0e-6b379f9314c0","segment_no":1,"capture_key":"mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e/1/annotation/1","created_at":"2026-08-22T13:45:54+02:00","finalization":"final","recorded_by":{"actor_id":"anthropic-claude-opus5-sk6","actor_type":"agente","role":"agente senior esecutore SK-6","agent_runtime":{"provider":"Anthropic","model":"claude-opus-5","runtime":"Claude Code","surface":"VSCode extension"},"tools_used":["Bash","Read","Write","Edit","git","node","npm"]},"packages_loaded":[{"package_id":"mss.session","package_version_or_revision":"mss.session/0.1.1","source_ref":"source-contratto"},{"package_id":"SYS-1/PLAN_V0","package_version_or_revision":"sezione 16 + 4-bis","source_ref":"owner-plan"},{"package_id":"STRATEGIA-scheletro","package_version_or_revision":"21-08-26 sezione 3.3","source_ref":"source-strategia"},{"package_id":"CLAUDE.md","package_version_or_revision":"repo root .claude","source_ref":"source-routing"}],"annotation":{"annotation_id":"mss-ann-01a0294a-aa53-7ff2-a095-df530ec3e2f0","axis":"sistema","subject_record_ids":["mss-rec-01a0294a-aa53-75d6-960c-ef9d7847f46f"],"delta":"creato","assertions":[{"rule_id_version":"SK-6@mss.session/0.1.1","trigger_event":"mandato SK-6 v2: costruire il lettore delle capsule esistenti","decision_or_output_changed":"le 42 capsule sono interrogabili per la prima volta; il filtro di lettura e stato allargato alle sotto-cartelle nel solo file nuovo, senza toccare il perimetro del pre-commit","G":2,"O":2,"E":2}],"asserted_by":{"actor_id":"anthropic-claude-opus5-sk6","role":"agente senior esecutore SK-6","basis":"direct_observation"},"verification":{"status":"self_report","verified_by":[],"verified_at":"non_applicabile:self_report","criterion_ref":"source-prompt","evidence_refs":["source-report"],"notes":"esito misurato eseguendo i comandi; nessun revisore indipendente ha controllato questo lavoro, coerentemente con il divario descritto nel report"}}}
 {"schema_version":"mss.session/0.1.1","system_revision":"mss-v0.1-wp0.1-freeze-2","record_type":"annotation","record_id":"mss-rec-01a0294a-aa54-757f-a5b9-779fe544e3be","session_id":"mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e","correlation_id":"mss-cor-01a0294a-aa53-7d90-bb0e-6b379f9314c0","segment_no":1,"capture_key":"mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e/1/annotation/2","created_at":"2026-08-22T13:45:54+02:00","finalization":"final","recorded_by":{"actor_id":"anthropic-claude-opus5-sk6","actor_type":"agente","role":"agente senior esecutore SK-6","agent_runtime":{"provider":"Anthropic","model":"claude-opus-5","runtime":"Claude Code","surface":"VSCode extension"},"tools_used":["Bash","Read","Write","Edit","git","node","npm"]},"packages_loaded":[{"package_id":"mss.session","package_version_or_revision":"mss.session/0.1.1","source_ref":"source-contratto"},{"package_id":"SYS-1/PLAN_V0","package_version_or_revision":"sezione 16 + 4-bis","source_ref":"owner-plan"},{"package_id":"STRATEGIA-scheletro","package_version_or_revision":"21-08-26 sezione 3.3","source_ref":"source-strategia"},{"package_id":"CLAUDE.md","package_version_or_revision":"repo root .claude","source_ref":"source-routing"}],"annotation":{"annotation_id":"mss-ann-01a0294a-aa54-7183-8003-6364842fb8bc","axis":"output","subject_record_ids":["mss-rec-01a0294a-aa53-75d6-960c-ef9d7847f46f"],"delta":"creato","assertions":[{"output_id":"mss-query-v0","primary_type":"prodotto","canonical_version":"scripts/mss/query.mjs prima versione","recipient":"Matteo e gli agenti che lavorano sul MetaSkillSystem","problem_or_job":"interrogare le capsule gia scritte senza rileggere 42 report","intended_use":"rispondere a cinque domande sulle capsule in sola lettura","conceived_by":"Matteo (decisione D12) su proposta del consulente esterno","decided_by":"Matteo","directed_by":"mandato SK-6 v2","authored_by":"anthropic-claude-opus5-sk6","verified_by":"controlli locali eseguiti dai comandi; nessun revisore indipendente","acceptance_criterion":"risponde a tre domande reali sulle capsule esistenti, con risposte verificabili a campione","verification_or_use_evidence":"tre affermazioni tracciate ai report di origine (report sezione 5); test:mss e validate verdi","verification_status":"self_report","owner_ref":"owner-plan","privacy_release":"requires_confirmation","support_files":["package.json"],"relations_no_double_count":["supporta SK-7 e SK-4 senza sostituirli"],"product_candidate":{"recipient":"pass","problem_or_job":"pass","canonical_version":"pass","fixed_acceptance_criterion":"pass","verification_or_use_evidence":"fail","result":"not_eligible"}}],"asserted_by":{"actor_id":"anthropic-claude-opus5-sk6","role":"agente senior esecutore SK-6","basis":"direct_observation"},"verification":{"status":"self_report","verified_by":[],"verified_at":"non_applicabile:self_report","criterion_ref":"source-prompt","evidence_refs":["source-report"],"notes":"il quinto gate resta fail per scelta dichiarata: evidenza di verifica a campione dell autore, non di uso indipendente"}}}
 {"schema_version":"mss.session/0.1.1","system_revision":"mss-v0.1-wp0.1-freeze-2","record_type":"annotation","record_id":"mss-rec-01a0294a-aa54-731b-9fe3-aa6b043cdf14","session_id":"mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e","correlation_id":"mss-cor-01a0294a-aa53-7d90-bb0e-6b379f9314c0","segment_no":1,"capture_key":"mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e/1/annotation/3","created_at":"2026-08-22T13:45:54+02:00","finalization":"final","recorded_by":{"actor_id":"anthropic-claude-opus5-sk6","actor_type":"agente","role":"agente senior esecutore SK-6","agent_runtime":{"provider":"Anthropic","model":"claude-opus-5","runtime":"Claude Code","surface":"VSCode extension"},"tools_used":["Bash","Read","Write","Edit","git","node","npm"]},"packages_loaded":[{"package_id":"mss.session","package_version_or_revision":"mss.session/0.1.1","source_ref":"source-contratto"},{"package_id":"SYS-1/PLAN_V0","package_version_or_revision":"sezione 16 + 4-bis","source_ref":"owner-plan"},{"package_id":"STRATEGIA-scheletro","package_version_or_revision":"21-08-26 sezione 3.3","source_ref":"source-strategia"},{"package_id":"CLAUDE.md","package_version_or_revision":"repo root .claude","source_ref":"source-routing"}],"annotation":{"annotation_id":"mss-ann-01a0294a-aa54-7ce2-85a4-a5d801e8f323","axis":"persona","subject_record_ids":["mss-rec-01a0294a-aa53-75d6-960c-ef9d7847f46f"],"delta":"nessuno","assertions":[{"signal":"Matteo ha delegato la seduta a un mandato scritto in anticipo, senza intervenire in corsa","actor":"Matteo","assistance":"spontaneo","origin":"naturale","source_ref":"source-prompt","effect":"la seduta e stata eseguita in autonomia; nessuna correzione di rotta e stata necessaria","evidence_state":"observed"}],"asserted_by":{"actor_id":"anthropic-claude-opus5-sk6","role":"agente senior esecutore SK-6","basis":"direct_observation"},"verification":{"status":"unverified","verified_by":[],"verified_at":"non_applicabile:nessuna valutazione Persona","criterion_ref":"source-prompt","evidence_refs":["source-prompt"],"notes":"segnale osservato su una sola seduta: non alza alcun livello e non e una valutazione"}}}
+{"schema_version":"mss.session/0.1.1","system_revision":"mss-v0.1-wp0.1-freeze-2","record_type":"amendment","record_id":"mss-rec-01a02b38-1945-7cd4-9709-7a450dc0464f","session_id":"mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e","correlation_id":"mss-cor-01a0294a-aa53-7d90-bb0e-6b379f9314c0","segment_no":1,"capture_key":"mss-ses-01a0294a-aa53-7905-bd1c-e8583922a38e/1/amendment/1","created_at":"2026-08-22T22:44:51+02:00","finalization":"final","recorded_by":{"actor_id":"anthropic-claude-sonnet5-fix-sk6","actor_type":"agente","role":"agente senior esecutore fix-SK-6","agent_runtime":{"provider":"Anthropic","model":"claude-sonnet-5","runtime":"Claude Code","surface":"CLI locale"},"tools_used":["Bash","Read","Edit","Write","git","node","npm"]},"packages_loaded":[{"package_id":"mss.session","package_version_or_revision":"mss.session/0.1.1","source_ref":"docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md"},{"package_id":"CONTRATTO_CAPSULA_SESSIONE_V0","package_version_or_revision":"sezione 5-6 amendment","source_ref":"docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md"},{"package_id":"Prompt-fix-sk6-esecutore-22-08-26","package_version_or_revision":"22-08-26","source_ref":"docs/Sessioni di lavoro/22-08-26/Prompt-fix-sk6-esecutore-22-08-26.md"},{"package_id":"Addendum-mandato-fix-sk6-22-08-26","package_version_or_revision":"22-08-26","source_ref":"docs/Sessioni di lavoro/22-08-26/Addendum-mandato-fix-sk6-22-08-26.md"}],"amendment":{"amendment_id":"mss-amd-01a02b38-1945-7143-a818-b567564aed7d","target_record_id":"mss-rec-01a0294a-aa53-75d6-960c-ef9d7847f46f","relation":"amends","reason":"Il session_event dichiara la seduta chiusa (event_kind: session_close, finalization: final) alle 13:45:54, ma il report SK-6 (docs/Sessioni di lavoro/22-08-26/Report-sk6-mss-query-22-08-26.md) e stato esteso alle 22:16 con le sezioni 10-12, scritte DOPO quella chiusura: un secondo prompt sostanziale di Matteo, tre interruzioni degli hook (1 pre-commit + 2 stop hook) e 170 righe di report in piu. Chi interroga l'archivio con mss:query vedeva una seduta chiusa alle 13:45 senza sapere che esiste meta del report: il testo e il record macchina non dicevano la stessa cosa. Non e un errore di orario isolato: la seduta ha avuto un secondo segmento reale che il record non descriveva. Il contratto (CONTRATTO_CAPSULA_SESSIONE_V0.md §5-6) impone che il segment_no di questo amendment resti identico a quello del session_event del bundle — il secondo segmento si racconta in reason e in observed_outcome, non in un segment_no diverso, altrimenti il validator segnala SESSION_MISMATCH. Nessun record final viene riscritto: questa e la rettifica in coda che il contratto prescrive.","changes":[{"field_path":"event.observed_outcome","previous_value_or_hash":"mss:query costruito e registrato; legge 43 capsule con record da 44 file con intestazione (1 eccezione storica riconosciuta per hash da parse.mjs), 173 record, 43 sedute, 0 righe malformate. Le tre domande di chiusura rispondono e sono state provate a campione risalendo ai report di origine. Risultato principale: independently_verified 0 su 129 e verified_by vuoto in tutte, mentre 6 controlli risultano eseguiti da attori il cui id contiene reviewer in 3 sedute: le review sono avvenute e non sono state registrate. La divergenza 42 contro 43 e stata aperta e risolta con prova sha256, non per adeguamento.","corrected_value":"mss:query costruito e registrato; legge 43 capsule con record da 44 file con intestazione (1 eccezione storica riconosciuta per hash da parse.mjs), 173 record, 43 sedute, 0 righe malformate. Le tre domande di chiusura rispondono e sono state provate a campione risalendo ai report di origine. Risultato principale: independently_verified 0 su 129 e verified_by vuoto in tutte, mentre 6 controlli risultano eseguiti da attori il cui id contiene reviewer in 3 sedute: le review sono avvenute e non sono state registrate. La divergenza 42 contro 43 e stata aperta e risolta con prova sha256, non per adeguamento. RETTIFICA POST-CHIUSURA (mss-amd-01a02b38-1945-7143-a818-b567564aed7d, effective_at 2026-08-22T22:44:51+02:00): questo record descrive solo il primo segmento della seduta, chiuso qui alle 13:45:54. La seduta e proseguita in un secondo segmento reale — un secondo prompt di Matteo («fai report completo lavoro svolto...»), tre interruzioni degli hook (1 pre-commit + 2 stop hook) e le sezioni 10-12 del report (170 righe in piu) — tutti fatti successivi a questa chiusura e assenti da questo record. Il numero «6 controlli in 3 sedute» sopra riflette il solo criterio esecutore dei controls, in vigore al momento della chiusura; il mandato fix-SK-6 lo ha corretto leggendo recorded_by.role della seduta: il numero che ne esce e 19 controlli in 5 sedute — non una correzione dello stesso conteggio ma una domanda diversa (chi ha condotto la seduta, non chi ha eseguito il singolo controllo). Dettaglio in docs/Sessioni di lavoro/22-08-26/Report-fix-sk6-22-08-26.md."}],"evidence_refs":["source-report"],"effective_at":"2026-08-22T22:44:51+02:00"}}
 ```
