@@ -26,6 +26,7 @@ import {
   collectGitContext,
   buildSourceRefsFromGit,
   buildJudgmentsTemplate,
+  buildR1JudgmentsTemplate,
 } from '../../../../scripts/mss/capsule.mjs'
 import { countCapsuleHeadings } from '../../../../scripts/mss/parse.mjs'
 import { validateMss } from '../../../../scripts/mss/core.mjs'
@@ -545,6 +546,35 @@ const tests = [
     assert.match(first, /mss-ses-0198b000-0001-7000-8000-000000000001/)
     assert.match(first, /"segment_no":1/)
     assert.doesNotMatch(first, /2026-08-23T17:07:00/)
+  }],
+  ['capsule: R1 — tre soli giudizi compongono una capsula valida senza busta JSON manuale', () => {
+    const judgments = {
+      persona: { delta: 'nessuno', assertions: [] },
+      sistema: { delta: 'nessuno', assertions: [] },
+      output: { delta: 'nessuno', assertions: [] },
+    }
+    const template = buildR1JudgmentsTemplate()
+    assert.equal(Object.hasOwn(template, 'session_event'), false)
+    assert.deepEqual(Object.keys(judgments).sort(), ['output', 'persona', 'sistema'])
+
+    withTempGitRepo(({ repo }) => {
+      const records = buildCapsuleBundle(goldenCapsuleOptions({
+        judgments,
+        root: repo,
+        reportPath: `${SESSIONI}/24-08-26/Report-r1-compact.md`,
+      }))
+      const jsonl = recordsToJsonl(records)
+      const event = records[0].event
+      assert.match(event.intent_user, /^non_osservato:/)
+      assert.equal(event.environment, 'branch fixture; HEAD abc1234; 0 file in working tree')
+      assert.deepEqual(event.authorization.write, [`${SESSIONI}/24-08-26/Report-r1-compact.md`])
+      assert.equal(records[1].annotation.assertions.length, 0)
+      const reportPath = `${SESSIONI}/24-08-26/Report-r1-compact.md`
+      const report = `# R1 compact\n${formatCapsuleBlock(jsonl)}`
+      writeRepoFile(repo, reportPath, report)
+      const result = validateMss({ kind: 'report', file: reportPath, content: report }, { workspaceRoot: repo })
+      assert.equal(result.ok, true, JSON.stringify(result.diagnostics, null, 2))
+    })
   }],
   ['capsule: giro completo — capsula generata passa validate:mss', () => {
     withTempGitRepo(({ repo }) => {

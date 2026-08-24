@@ -5,6 +5,8 @@
  * Livello 1 (macchina): UUIDv7, timestamp, schema, git, controls eseguiti.
  * Livello 2 (macchina + flag): agent_runtime da env whitelisted; modello obbligatorio via --model.
  * Livello 3 (agente): giudizi in --judgments file.json; tre assi obbligatori.
+ * La modalita R1 compatta non fa riscrivere la busta: riceve solo i tre assi e
+ * dichiara come non osservato cio che Git/comandi/runtime non possono sapere.
  *
  * Non modifica report esistenti salvo --append-to esplicito.
  */
@@ -539,6 +541,101 @@ export function buildJudgmentsTemplate() {
   }
 }
 
+/**
+ * R1: l'agente consegna soltanto i tre giudizi. La busta della seduta e' costruita
+ * dai fatti disponibili al generatore; i campi semantici che non hanno una fonte
+ * meccanica restano esplicitamente non osservati, mai riempiti per plausibilita'.
+ */
+export function buildR1JudgmentsTemplate() {
+  return {
+    _guida: 'R1 compatto: compila solo persona, sistema e output. Per delta "nessuno" lascia assertions: [].',
+    persona: { delta: 'nessuno', assertions: [] },
+    sistema: { delta: 'nessuno', assertions: [] },
+    output: { delta: 'nessuno', assertions: [] },
+  }
+}
+
+export function isR1CompactJudgments(judgments) {
+  return Boolean(
+    judgments &&
+    typeof judgments === 'object' &&
+    !judgments.session_event &&
+    !judgments.annotations &&
+    ['persona', 'sistema', 'output'].every((axis) => Object.hasOwn(judgments, axis)),
+  )
+}
+
+function nonObserved(label) {
+  return `non_osservato: ${label}`
+}
+
+export function normalizeR1Judgments(judgments, { role, actorId, reportPath, gitContext } = {}) {
+  const reportOutput = reportPath || 'capsula JSONL emessa su stdout'
+  const compactAnnotation = (axis) => ({
+    delta: judgments[axis].delta,
+    assertions: judgments[axis].assertions,
+    asserted_by: {
+      actor_id: actorId,
+      role,
+      basis: 'self_report',
+    },
+    verification: {
+      status: axis === 'persona' ? 'unverified' : 'self_report',
+      verified_by: [],
+      verified_at: `non_applicabile:${axis === 'persona' ? 'nessuna valutazione Persona' : 'self_report'}`,
+      criterion_ref: 'non_applicabile: criterio di verifica non raccolto automaticamente',
+      evidence_refs: [],
+      notes: nonObserved('note di verifica non raccolte automaticamente'),
+    },
+  })
+
+  return {
+    session_event: {
+      intent_user: nonObserved('il generatore non legge la chat'),
+      event_kind: 'session_close',
+      session_type: 'standard',
+      capsule_status: 'completa',
+      role_key: role,
+      area: 'MetaSkillSystem / raccolta R1',
+      environment: `branch ${gitContext?.branch || 'non_osservato'}; HEAD ${gitContext?.headShort || 'non_osservato'}; ${(gitContext?.changedFiles || []).length} file in working tree`,
+      authorization: {
+        read: [],
+        write: reportPath ? [reportPath] : [],
+        forbid: [],
+      },
+      authorized_outputs: [reportOutput],
+      route: {
+        chosen: 'mss:capsule modalita R1 compatta',
+        alternatives_or_conflicts: 'nessuno',
+      },
+      observed_outcome: 'capsula composta da Git, runtime e controlli eseguiti dal generatore',
+      open_items: nonObserved('il generatore non deduce i follow-up dal report'),
+      subject_runtime: {
+        actor_id: nonObserved('soggetto della seduta'),
+        provider: nonObserved('provider del soggetto della seduta'),
+        model: nonObserved('modello del soggetto della seduta'),
+        runtime: nonObserved('runtime del soggetto della seduta'),
+        surface: nonObserved('superficie del soggetto della seduta'),
+      },
+      privacy: {
+        classification: 'internal',
+        capture_basis: 'operational_need',
+        allowed_content: ['metadati Git', 'esiti dei controlli dichiarati'],
+        prohibited_content: ['dati personali', 'segreti', 'materiale privato non registrabile'],
+        redactions: 'nessuno',
+        external_release: 'requires_confirmation',
+        retention: 'undecided_wp0.1',
+        rectification_route: 'amendment',
+      },
+      owner_refs: [],
+      source_refs: [],
+    },
+    annotations: Object.fromEntries(
+      ['persona', 'sistema', 'output'].map((axis) => [axis, compactAnnotation(axis)]),
+    ),
+  }
+}
+
 function isFilled(value) {
   if (value === undefined || value === null || value === '') return false
   if (typeof value === 'string' && PLACEHOLDER_RE.test(value.trim())) return false
@@ -575,8 +672,9 @@ export function validateJudgments(judgments) {
         continue
       }
       if (!isFilled(ann.delta)) errors.push(`annotations.${axis}.delta mancante`)
-      if (!Array.isArray(ann.assertions) || ann.assertions.length === 0) {
-        errors.push(`annotations.${axis}.assertions deve contenere almeno un elemento`)
+      const noDelta = ann.delta === 'nessuno'
+      if (!Array.isArray(ann.assertions) || (!noDelta && ann.assertions.length === 0)) {
+        errors.push(`annotations.${axis}.assertions deve contenere almeno un elemento salvo delta "nessuno"`)
       }
       if (!ann.asserted_by || !isFilled(ann.asserted_by.actor_id)) {
         errors.push(`annotations.${axis}.asserted_by.actor_id mancante`)
@@ -625,18 +723,12 @@ export function buildCapsuleBundle({
   verifications = [],
   lookupRecord,
   amendmentIds,
+  reportPath,
 } = {}) {
   if (SCHEMA_CURRENT === SCHEMA_LEGACY || REVISION_CURRENT === REVISION_LEGACY) {
     throw new Error('Rifiutato: coppia legacy disattiva le prove — leggere da rules.mjs')
   }
 
-  const judgmentErrors = validateJudgments(judgments)
-  if (judgmentErrors.length) {
-    const err = new Error(judgmentErrors.join('; '))
-    err.code = 'JUDGMENTS_INVALID'
-    err.details = judgmentErrors
-    throw err
-  }
   if (!model || PLACEHOLDER_RE.test(model)) {
     const err = new Error('Flag --model obbligatorio: il modello non si deduce dall\'ambiente')
     err.code = 'MODEL_MISSING'
@@ -653,6 +745,16 @@ export function buildCapsuleBundle({
   const timestamp = timestampOverride || formatTimestamp(now)
   const ids = newMssIds({ nowMs: now.getTime(), entropy, ids: idOverrides })
   const resolvedActorId = actorId || `${agentRuntime.provider}-${model}`.replace(/\s+/g, '-').toLowerCase()
+  const normalizedJudgments = isR1CompactJudgments(judgments)
+    ? normalizeR1Judgments(judgments, { role, actorId: resolvedActorId, reportPath, gitContext })
+    : judgments
+  const judgmentErrors = validateJudgments(normalizedJudgments)
+  if (judgmentErrors.length) {
+    const err = new Error(judgmentErrors.join('; '))
+    err.code = 'JUDGMENTS_INVALID'
+    err.details = judgmentErrors
+    throw err
+  }
 
   const recordedBy = {
     actor_id: resolvedActorId,
@@ -664,7 +766,7 @@ export function buildCapsuleBundle({
 
   const packagesLoaded = packages.length ? packages : PACKAGE_DEFAULT
   const controls = checks.length ? checks : 'nessuno'
-  const ev = judgments.session_event
+  const ev = normalizedJudgments.session_event
   const gitRefs = buildSourceRefsFromGit(gitContext.changedFiles, gitContext.headShort, { root })
   const sourceRefs = [...(ev.source_refs || []), ...gitRefs]
 
@@ -709,7 +811,7 @@ export function buildCapsuleBundle({
   ]
 
   const annotations = axisOrder.map(([axis, recordId, annId, ordinal]) => {
-    const src = judgments.annotations[axis]
+    const src = normalizedJudgments.annotations[axis]
     return {
       ...sharedTop(ids, timestamp, recordedBy, packagesLoaded),
       record_type: 'annotation',
@@ -946,6 +1048,7 @@ export function validateCapsuleOutput({ jsonl, root = ROOT, plan = null, histori
 export function parseCapsuleArgs(argv) {
   const out = {
     template: false,
+    templateR1: false,
     judgments: null,
     model: null,
     role: 'agente esecutore',
@@ -963,6 +1066,7 @@ export function parseCapsuleArgs(argv) {
     const a = argv[i]
     if (a === '--help' || a === '-h') out.help = true
     else if (a === '--template') out.template = true
+    else if (a === '--template-r1') out.templateR1 = true
     else if (a === '--judgments') out.judgments = argv[++i]
     else if (a === '--model') out.model = argv[++i]
     else if (a === '--role') out.role = argv[++i]
@@ -1008,7 +1112,7 @@ export function runCapsule(argv = process.argv, options = {}) {
     return {
       exitCode: 0,
       stdout:
-        'Usage: npm run mss:capsule -- [--template] [--judgments file.json] --model <modello> ' +
+        'Usage: npm run mss:capsule -- [--template|--template-r1] [--judgments file.json] --model <modello> ' +
         '[--role ...] [--actor-id ...] [--check "ID=>comando" --check-expect <exit>] [--tool ...] [--package "id|ver|ref"] ' +
         '[--verify "mss-rec-…|independently_verified|evidence_ref|motivo"] ' +
         '[--append-to report.md]\n',
@@ -1020,6 +1124,14 @@ export function runCapsule(argv = process.argv, options = {}) {
     return {
       exitCode: 0,
       stdout: `${JSON.stringify(buildJudgmentsTemplate(), null, 2)}\n`,
+      stderr: '',
+    }
+  }
+
+  if (args.templateR1) {
+    return {
+      exitCode: 0,
+      stdout: `${JSON.stringify(buildR1JudgmentsTemplate(), null, 2)}\n`,
       stderr: '',
     }
   }
@@ -1048,15 +1160,6 @@ export function runCapsule(argv = process.argv, options = {}) {
       exitCode: 2,
       stdout: '',
       stderr: `Errore lettura giudizi: ${error.message}\n`,
-    }
-  }
-
-  const preErrors = validateJudgments(judgments)
-  if (preErrors.length) {
-    return {
-      exitCode: 2,
-      stdout: '',
-      stderr: `Giudizi incompleti — nessuna capsula emessa:\n${preErrors.map((e) => `  - ${e}`).join('\n')}\n`,
     }
   }
 
@@ -1093,6 +1196,7 @@ export function runCapsule(argv = process.argv, options = {}) {
       verifications: args.verify,
       lookupRecord: options.lookupRecord,
       amendmentIds: options.amendmentIds,
+      reportPath: args.appendTo,
     })
   } catch (error) {
     return {

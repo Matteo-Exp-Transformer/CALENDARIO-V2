@@ -405,7 +405,9 @@ function validateEvent(record, file, out) {
     const alternatives = ev.route.alternatives_or_conflicts
     if (alternatives !== 'nessuno') requireArray(alternatives, 'event.route.alternatives_or_conflicts', file, out)
   }
-  if (ev.open_items !== 'nessuno') requireArray(ev.open_items, 'event.open_items', file, out)
+  if (ev.open_items !== 'nessuno' && !/^non_osservato:\s*\S.+/i.test(String(ev.open_items || ''))) {
+    requireArray(ev.open_items, 'event.open_items', file, out)
+  }
   validateRuntime(ev.subject_runtime, 'event.subject_runtime', file, out)
 
   if (requireObject(ev.privacy, 'event.privacy', file, out)) {
@@ -486,7 +488,10 @@ function validateAnnotation(record, file, out) {
   if (requireArray(ann.subject_record_ids, 'annotation.subject_record_ids', file, out, { min: 1 })) {
     ann.subject_record_ids.forEach((id, i) => requireId(id, ID_RE.record, `annotation.subject_record_ids[${i}]`, file, out))
   }
-  requireArray(ann.assertions, 'annotation.assertions', file, out, { min: 1 })
+  // R1: un asse con delta "nessuno" deve poter dichiarare onestamente assenza di
+  // osservazioni. Pretendere un'asserzione fittizia violerebbe R2; per ogni altro
+  // delta almeno un fatto/giudizio resta obbligatorio.
+  requireArray(ann.assertions, 'annotation.assertions', file, out, { min: delta === 'nessuno' ? 0 : 1 })
   if (Array.isArray(ann.assertions)) {
     ann.assertions.forEach((assertion, index) => {
       const path = `annotation.assertions[${index}]`

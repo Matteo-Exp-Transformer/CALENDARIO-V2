@@ -42,38 +42,46 @@ export function deriveMatteoDashboard(planText) {
     throw new Error('MSS-VIEWS-OWNER-UNREADABLE: non trovo «ciclo concluso» nell\'owner. Non genero una vista per plausibilita.')
   }
   const [, closedId, closedState] = cycles[cycles.length - 1]
-  const nextMatches = [...planText.matchAll(/\*\*Prossima azione autorizzata: `(M-[A-Z])`\*\* \(([^)]+)\)/g)]
+  const nextMatches = [...planText.matchAll(/\*\*Prossima azione autorizzata: `((?:M-[A-Z])|[RT]\d+)`\*\* \(([^)]+)\)/g)]
   if (!nextMatches.length) {
     throw new Error('MSS-VIEWS-OWNER-UNREADABLE: non trovo «prossima azione autorizzata» nell\'owner. Non genero una vista per plausibilita.')
   }
   const nextMatch = nextMatches[nextMatches.length - 1]
   const next = nextMatch[1]
   const nextLabel = nextMatch[2].replace(/\s+/g, ' ').trim()
-  const r1 = required(
+  const r1Current = [...planText.matchAll(/\*\*Stato R1 attuale:\*\* `R1` è \*\*([^*]+)\*\*/g)].at(-1)?.[1]
+  const r1 = r1Current || required(
     planText,
     /`R1` resta \*\*(raccomandato ma non\s+aperto)\*\*/,
     'stato R1',
   )
+  const r1Closed = /^CHIUSO\b/.test(r1.trim())
 
   return [
     `> Generato da \`npm run generate:mss:views\` leggendo il solo owner [\`PLAN_V0.md\`](PLAN_V0.md).`,
     '> Questa vista non possiede stato: se il controllo anti-stale e rosso, rigenerala; non correggerla a mano.',
     '',
     '## Ultimo aggiornamento',
-    `\`${closedId}\` è **${closedState}** secondo \`M12\`: prova eseguibile, test nominati e controverifica di famiglia diversa.`,
+    r1Current
+      ? `\`R1\` è **${r1.replace(/\s+/g, ' ')}**: prova eseguibile, test nominato e controverifica Cursor/Composer sono registrati.`
+      : `\`${closedId}\` è **${closedState}** secondo \`M12\`: prova eseguibile, test nominati e controverifica di famiglia diversa.`,
     '',
     '## Cosa devi fare tu',
-    `Il prossimo lavoro autorizzato è \`${next}\` (${nextLabel}). \`R1\` resta **${r1.replace(/\s+/g, ' ')}**.`,
+    r1Current
+      ? `R1 è **${r1.replace(/\s+/g, ' ')}**. Il prossimo gate è \`${next}\` (${nextLabel}).`
+      : `Il prossimo lavoro autorizzato è \`${next}\` (${nextLabel}). \`R1\` resta **${r1.replace(/\s+/g, ' ')}**.`,
     '',
     '## Lavagna',
     '',
     '| Fatte | Con riserva | Da fare |',
     '|---|---|---|',
-    `| \`${closedId}\` chiuso | — | \`${next}\`: ${nextLabel} |`,
+    r1Current
+      ? `| \`${closedId}\` chiuso${r1Closed ? ' · `R1` chiuso' : ''} | \`R1\`: ${r1.replace(/\s+/g, ' ')} | \`${next}\`: ${nextLabel} |`
+      : `| \`${closedId}\` chiuso | — | \`${next}\`: ${nextLabel} |`,
     '',
     '## Prossimo passo',
     '',
-    `Aprire \`${next}\`. Non riaprire \`WP-1\` e non dichiarare \`H-1.3\` PASS pulito.`,
+    `Completare \`${next}\`. Non riaprire \`WP-1\` e non dichiarare \`H-1.3\` PASS pulito.`,
   ].join('\n') + '\n'
 }
 
