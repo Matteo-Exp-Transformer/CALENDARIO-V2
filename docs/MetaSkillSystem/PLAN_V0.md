@@ -100,9 +100,9 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica/--fail` rispondono · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ copertura test del lettore parziale (suite tools, non H-1 intero) · rettificato 22-08-26: capsula `SK-6` corretta con `amendment`; criterio revisori su `recorded_by.role` · ✅ **23-08-26 vista effettiva:** `query.mjs` delega `core.mjs::applyAmendmentsView()` · ✅ **23-08-26 P1:** `--fail` usa denominatori calcolati, non literal storici · revisioni/controlli: numero mobile → `npm run mss:query -- --verifica` · **Matteo ha dichiarato `SK-6` CHIUSO (`D16`)** |
 | S7 | `SK-7` — `mss:capsule` (generazione) | **`CHIUSO` 24-08-26 — decisione `M3` di Matteo dopo controverifica** | ✅ attrezzo e report SK-7 esistono · ✅ fix B: `parseCheckSpec` canonico `ID=>comando`, legacy un solo `:`, ambigui rifiutati; il comando può contenere ulteriori `=>` · ✅ `runChecks` non passa comandi vuoti · ✅ rettifica privacy append-only su report SK-7 · ✅ `source_refs` escludono untracked non pubblicabili · ✅ test/tools, H-1, docs, lint, validator capsule e validate globale rieseguiti verdi il 24-08-26 |
 | S8 | `SK-8` — radice robusta della suite | **`IMPLEMENTATO, non dichiarato`** | `npm run test:mss` verde da profondità diverse (risoluzione da posizione file); manca prova registrata e promozione documentale |
-| S9 | `SK-9` — `mss:move` | `NON INIZIATO` | file spostato, riferimenti vivi, suite verde, costo misurato contro le 1 741 righe di riferimento |
-| S10 | `SK-10` — manuale utente + intervista di bootstrap | **`PROVATO CON RISERVA` 24-08-26 (`M-D`) — decisione `M9` di Matteo; chiusura formale resta sua** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ✅ **`P2B` fatto:** `mss:export` copia il motore e verifica la chiusura degli import; `mss:doctor` è la checklist di primo run; i path cablati sono parametrici via `scripts/mss/config.mjs` con **default identici a prima** · ✅ prova in repo vergine **rifatta dall'orchestratore in una terza cartella con nomi propri**: `npm run validate:mss:all` verde in repo ospite configurata · ✅ default invariato provato confrontando `REPORT_PATH_RE` col letterale di `git show HEAD:scripts/mss/adapter.mjs` · ✅ prima consegna **respinta** dalla controverifica (test `R8` ambientale non dichiarato come verifica di progetto → checklist rossa proprio in una repo ospite configurata), riparata nel completamento · ⚠️ **riserva:** falso rosso del passo `owner` di `mss:doctor` (`N6`), assegnato a `M-G`. Atti: [`Report-md-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-md-portabilita-24-08-26.md) · [`Report-completamento-md-r8-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md) · [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) |
-| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura ancora parziale** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ✅ 24-08-26: hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4` (`npm run test:mss`) · ✅ 24-08-26 `M-C`: cinque casi nuovi nominano `N1` e `N2` (`npm run test:mss:tools`), verificati non vacui in controverifica — asseriscono exit non-zero, codice del validator su stderr e file bersaglio byte-identico · ✅ 24-08-26 `M-D`: sei casi nuovi nominano `R8`/`R2`, con asserzioni verificate non vacue in controverifica (confronto con la **stringa storica letterale**, prova nelle due direzioni, distinzione fra «repo vuota» e «attrezzo rotto»); il test ambientale è ora dichiarato come **verifica di progetto** e esce `n/a` col nome dell'ancora in una repo ospite · ⚠️ copertura ancora insufficiente: privacy template; **`N3`, `N4`, `N5` e `N6` scoperti e non coperti** · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
+| S9 | `SK-9` — `mss:move` | **`CHIUSO` 24-08-26 (`M-E`, `M12`)** | ✅ `npm run mss:move -- <sorgente> <destinazione>` sposta un file e aggiorna i riferimenti vivi · ✅ `npm run test:mss:tools` include il caso nominato `T1/R6` (move, rifiuti, rollback, costo < baseline) · ✅ controverifica Codex/OpenAI, famiglia diversa da Cursor/Composer, con sandbox indipendente: move+ref aggiornato, rifiuto rosso, rollback su validate rosso |
+| S10 | `SK-10` — manuale utente + intervista di bootstrap | **`PROVATO` 24-08-26 (`M-D`); riserva `N6` chiusa da `M-G` CHIUSO (`M12`)** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ✅ **`P2B` fatto:** `mss:export` copia il motore e verifica la chiusura degli import; `mss:doctor` è la checklist di primo run; i path cablati sono parametrici via `scripts/mss/config.mjs` con **default identici a prima** · ✅ prova in repo vergine **rifatta dall'orchestratore in una terza cartella con nomi propri**: `npm run validate:mss:all` verde in repo ospite configurata · ✅ default invariato provato confrontando `REPORT_PATH_RE` col letterale di `git show HEAD:scripts/mss/adapter.mjs` · ✅ prima consegna **respinta** dalla controverifica (test `R8` ambientale non dichiarato come verifica di progetto → checklist rossa proprio in una repo ospite configurata), riparata nel completamento · ✅ **riserva `N6` rimossa:** passo `owner` di `mss:doctor` non accusa più Git — chiuso in `M-G` con controverifica famiglia diversa. Atti `M-D`: [`Report-md-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-md-portabilita-24-08-26.md) · [`Report-completamento-md-r8-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md) · [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) · atti `M-G`: vedi §15 |
+| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura ancora parziale** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ✅ 24-08-26: hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4` (`npm run test:mss`) · ✅ 24-08-26 `M-C`: cinque casi nuovi nominano `N1` e `N2` (`npm run test:mss:tools`), verificati non vacui in controverifica — asseriscono exit non-zero, codice del validator su stderr e file bersaglio byte-identico · ✅ 24-08-26 `M-D`: sei casi nuovi nominano `R8`/`R2`, con asserzioni verificate non vacue in controverifica (confronto con la **stringa storica letterale**, prova nelle due direzioni, distinzione fra «repo vuota» e «attrezzo rotto»); il test ambientale è ora dichiarato come **verifica di progetto** e esce `n/a` col nome dell'ancora in una repo ospite · ✅ 24-08-26 `M-G`: casi nominati `N3`–`N6` in `test:mss:tools`, asserzioni non vacue e riprodotti in controverifica Cursor (famiglia diversa) · ⚠️ copertura ancora insufficiente: privacy template · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
 
 ### 4-ter. Rettifica tecnica dell'audit 23-08-26 — questa sezione prevale sulle celle stale sopra
 
@@ -698,6 +698,81 @@ non è trasferibile perché è la materia prima che il motore legge. Vedi `M14`.
 | `M12` | ⭐ **Chi chiude un pacchetto** | **si chiude da solo** | Un pacchetto con **prova eseguibile** + **test che nomina il difetto** + **controverifica di famiglia diversa** è `CHIUSO` **senza passare da Matteo**. Motivazione sua, verbatim: «*io al momento sento di non avere le competenze per validare una funzione, mi sto fidando delle controverifiche di modelli diversi che testano da 0 il prodotto. quindi non voglio dover dire chiuso di task già completate dove non ho competenze da portare*». **Ribalta la regola §5.7 del mandato vivo.** A Matteo restano: ciò che è ambiguo, ciò che è contestato, e ciò dove porta una competenza propria |
 | `M13` | Le quattro «chiusure in attesa di firma» | **`SK-5` CHIUSO · le altre tre no** · **`H13-POST-L01` sistemata** | Verificato prima di chiedere: solo `SK-5` era pronto. `SK-10` ha la riserva `N6` (vive in `M-G`), `SK-4` e `SK-11` hanno copertura reale mancante. **È la prova sul campo di `M12`:** il sistema chiedeva a Matteo di firmare tre pacchetti non pronti. `H13-POST-L01` chiusa a livello contratto + test nelle due direzioni |
 | `M14` | Export del MSS in una repo dedicata | **archiviato come non-problema** | Non c'è risparmio da inseguire (52 s). Si riapre **solo** per riuso esterno reale, e in quel caso la strada è `mss:export` in repo ospite **dopo** `M-G` — non un trasloco. Il corpus resta dove si lavora |
+
+### Quarto ciclo del 24-08-2026 — `M-G` eseguito e **CHIUSO** (`M12`)
+
+**`M-G` è `CHIUSO`.** Esecutore Codex (famiglia OpenAI); controverifica indipendente Cursor/Composer
+(famiglia diversa). Atti:
+[`Report-mg-attrezzi-che-non-sporcano-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-mg-attrezzi-che-non-sporcano-24-08-26.md)
+e
+[`Report-controverifica-MG-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-MG-24-08-26.md).
+
+Condizioni `M12` tutte vere:
+
+1. **Prova eseguibile:** `npm run test:mss:tools`, `npm run test:mss`, `npm run validate:mss:all`,
+   `validate:mss` sul report M-G, `git diff --check` — tutti exit 0 in controverifica.
+2. **Test che nominano il difetto:** `capsule: N3 — …`, `capsule: N4 — …`, `capsule: N5 — …`,
+   `doctor: N6 — …` in `docs/MetaSkillSystem/tests/tools/run.mjs`; asserzioni lette e non vacue.
+3. **Controverifica famiglia diversa:** riproduzioni manuali N3–N6 (path Windows, `--check-expect 3`,
+   rifiuto `unverified`+`verified_by`, `git init` senza commit con owner verde).
+
+- **`N3`:** avviso leggibile su apici singoli / path non quotato; virgolette doppie restano pulite.
+- **`N4`:** `--check-expect <exit>` lega l'exit atteso al `--check` immediatamente precedente.
+- **`N5`:** porta `--verify` + cancello `MSS-VERIFIER-STATUS-INCOHERENT` (anche via amendment).
+- **`N6`:** passo `owner` di `mss:doctor` legge solo il blocco owner, non la sezione Git.
+
+### Quinto ciclo del 24-08-2026 — `M-F` eseguito e **CHIUSO** (`M12`)
+
+**`M-F` è `CHIUSO`.** Esecutore Codex (famiglia OpenAI); controverifica indipendente Cursor/Composer
+(famiglia diversa). Atti:
+[`Report-mf-viste-generate-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-mf-viste-generate-24-08-26.md)
+e
+[`Report-controverifica-MF-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-MF-24-08-26.md).
+
+Condizioni `M12` tutte vere:
+
+1. **Prova eseguibile:** `npm run validate:mss:views`, `npm run test:mss:tools`, `npm run test:mss`,
+   `npm run validate:mss:all` (include `validate:mss:views`), `validate:mss` sul report M-F,
+   `git diff --check` — tutti exit 0 in controverifica.
+2. **Test che nomina il difetto:** `V1 — vista generata: owner modificato = gate rosso, rigenerazione = verde`
+   in `docs/MetaSkillSystem/tests/tools/run.mjs`; asserzioni non vacue (stale↔allineato, ultimo ciclo,
+   testo fuori marcatori, correzione manuale della sola copia non basta).
+3. **Controverifica famiglia diversa:** riproduzioni manuali owner→rosso, generate→verde, fake
+   manuale→resta rosso; marcatori rispettati.
+
+- **`V1`:** cruscotto generato da `PLAN_V0` fra marcatori; `validate:mss:views` nel cancello
+  `validate:mss:all`; una sola vista in questo ciclo (niente ROADMAP/HANDOFF).
+
+**Prossima azione autorizzata: `M-E`** (attrezzi mancanti, `T1`). `R1` resta **raccomandato ma non
+aperto**. Non dichiarare `H-1.3` PASS pulito. `WP-1` resta NO-GO. `M-E` **non** è aperto da questa
+chiusura: il prossimo senior lo apre.
+
+### Sesto ciclo del 24-08-2026 — `M-E` / `T1` eseguito e **CHIUSO** (`M12`)
+
+**`M-E` / `T1` (`SK-9` / `R6`) è `CHIUSO`.** Esecutore Cursor/Composer; controverifica indipendente
+Codex/OpenAI (famiglia diversa). Atti:
+[`Report-me-attrezzi-mancanti-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-me-attrezzi-mancanti-24-08-26.md)
+e
+[`Report-controverifica-ME-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-ME-24-08-26.md).
+
+Condizioni `M12` tutte vere:
+
+1. **Prova eseguibile:** `npm run mss:move -- <sorgente> <destinazione>` riprodotto in sandbox;
+   `npm run test:mss:tools`, `npm run test:mss`, `npm run validate:mss:views`,
+   `npm run validate:mss:all`, `validate:mss` sul report M-E e `git diff --check` tutti exit 0.
+2. **Test che nomina il difetto:** `T1/R6 — mss:move sposta un file di prova, aggiorna i riferimenti vivi e resta atomico`
+   in `docs/MetaSkillSystem/tests/tools/run.mjs`; asserzioni non vacue su move, rifiuti, rollback e
+   costo inferiore alla baseline di 1 741 righe.
+3. **Controverifica famiglia diversa:** Codex/OpenAI ha riprodotto move+aggiornamento riferimenti,
+   un rifiuto rosso e rollback con validate rosso, solo in sandbox.
+
+- **`T1` / `R6`:** `mss:move` usa il parser condiviso `doc-paths-lib.mjs` con `validate:docs` (D18);
+  non ha mosso atti vivi del corpus.
+- **`T2` / `mss:review`:** resta `NON INIZIATO`, fuori da questo ciclo.
+
+**Prossima azione autorizzata: `T2`** (`mss:review`) da affidare con nuovo mandato; `R1` resta
+**raccomandato ma non aperto**. Non aprire nessuno dei due in questa seduta. Non dichiarare `H-1.3`
+PASS pulito. `WP-1` resta NO-GO.
 
 **Non deciso, e non va dato per deciso:** aprire `R1` (capsula come sottoprodotto) come **mandato
 dichiarato** è **raccomandato dall'orchestratore e ancora aperto**. È il singolo intervento con il

@@ -1,0 +1,224 @@
+{
+  "session_event": {
+    "intent_user": "Controverificare a freddo M-E/T1/R6, chiudere sotto M12 solo con prova eseguibile, test nominato e famiglia diversa; produrre un solo report e una capsula.",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "revisore-mss-me-codex",
+    "area": "MetaSkillSystem / controverifica M-E T1 mss:move",
+    "environment": "repo locale CalendarBackup-v2, branch env/test, HEAD 6a76f5759a36ec170a45242f5c876d2db64a5a5b; nessuna operazione Supabase",
+    "authorization": {
+      "read": [
+        "docs/MetaSkillSystem/",
+        "docs/Sessioni di lavoro/24-08-26/",
+        "scripts/mss/move.mjs",
+        "scripts/doc-paths-lib.mjs",
+        "scripts/check-doc-paths.mjs",
+        "scripts/mss/export-kit.mjs",
+        "package.json"
+      ],
+      "write": [
+        "docs/MetaSkillSystem/PLAN_V0.md dopo PASS M12",
+        "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md solo tramite generate:mss:views",
+        "docs/Sessioni di lavoro/24-08-26/Report-controverifica-ME-24-08-26.md",
+        "docs/Sessioni di lavoro/24-08-26/judgments-controverifica-ME-24-08-26.json"
+      ],
+      "forbid": [
+        "commit",
+        "push",
+        "src/",
+        "database",
+        "migrazioni",
+        "R1",
+        "WP-1",
+        "T2/mss:review",
+        "H-1.3 PASS pulito",
+        "move di atti vivi"
+      ]
+    },
+    "authorized_outputs": [
+      "verdetto M12 su M-E T1/R6",
+      "PLAN M-E CHIUSO con prossimo T2 non aperto",
+      "cruscotto rigenerato",
+      "report e capsula di controverifica"
+    ],
+    "route": {
+      "chosen": "Rieseguire tutti i gate, leggere il test nominato T1/R6, riprodurre move/rifiuto/rollback in sandbox e chiudere M-E solo dopo le tre condizioni M12.",
+      "alternatives_or_conflicts": [
+        "Scartati move di atti vivi.",
+        "Scartate apertura T2/R1/WP-1, modifica manuale del cruscotto e commit/push."
+      ]
+    },
+    "observed_outcome": "M12 PASS: prova CLI in sandbox, test nominato non vacuo e controverifica Codex/OpenAI indipendente da Cursor/Composer; M-E T1/R6 chiuso nell'owner e cruscotto rigenerato.",
+    "open_items": [
+      "T2 mss:review resta NON INIZIATO e richiede un nuovo mandato",
+      "R1 resta raccomandato ma non aperto",
+      "H-1.3 resta PASS_CON_RISERVE",
+      "WP-1 resta NO-GO"
+    ],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: soggetto non valutato",
+      "provider": "non_applicabile: seduta tecnica",
+      "model": "non_applicabile: seduta tecnica",
+      "runtime": "non_applicabile: seduta tecnica",
+      "surface": "non_applicabile: seduta tecnica"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "path repository",
+        "esiti gate",
+        "identificatori M-E T1 R6 M12"
+      ],
+      "prohibited_content": [
+        "dati personali",
+        "segreti",
+        "materiale privato non registrabile"
+      ],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-plan-v0",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "S9 e sezione 15, sesto ciclo M-E",
+        "revision_or_hash": "working tree 24-08-2026 post-M12",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-mandate-review-me",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Prompt-controverifica-ME-24-08-26.md",
+        "stable_anchor_or_event_id": "mandato completo controverifica M-E",
+        "revision_or_hash": "c99d918c883836ee142d51ca67f26bfcfa1863b0",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-report-executor-me",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Report-me-attrezzi-mancanti-24-08-26.md",
+        "stable_anchor_or_event_id": "consegna M-E T1/R6",
+        "revision_or_hash": "c066a195adb1f17a0c80f97a8dd92cec37805a4f",
+        "sensitivity": "internal"
+      }
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "Nessuna nuova osservazione Persona: controverifica tecnica di un attrezzo MSS.",
+          "actor": "non_applicabile: soggetto non valutato",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "source-mandate-review-me",
+          "effect": "Nessuna promozione o inferenza Persona.",
+          "evidence_state": "not_applicable"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "codex-openai-revisore-me",
+        "role": "revisore",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "not_applicable",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessuna valutazione Persona",
+        "criterion_ref": "non_applicabile:seduta tecnica",
+        "evidence_refs": [],
+        "notes": "nessuna valutazione"
+      }
+    },
+    "sistema": {
+      "delta": "verificato",
+      "assertions": [
+        {
+          "rule_id_version": "M12 / T1-R6 / M-E",
+          "trigger_event": "Consegna Cursor/Composer di mss:move da controverificare senza fidarsi del report.",
+          "decision_or_output_changed": "Le tre prove M12 sono risultate vere: chiuso M-E/T1 nell'owner, con T2 fuori e cruscotto rigenerato dall'owner.",
+          "G": 2,
+          "O": 1,
+          "E": 1
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "codex-openai-revisore-me",
+        "role": "revisore",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-plan-v0",
+        "evidence_refs": [
+          "source-mandate-review-me",
+          "source-report-executor-me"
+        ],
+        "notes": "Autodichiarazione del revisore; l'indipendenza è rispetto all'esecutore Cursor/Composer, non una seconda verifica del record appena creato."
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "controverifica-me-t1-r6-m12-24-08-26",
+          "primary_type": "prova",
+          "canonical_version": "working tree 24-08-2026 post-M12",
+          "recipient": "Matteo e agenti MSS",
+          "problem_or_job": "Accertare se mss:move soddisfa T1/R6 prima della chiusura M12.",
+          "intended_use": "Usare npm run mss:move su path non congelati dopo nuovo mandato; non per riordinare atti vivi in questa seduta.",
+          "conceived_by": "Matteo",
+          "decided_by": "M12 applicato dal revisore su prova oggettiva",
+          "directed_by": "Matteo",
+          "authored_by": "codex-openai-revisore-me",
+          "verified_by": "codex-openai-revisore-me (famiglia OpenAI, diversa da Cursor/Composer)",
+          "acceptance_criterion": "Prova a comando, test nominato T1/R6 con asserzioni non vacue, controverifica famiglia diversa.",
+          "verification_or_use_evidence": "move CLI sandbox con ref aggiornati e delta 2<1741; rifiuto sorgente assente exit 2; rollback validate rosso exit 1 atomico; gate MSS verdi.",
+          "verification_status": "independently_verified",
+          "owner_ref": "owner-plan-v0",
+          "privacy_release": "internal",
+          "support_files": [
+            "scripts/mss/move.mjs",
+            "scripts/doc-paths-lib.mjs",
+            "docs/MetaSkillSystem/tests/tools/run.mjs"
+          ],
+          "relations_no_double_count": [],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "pass",
+            "result": "eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "codex-openai-revisore-me",
+        "role": "revisore",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-plan-v0",
+        "evidence_refs": [
+          "source-mandate-review-me",
+          "source-report-executor-me"
+        ],
+        "notes": "Autodichiarazione del revisore; l'indipendenza è rispetto all'esecutore Cursor/Composer."
+      }
+    }
+  }
+}

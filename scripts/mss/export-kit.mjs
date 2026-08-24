@@ -36,6 +36,7 @@ const ROOT = repoRootFromModule(import.meta.url)
 export const EXPORT_MANIFEST = Object.freeze([
   { kind: 'dir', path: 'scripts/mss', filter: (name) => name.endsWith('.mjs'), why: 'i moduli del motore' },
   { kind: 'file', path: 'scripts/check-doc-paths.mjs', why: 'validate:docs vive fuori da scripts/mss' },
+  { kind: 'file', path: 'scripts/doc-paths-lib.mjs', why: 'parser path condiviso (D18) per validate:docs e mss:move' },
   { kind: 'file', path: 'scripts/_cliLog.mjs', why: 'logger CLI usato da check-doc-paths' },
   { kind: 'file', path: 'scripts/doc-path-check-allowlist.json', why: 'allowlist con tetto dichiarato (D21)' },
   { kind: 'dir', path: 'docs/MetaSkillSystem/tests', why: 'test:mss e test:mss:tools' },
@@ -120,6 +121,7 @@ export function packageScriptsFragment() {
     'mss:capsule': 'node scripts/mss/capsule.mjs',
     'mss:doctor': 'node scripts/mss/doctor.mjs',
     'mss:export': 'node scripts/mss/export-kit.mjs',
+    'mss:move': 'node scripts/mss/move.mjs',
     'test:mss': 'node docs/MetaSkillSystem/tests/h1/run.mjs',
     'test:mss:tools': 'node docs/MetaSkillSystem/tests/tools/run.mjs',
     'generate:mss-fixtures': 'node docs/MetaSkillSystem/tests/h1/build-fixtures.mjs',

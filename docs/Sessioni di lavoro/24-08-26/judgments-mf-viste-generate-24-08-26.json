@@ -1,0 +1,66 @@
+{
+  "session_event": {
+    "intent_user": "Proseguire dopo la chiusura M-G costruendo M-F: una vista MSS generata e un cancello anti-stale, senza aprire R1.",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "orchestratore-senior-mss-mf",
+    "area": "MetaSkillSystem / viste generate V1",
+    "environment": "repo locale CalendarBackup-v2 su env/test; nessuna operazione Supabase",
+    "authorization": {
+      "read": ["docs/MetaSkillSystem/", "docs/Sessioni di lavoro/24-08-26/", "scripts/mss/", "package.json"],
+      "write": ["scripts/mss/views.mjs", "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md", "docs/MetaSkillSystem/tests/tools/run.mjs", "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md", "package.json", "docs/Sessioni di lavoro/24-08-26/"],
+      "forbid": ["PLAN_V0.md", "src/", "database", "migrazioni", "commit", "push", "WP-1", "R1"]
+    },
+    "authorized_outputs": ["prima vista generata", "cancello anti-stale", "test V1 nominato", "report e capsula"],
+    "route": {
+      "chosen": "una sola vista, il cruscotto di Matteo: blocco delimitato, render dal solo owner PLAN_V0 e gate integrato in validate:mss:all; R1 e le altre viste restano fuori mandato",
+      "alternatives_or_conflicts": ["scartato generare ROADMAP e HANDOFF nello stesso giro: estenderebbe il contratto documentale prima di provare il primo caso", "scartato correggere il cruscotto a mano: il gate deve rifiutare la deriva, non solo renderla meno visibile"]
+    },
+    "observed_outcome": "Il cruscotto è generato da PLAN_V0 fra marcatori, validate:mss:views rileva una deriva e validate:mss:all lo include; il test V1 prova owner cambiato rosso e rigenerazione verde.",
+    "open_items": ["controverifica di famiglia diversa per promuovere M-F a CHIUSO sotto M12", "estendere le viste generate ad altri consumatori solo con un mandato successivo", "R1 resta raccomandato ma non aperto"],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: soggetto non valutato",
+      "provider": "non_applicabile: seduta tecnica",
+      "model": "non_applicabile: seduta tecnica",
+      "runtime": "non_applicabile: seduta tecnica",
+      "surface": "non_applicabile: seduta tecnica"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": ["path repo", "esiti gate", "identificatori M-F e V1"],
+      "prohibited_content": ["dati personali", "segreti", "materiale privato non registrabile"],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {"ref_id": "owner-plan-v0", "owner_id": "MSS", "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md", "stable_anchor_or_event_id": "sezione 15 / M-G chiuso e prossima azione M-F", "revision_or_hash": "working tree 24-08-2026", "sensitivity": "internal"}
+    ],
+    "source_refs": [
+      {"ref_id": "source-mg-review", "owner_id": "MSS", "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Report-controverifica-MG-24-08-26.md", "stable_anchor_or_event_id": "esito M12", "revision_or_hash": "working tree 24-08-2026", "sensitivity": "internal"}
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [{"signal": "nessuna nuova osservazione Persona: seduta tecnica di implementazione", "actor": "non_applicabile: soggetto non valutato", "assistance": "spontaneo", "origin": "naturale", "source_ref": "source-mg-review", "effect": "nessuna promozione o inferenza Persona", "evidence_state": "not_applicable"}],
+      "asserted_by": {"actor_id": "openai-codex-senior", "role": "orchestratore", "basis": "direct_observation"},
+      "verification": {"status": "not_applicable", "verified_by": [], "verified_at": "non_applicabile:nessuna valutazione Persona", "criterion_ref": "non_applicabile:nessuna valutazione Persona", "evidence_refs": [], "notes": "seduta tecnica"}
+    },
+    "sistema": {
+      "delta": "creato",
+      "assertions": [{"rule_id_version": "V1/M-F", "trigger_event": "una vista manuale poteva restare falsa dopo un aggiornamento dell'owner", "decision_or_output_changed": "il cruscotto e il suo gate sono derivati dallo stesso owner; la deriva diventa un errore eseguibile", "G": 2, "O": 1, "E": 1}],
+      "asserted_by": {"actor_id": "openai-codex-senior", "role": "orchestratore", "basis": "direct_observation"},
+      "verification": {"status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "owner-plan-v0", "evidence_refs": [], "notes": "V1 test nominato + validate:mss:all; richiede controverifica famiglia diversa per M12"}
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [{"output_id": "m-f-prima-vista-generata-24-08-26", "primary_type": "prova", "canonical_version": "working tree 24-08-2026", "recipient": "Matteo e agenti MSS", "problem_or_job": "evitare che il cruscotto manuale contraddica lo stato dell'owner", "intended_use": "rigenerare la vista dopo il piano e fermare il gate quando non coincide", "conceived_by": "Matteo", "decided_by": "Matteo", "directed_by": "Matteo", "authored_by": "openai-codex-senior", "verified_by": "non_osservato: controverifica M12 pendente", "acceptance_criterion": "il test V1 modifica l'owner e ottiene rosso prima della rigenerazione, verde dopo; validate:mss:all include il gate", "verification_or_use_evidence": "test:mss:tools e validate:mss:all verdi in questa seduta", "verification_status": "self_report", "owner_ref": "owner-plan-v0", "privacy_release": "internal", "support_files": ["scripts/mss/views.mjs", "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md", "docs/MetaSkillSystem/tests/tools/run.mjs"], "relations_no_double_count": [], "product_candidate": {"recipient": "pass", "problem_or_job": "pass", "canonical_version": "pass", "fixed_acceptance_criterion": "pass", "verification_or_use_evidence": "fail", "result": "not_eligible"}}],
+      "asserted_by": {"actor_id": "openai-codex-senior", "role": "orchestratore", "basis": "direct_observation"},
+      "verification": {"status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "owner-plan-v0", "evidence_refs": [], "notes": "V1 test nominato + validate:mss:all; richiede controverifica famiglia diversa per M12"}
+    }
+  }
+}

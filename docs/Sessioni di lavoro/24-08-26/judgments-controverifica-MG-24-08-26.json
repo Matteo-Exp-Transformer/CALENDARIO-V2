@@ -1,0 +1,125 @@
+{
+  "session_event": {
+    "intent_user": "Controverifica indipendente Cursor di M-G; chiudere sotto M12 solo se prova+test nominati+famiglia diversa; aggiornare PLAN e cruscotto; non aprire M-F.",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "revisore-cursor-mss",
+    "area": "MetaSkillSystem / controverifica M-G N3-N6",
+    "environment": "repo locale CalendarBackup-v2 su env/test; nessuna operazione Supabase",
+    "authorization": {
+      "read": ["docs/MetaSkillSystem/", "docs/Sessioni di lavoro/", "scripts/mss/"],
+      "write": ["docs/MetaSkillSystem/PLAN_V0.md", "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md", "docs/Sessioni di lavoro/24-08-26/"],
+      "forbid": ["src/", "database", "migrazioni", "commit", "push", "tag", "apertura M-F", "H-1.3 PASS pulito"]
+    },
+    "authorized_outputs": ["controverifica M-G", "report con capsula", "aggiornamento PLAN_V0 e CRUSCOTTO se M12"],
+    "route": {
+      "chosen": "rieseguire gate e riproduzioni N3-N6 senza fidarsi del report esecutore; chiudere M-G sotto M12; handoff a M-F senza aprirlo",
+      "alternatives_or_conflicts": ["lasciare M-G PROVATO se una condizione M12 manca", "non aggiornare owner senza controverifica"]
+    },
+    "observed_outcome": "M-G CHIUSO: suite e validate verdi; asserzioni N3-N6 non vacue; riproduzioni manuali allineate; PLAN e CRUSCOTTO aggiornati; M-F non aperto.",
+    "open_items": ["prossimo senior apre M-F", "R1 raccomandato ma non aperto", "H-1.3 resta PASS_CON_RISERVE"],
+    "subject_runtime": {
+      "actor_id": "openai-codex-senior",
+      "provider": "openai",
+      "model": "gpt-5.6-codex",
+      "runtime": "codex",
+      "surface": "chat"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": ["path repo", "esiti gate", "identificatori N3-N6", "hash HEAD"],
+      "prohibited_content": ["dati personali", "segreti", "materiale privato non registrabile"],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [{
+      "ref_id": "owner-plan-v0",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+      "stable_anchor_or_event_id": "sezione 15 / M-G CHIUSO M12",
+      "revision_or_hash": "working tree controverifica 24-08-2026",
+      "sensitivity": "internal"
+    }],
+    "source_refs": [{
+      "ref_id": "source-mg-report",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Report-mg-attrezzi-che-non-sporcano-24-08-26.md",
+      "stable_anchor_or_event_id": "report esecutore M-G",
+      "revision_or_hash": "6a76f57",
+      "sensitivity": "internal"
+    }, {
+      "ref_id": "source-mg-mandate",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MG-attrezzi-che-non-sporcano-24-08-26.md",
+      "stable_anchor_or_event_id": "sezioni 2-6",
+      "revision_or_hash": "working tree / HEAD",
+      "sensitivity": "internal"
+    }, {
+      "ref_id": "source-m12",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+      "stable_anchor_or_event_id": "decisione M12",
+      "revision_or_hash": "working tree controverifica 24-08-2026",
+      "sensitivity": "internal"
+    }]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [{
+        "signal": "nessuna nuova osservazione Persona: seduta di controverifica tecnica",
+        "actor": "non_applicabile: soggetto non valutato",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "source-mg-mandate",
+        "effect": "nessuna promozione o inferenza Persona",
+        "evidence_state": "not_applicable"
+      }],
+      "asserted_by": {"actor_id": "cursor-composer-revisore", "role": "revisore", "basis": "direct_observation"},
+      "verification": {"status": "not_applicable", "verified_by": [], "verified_at": "non_applicabile:nessuna valutazione Persona", "criterion_ref": "source-mg-mandate", "evidence_refs": [], "notes": "seduta tecnica"}
+    },
+    "sistema": {
+      "delta": "modificato",
+      "assertions": [{
+        "rule_id_version": "M12/M-G",
+        "trigger_event": "controverifica famiglia diversa su N3-N6 dopo consegna Codex",
+        "decision_or_output_changed": "M-G promosso da PROVATO a CHIUSO; S10 senza riserva N6; prossimo task M-F senza aprirlo",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }],
+      "asserted_by": {"actor_id": "cursor-composer-revisore", "role": "revisore", "basis": "direct_observation"},
+      "verification": {"status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "source-m12", "evidence_refs": ["source-mg-report"], "notes": "chiusura M12 registrata dal revisore che ha rieseguito le prove"}
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [{
+        "output_id": "controverifica-mg-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "working tree 24-08-2026",
+        "recipient": "orchestratore MSS e Matteo",
+        "problem_or_job": "confermare o smentire M-G senza fidarsi del report esecutore",
+        "intended_use": "chiudere M-G sotto M12 e handoff a M-F",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Matteo",
+        "authored_by": "cursor-composer-revisore",
+        "verified_by": "cursor-composer-revisore (stesso attore della prova: self_report sulla prova)",
+        "acceptance_criterion": "gate verdi + riproduzioni N3-N6 + asserzioni non vacue + famiglia diversa da Codex",
+        "verification_or_use_evidence": "npm run validate:mss:all; riproduzioni N3-N6; validate:mss sul report M-G",
+        "verification_status": "self_report",
+        "owner_ref": "owner-plan-v0",
+        "privacy_release": "internal",
+        "support_files": ["docs/MetaSkillSystem/PLAN_V0.md", "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md", "docs/Sessioni di lavoro/24-08-26/Report-controverifica-MG-24-08-26.md"],
+        "relations_no_double_count": [],
+        "product_candidate": {"recipient": "pass", "problem_or_job": "pass", "canonical_version": "pass", "fixed_acceptance_criterion": "pass", "verification_or_use_evidence": "pass", "result": "eligible"}
+      }],
+      "asserted_by": {"actor_id": "cursor-composer-revisore", "role": "revisore", "basis": "direct_observation"},
+      "verification": {"status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "source-m12", "evidence_refs": ["source-mg-report"], "notes": "prova rieseguita dal revisore; non richiede secondo revisore per M12"}
+    }
+  }
+}

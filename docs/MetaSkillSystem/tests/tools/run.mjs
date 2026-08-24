@@ -33,6 +33,11 @@ import { CONFIG, buildReportPathRe, normalizeConfig } from '../../../../scripts/
 import { REPORT_PATH_RE } from '../../../../scripts/mss/adapter.mjs'
 import { collectExportPaths, findDanglingImports } from '../../../../scripts/mss/export-kit.mjs'
 import { runDoctor } from '../../../../scripts/mss/doctor.mjs'
+import { runViews } from '../../../../scripts/mss/views.mjs'
+import {
+  MANUAL_MOVE_BASELINE_LINES,
+  runMove,
+} from '../../../../scripts/mss/move.mjs'
 import { REVISION_CURRENT } from '../../../../scripts/mss/rules.mjs'
 import {
   IDS,
@@ -268,12 +273,15 @@ function syntheticAllowlist(count) {
   }))
 }
 
+const REAL_DOC_PATHS_LIB = join(REPO_ROOT, 'scripts/doc-paths-lib.mjs')
+
 function runCheckDocPathsWithAllowlist(allowlistEntries) {
   const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-b4-'))
   try {
     mkdirSync(join(root, 'scripts'), { recursive: true })
     mkdirSync(join(root, 'docs'), { recursive: true })
     writeFileSync(join(root, 'scripts/check-doc-paths.mjs'), readFileSync(REAL_CHECK_DOC_PATHS))
+    writeFileSync(join(root, 'scripts/doc-paths-lib.mjs'), readFileSync(REAL_DOC_PATHS_LIB))
     writeFileSync(join(root, 'scripts/_cliLog.mjs'), readFileSync(REAL_CLI_LOG))
     writeFileSync(join(root, 'scripts/doc-path-check-allowlist.json'), JSON.stringify(allowlistEntries, null, 2))
     writeFileSync(join(root, 'docs/placeholder.md'), '# placeholder — nessun riferimento a file locali.\n')
@@ -1159,6 +1167,134 @@ const tests = [
       assert.doesNotMatch(con.output, /QUESTO_FILE_NON_ESISTE_MAI/)
     } finally {
       rmSync(probeDir, { recursive: true, force: true })
+    }
+  }],
+
+  ['V1 — vista generata: owner modificato = gate rosso, rigenerazione = verde', () => {
+    // Il test usa una repo minima: non basta vedere che il file reale e allineato oggi. Serve
+    // provare entrambe le direzioni che rendono il generatore un antidoto alle viste stale.
+    // Prende l'ULTIMO ciclo chiuso: un ciclo precedente non deve mascherare lo stato corrente.
+    assert.ok(runViews({ root: REPO_ROOT }).every((view) => !view.stale), 'il cruscotto reale non e allineato al suo owner')
+    const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-v1-'))
+    try {
+      writeRepoFile(root, 'docs/MetaSkillSystem/PLAN_V0.md', [
+        '# Piano',
+        '### Ciclo precedente — `M-G` eseguito e **CHIUSO**',
+        '### Ciclo di prova — `M-F` eseguito e **CHIUSO**',
+        '',
+        '**Prossima azione autorizzata: `M-E`** (attrezzi mancanti, `T1`).',
+        '`R1` resta **raccomandato ma non aperto**.',
+      ].join('\n'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md', [
+        '# Cruscotto MSS di Matteo',
+        'TESTO ESTERNO DA CONSERVARE',
+        '<!-- mss:generated cruscotto-matteo inizio -->',
+        'contenuto da sostituire',
+        '<!-- mss:generated cruscotto-matteo fine -->',
+        'CODA ESTERNA DA CONSERVARE',
+      ].join('\n'))
+      assert.ok(runViews({ root, write: true }).every((view) => view.stale), 'la prima generazione doveva rilevare il blocco diverso')
+      const afterGen = readFileSync(join(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md'), 'utf8')
+      assert.ok(runViews({ root }).every((view) => !view.stale), 'subito dopo la generazione il gate deve essere verde')
+      assert.match(afterGen, /`M-F` è \*\*CHIUSO\*\*/, 'deve leggere l\'ultimo ciclo, non M-G')
+      assert.match(afterGen, /TESTO ESTERNO DA CONSERVARE/, 'il testo fuori dai marcatori non va cancellato')
+      assert.match(afterGen, /CODA ESTERNA DA CONSERVARE/, 'la coda fuori dai marcatori non va cancellata')
+
+      const owner = join(root, 'docs/MetaSkillSystem/PLAN_V0.md')
+      writeFileSync(owner, readFileSync(owner, 'utf8').replace('### Ciclo di prova — `M-F` eseguito e **CHIUSO**', '### Ciclo di prova — `M-F` eseguito e **PROVATO**'), 'utf8')
+      assert.ok(runViews({ root }).some((view) => view.stale), 'un owner cambiato non ha reso rosso il controllo anti-stale')
+
+      // Una correzione manuale della sola copia non basta: deve restare stale rispetto all'owner.
+      writeFileSync(join(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md'), afterGen.replaceAll('CHIUSO', 'CHIUSISSIMO'), 'utf8')
+      assert.ok(runViews({ root }).some((view) => view.stale), 'una modifica manuale della sola vista non deve far diventare verde il cancello')
+
+      runViews({ root, write: true })
+      const realigned = readFileSync(join(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md'), 'utf8')
+      assert.ok(runViews({ root }).every((view) => !view.stale), 'la rigenerazione non ha riallineato la vista')
+      assert.match(realigned, /PROVATO/, 'la vista deve riflettere l\'owner, non la correzione manuale')
+      assert.doesNotMatch(realigned, /CHIUSISSIMO/)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  }],
+
+  ['T1/R6 — mss:move sposta un file di prova, aggiorna i riferimenti vivi e resta atomico', () => {
+    // Non basta exit !== 0: serve prova nelle due direzioni (move ok + rifiuti leggibili) e
+    // confronto col costo manuale documentato (~1741 righe). Sandbox dedicata: niente atti vivi.
+    const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-t1-r6-'))
+    try {
+      writeRepoFile(root, 'docs/MetaSkillSystem/NOTE_SORGENTE.md', '# Sorgente\n\nContenuto di prova T1.\n')
+      writeRepoFile(root, 'docs/MetaSkillSystem/INDICE.md', [
+        '# Indice',
+        '',
+        'Vedi [nota](NOTE_SORGENTE.md) e anche `docs/MetaSkillSystem/NOTE_SORGENTE.md`.',
+        '',
+      ].join('\n'))
+      writeRepoFile(root, 'scripts/helper-t1.mjs', "export const PATH = 'docs/MetaSkillSystem/NOTE_SORGENTE.md'\n")
+      writeRepoFile(root, 'scripts/check-doc-paths.mjs', readFileSync(REAL_CHECK_DOC_PATHS))
+      writeRepoFile(root, 'scripts/doc-paths-lib.mjs', readFileSync(REAL_DOC_PATHS_LIB))
+      writeRepoFile(root, 'scripts/_cliLog.mjs', readFileSync(REAL_CLI_LOG))
+      writeRepoFile(root, 'scripts/doc-path-check-allowlist.json', '[]\n')
+
+      const missing = runMove(
+        ['node', 'move.mjs', 'docs/MetaSkillSystem/ASSENTE.md', 'docs/MetaSkillSystem/ALTRO.md'],
+        { root, validateDocs: () => ({ status: 0, output: '' }) },
+      )
+      assert.equal(missing.exitCode, 2, missing.stderr)
+      assert.match(missing.stderr, /Sorgente assente/)
+
+      writeRepoFile(root, 'docs/MetaSkillSystem/OCCUPATO.md', '# gia qui\n')
+      const occupied = runMove(
+        ['node', 'move.mjs', 'docs/MetaSkillSystem/NOTE_SORGENTE.md', 'docs/MetaSkillSystem/OCCUPATO.md'],
+        { root, validateDocs: () => ({ status: 0, output: '' }) },
+      )
+      assert.equal(occupied.exitCode, 2, occupied.stderr)
+      assert.match(occupied.stderr, /gia occupata|già occupata/)
+
+      const frozen = runMove(
+        ['node', 'move.mjs', 'docs/MetaSkillSystem/NOTE_SORGENTE.md', 'scripts/mss/vietato.md'],
+        { root, validateDocs: () => ({ status: 0, output: '' }) },
+      )
+      assert.equal(frozen.exitCode, 2, frozen.stderr)
+      assert.match(frozen.stderr, /congelata/)
+
+      const ok = runMove(
+        ['node', 'move.mjs', 'docs/MetaSkillSystem/NOTE_SORGENTE.md', 'docs/MetaSkillSystem/NOTE_DEST.md', '--no-stub'],
+        { root, validateDocs: () => ({ status: 0, output: '' }) },
+      )
+      assert.equal(ok.exitCode, 0, `${ok.stdout}\n${ok.stderr}`)
+      assert.ok(ok.summary, 'manca il riepilogo misurabile')
+      assert.equal(ok.summary.from, 'docs/MetaSkillSystem/NOTE_SORGENTE.md')
+      assert.equal(ok.summary.to, 'docs/MetaSkillSystem/NOTE_DEST.md')
+      assert.ok(ok.summary.refsUpdated >= 2, `attesi ≥2 ref aggiornati, got ${ok.summary.refsUpdated}`)
+      assert.ok(
+        ok.summary.lineDelta < MANUAL_MOVE_BASELINE_LINES,
+        `costo attrezzo ${ok.summary.lineDelta} non inferiore alla baseline ${MANUAL_MOVE_BASELINE_LINES}`,
+      )
+      assert.equal(existsSync(join(root, 'docs/MetaSkillSystem/NOTE_SORGENTE.md')), false)
+      assert.equal(existsSync(join(root, 'docs/MetaSkillSystem/NOTE_DEST.md')), true)
+      const indice = readFileSync(join(root, 'docs/MetaSkillSystem/INDICE.md'), 'utf8')
+      assert.match(indice, /NOTE_DEST\.md/)
+      assert.doesNotMatch(indice, /NOTE_SORGENTE\.md/)
+      const helper = readFileSync(join(root, 'scripts/helper-t1.mjs'), 'utf8')
+      assert.match(helper, /NOTE_DEST\.md/)
+      assert.doesNotMatch(helper, /NOTE_SORGENTE\.md/)
+
+      // Atomicità: se validate:docs fallisce dopo la scrittura, l'albero torna com'era.
+      writeRepoFile(root, 'docs/MetaSkillSystem/ATOM_SRC.md', '# atom\n')
+      writeRepoFile(root, 'docs/MetaSkillSystem/ATOM_LINK.md', 'Link: `docs/MetaSkillSystem/ATOM_SRC.md`\n')
+      const beforeLink = readFileSync(join(root, 'docs/MetaSkillSystem/ATOM_LINK.md'), 'utf8')
+      const rolled = runMove(
+        ['node', 'move.mjs', 'docs/MetaSkillSystem/ATOM_SRC.md', 'docs/MetaSkillSystem/ATOM_DST.md', '--no-stub'],
+        { root, validateDocs: () => ({ status: 1, output: 'synthetic validate fail' }) },
+      )
+      assert.equal(rolled.exitCode, 1, rolled.stderr)
+      assert.match(rolled.stderr, /validate:docs rosso|Albero ripristinato/)
+      assert.equal(existsSync(join(root, 'docs/MetaSkillSystem/ATOM_SRC.md')), true)
+      assert.equal(existsSync(join(root, 'docs/MetaSkillSystem/ATOM_DST.md')), false)
+      assert.equal(readFileSync(join(root, 'docs/MetaSkillSystem/ATOM_LINK.md'), 'utf8'), beforeLink)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
     }
   }],
 ]

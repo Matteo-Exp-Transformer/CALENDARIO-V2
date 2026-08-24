@@ -152,6 +152,38 @@ ogni import relativo dei file copiati: se manca un modulo esce rosso invece di c
 monco. Scrive un `mss.config.json` di default se assente e un marcatore `.mss-vendored` nella
 cartella dei documenti copiati, perché i loro link parlano dell'albero di origine.
 
+### 2.4-quater `npm run generate:mss:views` — rigenera le viste di progetto
+
+| | |
+|---|---|
+| **Legge** | gli owner dichiarati dalla singola vista |
+| **Scrive** | solo fra i marcatori `<!-- mss:generated … inizio/fine -->` della vista bersaglio |
+| **Uso sicuro** | `npm run generate:mss:views` dopo una modifica all'owner |
+
+La prima vista è il cruscotto di Matteo. Fuori dai marcatori resta testo umano; dentro non si
+corregge a mano. `npm run validate:mss:views` rigenera in memoria e confronta: se owner e vista
+divergono esce rosso e indica il comando di rigenerazione. È un attrezzo **di questo progetto**,
+non una capacità esportata dal motore nelle repo ospiti.
+
+### 2.4-quinquies `npm run mss:move -- <sorgente> <destinazione>` — sposta e aggiorna i link vivi
+
+| | |
+|---|---|
+| **Legge** | il file sorgente + i docs vivi (stesso perimetro di `validate:docs`) + citazioni path in `scripts/` |
+| **Scrive** | sposta il file; aggiorna i riferimenti vivi; opzionale stub di redirect al path vecchio (TTL 30g) |
+| **Uso sicuro** | `npm run mss:move -- --help` · prova in sandbox prima di atti vivi |
+| **Forma** | **una sola:** `npm run mss:move -- <sorgente> <destinazione> [--no-stub] [--skip-validate]` |
+
+Effetti: (1) sposta/rinomina nel working tree; (2) aggiorna link markdown e path citati nei docs
+vivi e nelle stringhe path sotto `scripts/`; (3) **non** riscrive la storia sotto
+`Sessioni di lavoro` / Archivio; (4) esce rosso senza scrivere a metà se sorgente assente,
+destinazione occupata, zona congelata (L5 prove / L6 privato / storia sedute) o
+`validate:docs` rosso dopo il move — in quel caso **annulla**. Baseline costo manuale
+documentata: ≈ 1 741 righe (`R6` / `D15`); l'attrezzo stampa il delta righe del proprio run.
+
+**`T1`/`R6` PROVATO in `M-E` (24-08-26), non `CHIUSO`:** serve controverifica famiglia diversa
+(`M12`). Test: `npm run test:mss:tools` cerca `T1/R6`.
+
 ### 2.5 Suite e cancelli globali
 
 | Comando | Legge | Scrive | Quando |
@@ -160,14 +192,12 @@ cartella dei documenti copiati, perché i loro link parlano dell'albero di origi
 | `npm run test:mss:tools` | Attrezzi query/status/capsule | nulla | Dopo tocchi `scripts/mss/*.mjs` |
 | `npm run validate:docs` | Path citati nei `.md` vivi | nulla | Dopo tocchi docs o link |
 | `npm run validate:app` | `lint` + `typecheck` + `test` (codice `src/`) | nulla | Chi tocca `src/` |
-| `npm run validate:mss:all` | `test:mss` + `test:mss:tools` + `validate:docs` | nulla | Chi tocca `scripts/mss/`, `docs/` o gli hook |
+| `npm run validate:mss:all` | `test:mss` + `test:mss:tools` + `validate:mss:views` + `validate:docs` | nulla | Chi tocca `scripts/mss/`, `docs/` o gli hook |
 | `npm run validate` | `validate:app` + `validate:mss:all` (i due composti, in sequenza) | nulla | Chi prepara una PR |
 
 ### 2.6 Comandi **non** implementati (non inventarli)
 
-- `mss:move` (`SK-9`) — NON INIZIATO
 - `mss:review` (`SK-3`) — NON INIZIATO
-- Generatore ROADMAP/HANDOFF (`D14`) — promesso, assente
 
 ---
 

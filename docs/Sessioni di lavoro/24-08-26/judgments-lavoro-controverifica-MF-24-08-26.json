@@ -1,0 +1,67 @@
+{
+  "session_event": {
+    "intent_user": "Chiudere la seduta di controverifica M-F con report di lavoro svolto e preparare il prompt per proseguire con M-E.",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "revisore-cursor-mss-chiusura",
+    "area": "MetaSkillSystem / chiusura M-F + prompt M-E",
+    "environment": "repo locale CalendarBackup-v2 su env/test; nessuna operazione Supabase",
+    "authorization": {
+      "read": ["docs/MetaSkillSystem/", "docs/Sessioni di lavoro/24-08-26/", "docs/FOLLOW_UP.md"],
+      "write": ["docs/Sessioni di lavoro/24-08-26/", "docs/FOLLOW_UP.md"],
+      "forbid": ["src/", "database", "migrazioni", "commit", "push", "esecuzione M-E", "apertura R1", "H-1.3 PASS pulito"]
+    },
+    "authorized_outputs": ["report lavoro svolto", "prompt mandato M-E", "riga FOLLOW_UP"],
+    "route": {
+      "chosen": "report di chiusura che rimanda alla controverifica tecnica già validata; mandato M-E scritto, non eseguito",
+      "alternatives_or_conflicts": ["duplicare la capsula tecnica nel report di chiusura senza fatti nuovi", "eseguire M-E in questa stessa chat"]
+    },
+    "observed_outcome": "Report lavoro e Prompt-mandato-ME scritti; FU-MSS-ME-T1 aperto; M-E non eseguito; capsula di chiusura generata con mss:capsule.",
+    "open_items": ["esecutore apre M-E col prompt preparato", "R1 raccomandato ma non aperto", "WP-1 NO-GO", "H-1.3 PASS_CON_RISERVE"],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: soggetto non valutato",
+      "provider": "non_applicabile: seduta tecnica",
+      "model": "non_applicabile: seduta tecnica",
+      "runtime": "non_applicabile: seduta tecnica",
+      "surface": "non_applicabile: seduta tecnica"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": ["path repo", "identificatori M-F M-E", "hash HEAD"],
+      "prohibited_content": ["dati personali", "segreti", "materiale privato non registrabile"],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {"ref_id": "owner-plan-v0", "owner_id": "MSS", "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md", "stable_anchor_or_event_id": "sezione 15 / M-F CHIUSO prossimo M-E", "revision_or_hash": "working tree 24-08-2026", "sensitivity": "internal"}
+    ],
+    "source_refs": [
+      {"ref_id": "source-mf-review", "owner_id": "MSS", "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Report-controverifica-MF-24-08-26.md", "stable_anchor_or_event_id": "controverifica M12", "revision_or_hash": "working tree 24-08-2026", "sensitivity": "internal"},
+      {"ref_id": "source-me-prompt", "owner_id": "MSS", "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-ME-attrezzi-mancanti-24-08-26.md", "stable_anchor_or_event_id": "mandato M-E", "revision_or_hash": "working tree 24-08-2026", "sensitivity": "internal"}
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [{"signal": "nessuna nuova osservazione Persona: chiusura documentale e preparazione prompt", "actor": "non_applicabile: soggetto non valutato", "assistance": "spontaneo", "origin": "naturale", "source_ref": "source-mf-review", "effect": "nessuna promozione o inferenza Persona", "evidence_state": "not_applicable"}],
+      "asserted_by": {"actor_id": "cursor-composer-revisore", "role": "revisore", "basis": "direct_observation"},
+      "verification": {"status": "not_applicable", "verified_by": [], "verified_at": "non_applicabile:nessuna valutazione Persona", "criterion_ref": "source-mf-review", "evidence_refs": [], "notes": "seduta tecnica"}
+    },
+    "sistema": {
+      "delta": "nessuno",
+      "assertions": [{"rule_id_version": "M-F/già-CHIUSO", "trigger_event": "richiesta report lavoro + prompt M-E dopo controverifica già chiusa", "decision_or_output_changed": "nessun cambiamento di motore: solo atti di chiusura e mandato successivo", "G": 2, "O": 1, "E": 1}],
+      "asserted_by": {"actor_id": "cursor-composer-revisore", "role": "revisore", "basis": "direct_observation"},
+      "verification": {"status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "owner-plan-v0", "evidence_refs": ["source-mf-review"], "notes": "stato M-F già CHIUSO nell'owner; questa seduta non lo ricalcola"}
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [{"output_id": "report-lavoro-e-prompt-me-24-08-26", "primary_type": "prova", "canonical_version": "working tree 24-08-2026", "recipient": "Matteo e prossimo esecutore M-E", "problem_or_job": "chiudere documentalmente la seduta e consegnare un mandato M-E auto-contenuto", "intended_use": "incollare il prompt M-E in una chat nuova senza rieseguire M-F", "conceived_by": "Matteo", "decided_by": "Matteo", "directed_by": "Matteo", "authored_by": "cursor-composer-revisore", "verified_by": "non_osservato: validazione report di chiusura in questa correzione", "acceptance_criterion": "validate:mss sul report di lavoro exit 0 con capsula; prompt M-E presente su disco", "verification_or_use_evidence": "npm run validate:mss sul report dopo mss:capsule", "verification_status": "self_report", "owner_ref": "owner-plan-v0", "privacy_release": "internal", "support_files": ["docs/Sessioni di lavoro/24-08-26/Report-lavoro-controverifica-MF-24-08-26.md", "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-ME-attrezzi-mancanti-24-08-26.md"], "relations_no_double_count": [], "product_candidate": {"recipient": "pass", "problem_or_job": "pass", "canonical_version": "pass", "fixed_acceptance_criterion": "pass", "verification_or_use_evidence": "fail", "result": "not_eligible"}}],
+      "asserted_by": {"actor_id": "cursor-composer-revisore", "role": "revisore", "basis": "direct_observation"},
+      "verification": {"status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "source-me-prompt", "evidence_refs": ["source-mf-review"], "notes": "output documentale di chiusura"}
+    }
+  }
+}
