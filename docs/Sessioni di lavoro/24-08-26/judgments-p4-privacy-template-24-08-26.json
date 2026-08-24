@@ -1,0 +1,54 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [{
+      "rule_id_version": "SK-11/P4@mss-v0.1-wp0.1-freeze-2",
+      "trigger_event": "Mandato P4: copertura nominata del template privacy R1",
+      "decision_or_output_changed": "La suite prova il contratto privacy letterale di mode e che un testo chat contraddittorio non puo classificare la busta R1.",
+      "G": 2,
+      "O": 1,
+      "E": 1
+    }]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [{
+      "output_id": "p4-privacy-template-24-08-26",
+      "primary_type": "processo",
+      "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-p4-privacy-template-24-08-26.md",
+      "recipient": "orchestratore MSS e controverificatore M12",
+      "problem_or_job": "coprire il contratto privacy del template R1 senza deduzione dalla chat",
+      "intended_use": "rilevare regressioni delle costanti privacy R1 e della separazione tra mode e conversazione",
+      "conceived_by": "Matteo",
+      "decided_by": "Matteo",
+      "directed_by": "mandato P4 ricevuto dall'orchestratore MSS",
+      "authored_by": "openai-codex-esecutore-p4",
+      "verified_by": "non_osservato",
+      "acceptance_criterion": "test nominato non vacuo, gate MSS verdi e nessuna chiusura anticipata di SK-11",
+      "verification_or_use_evidence": "controls della capsula e report P4",
+      "verification_status": "self_report",
+      "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+      "privacy_release": "internal",
+      "support_files": [
+        "docs/MetaSkillSystem/tests/tools/run.mjs",
+        "scripts/mss/capsule.mjs",
+        "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md"
+      ],
+      "relations_no_double_count": [
+        "La prova P4 riduce la lacuna di SK-11 ma non ne dichiara la chiusura; M12 resta un gate separato."
+      ],
+      "product_candidate": {
+        "recipient": "pass",
+        "problem_or_job": "pass",
+        "canonical_version": "pass",
+        "fixed_acceptance_criterion": "pass",
+        "verification_or_use_evidence": "pass",
+        "result": "eligible"
+      }
+    }]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "persona": { "delta": "nessuno", "assertions": [] },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "SK-3/T2+SK-11/P4@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato senior orchestratore MSS: controverifica T2 M12 e un solo mandato residuo",
+        "decision_or_output_changed": "T2/SK-3 chiuso con M12; P4/SK-11 provato con test privacy nominato, senza promuovere SK-11",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "orchestratore-t2-p4-24-08-26",
+        "primary_type": "registro",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-orchestratore-t2-p4-24-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "rendere ricostruibili la chiusura M12 di T2 e il confine del mandato P4",
+        "intended_use": "ripartire dal solo gate residuo senza riaprire T2 o dichiarare SK-11 chiuso",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato allegato della chat 24-08-2026",
+        "authored_by": "openai-codex-orchestratore",
+        "verified_by": "controlli registrati nella capsula",
+        "acceptance_criterion": "owner e vista coerenti; gate MSS verdi; T2 M12 esplicito; P4 al massimo PROVATO",
+        "verification_or_use_evidence": "controls della capsula di questo report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/PLAN_V0.md",
+          "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md",
+          "docs/MetaSkillSystem/tests/tools/run.mjs"
+        ],
+        "relations_no_double_count": ["registro orchestratore; non sostituisce i report T2/P4"],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

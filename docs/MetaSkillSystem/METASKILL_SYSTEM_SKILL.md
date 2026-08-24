@@ -51,10 +51,12 @@ Prima di ricostruire lo stato a mano, usare soltanto gli attrezzi necessari (det
   `PLAN_V0.md`. D5 (P1) ha rimosso numeri stale da §4-bis; conteggi mobili restano sui comandi.
 - `npm run mss:query -- --verifica|--regole|--modelli|--fail|--costo|--json` — lettore del corpus;
   il conteggio dinamico va chiesto qui, non copiato da un report.
+- `npm run mss:review -- [--base <ref>] [--report <path>] [--json]` — fatti della seduta (file
+  toccati L1–L6, ⚠️ owner/L5/L6, mancanze); sola lettura; `T2` PROVATO, CHIUSO solo dopo M12.
 - `npm run validate:mss -- --mode file --file <report> --kind report --require-capsule` — gate di
   un report; il comando senza argomenti mostra intenzionalmente usage.
 - `npm run test:mss` e `npm run test:mss:tools` — suite del validator e degli attrezzi.
-- `npm run mss:capsule -- --judgments <file.json>` — generatore; richiede giudizi espliciti, non è
+- `npm run mss:capsule -- --model <modello> --judgments <file.json>` — generatore; richiede giudizi espliciti, non è
   una chiusura automatica della seduta.
 
 Lo stato autorevole è in [`PLAN_V0.md`](PLAN_V0.md) §4-bis · §4-ter · §15;

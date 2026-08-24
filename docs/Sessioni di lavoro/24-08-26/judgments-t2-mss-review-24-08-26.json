@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "SK-3/T2@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T2 + rifinitura riserva R1 (mss:review sola lettura)",
+        "decision_or_output_changed": "npm run mss:review produce fatti L1-L6 senza scrivere; busta R1: area/observed_outcome non_osservato; enum come R1_MODE_CONSTANTS; T2 PROVATO non CHIUSO",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "t2-mss-review-24-08-26",
+        "primary_type": "processo",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-t2-mss-review-24-08-26.md",
+        "recipient": "Matteo e revisore famiglia diversa (M12)",
+        "problem_or_job": "avere un attrezzo che elenca fatti della seduta senza giudizio di merito",
+        "intended_use": "controverificare T2 e usare mss:review nelle chiusure successive",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat T2 + rifinitura R1",
+        "authored_by": "cursor-composer-esecutore-t2",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "test T2/mss:review non vacuo + gate MSS verdi + T2 al massimo PROVATO",
+        "verification_or_use_evidence": "controlli registrati nella capsula di questo report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/review.mjs",
+          "scripts/mss/capsule.mjs",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md"
+        ],
+        "relations_no_double_count": [
+          "processo attrezzo; il report resta registro; CHIUSO solo dopo M12"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

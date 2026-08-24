@@ -80,9 +80,12 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 **R1 — ingresso compatto.** `npm run mss:capsule -- --template-r1` produce il file giudizi
 minimo: soltanto `persona`, `sistema`, `output`. Con quel formato il generatore compone UUID,
 timestamp, runtime, Git, `source_refs` e risultati dei `--check`; non inventa intent, soggetto o
-follow-up, che restano `non_osservato`. Un asse con `delta: nessuno` usa onestamente
-`assertions: []`; per ogni altro delta l'asserzione resta obbligatoria. Il formato storico esteso
-resta compatibile per le capsule esistenti.
+follow-up, che restano `non_osservato`. **Busta non osservabile dalla chat** (riserva R1 ridotta
+24-08-26): `area` e `observed_outcome` sono `non_osservato:…`; `session_type` / `capsule_status` /
+template `privacy` enum sono **costanti di mode** (`R1_MODE_CONSTANTS` in `capsule.mjs`), non fatti
+dedotti dalla conversazione. Un asse con `delta: nessuno` usa onestamente `assertions: []`; per ogni
+altro delta l'asserzione resta obbligatoria. Il formato storico esteso resta compatibile per le
+capsule esistenti.
 
 ✅ **`N3`/`N4` PROVATI — il controllo dichiara ora ciò che prova.** La diagnosi
 precedente («le virgolette si perdono nel trasporto») è **falsa ed è stata falsificata con misura
@@ -117,7 +120,23 @@ davvero assente o non interpretabile.
 
 **`N1` PROVATO 24-08-26 (`M-C`).** L'attrezzo ora esegue `validateMss` sul bundle **prima** di scrivere: con `--append-to` valida il report **prospettico** (`--require-capsule`), altrimenti il solo JSONL. Se esce rosso: exit `2`, diagnostica su stderr, **nessuna scrittura**. La guardia «il report ha già una capsula» usa la stessa definizione del validator (`parse.mjs::findCapsuleHeadings`), quindi riconosce anche le intestazioni numerate (`## 6-bis. Capsula MetaSkillSystem`). Esegui comunque `validate:mss` dopo: è il gate dichiarato, non un doppione.
 
-**`N2` PROVATO 24-08-26 (`M-C`).** Un revisore registra una verifica con `--verify "<mss-rec-…>|<esito>|<evidence_ref>|<motivo>"` (ripetibile): l'attrezzo emette un `amendment` conforme al contratto §6, leggendo i valori precedenti **dal record bersaglio**. Bersaglio ed esito non si deducono; `self_report` è rifiutato (un secondo attore non può ridichiarare l'autodichiarazione altrui). Se `--role` nomina un revisore e la seduta non emette nessun amendment, l'attrezzo **avvisa** e non blocca. Il template resta con `verified_by: []`: è la verità per una seduta che non ha verificato nessuno. Non è `mss:review` (`SK-3`), che resta NON INIZIATO.
+**`N2` PROVATO 24-08-26 (`M-C`).** Un revisore registra una verifica con `--verify "<mss-rec-…>|<esito>|<evidence_ref>|<motivo>"` (ripetibile): l'attrezzo emette un `amendment` conforme al contratto §6, leggendo i valori precedenti **dal record bersaglio**. Bersaglio ed esito non si deducono; `self_report` è rifiutato (un secondo attore non può ridichiarare l'autodichiarazione altrui). Se `--role` nomina un revisore e la seduta non emette nessun amendment, l'attrezzo **avvisa** e non blocca. Il template resta con `verified_by: []`: è la verità per una seduta che non ha verificato nessuno.
+
+### 2.4-sexies `npm run mss:review` — che cosa ho toccato (sola lettura)
+
+| | |
+|---|---|
+| **Legge** | diff Git (`--base`, default `HEAD`) + eventuale `--report`; classificazione L1–L6 da `archive/README.md` |
+| **Scrive** | nulla |
+| **Argomenti** | `--base <ref>` · `--report <path>` · `--json` · `--help` |
+| **Uso sicuro** | `npm run mss:review` · `npm run mss:review -- --json` |
+
+**`T2` / `SK-3` PROVATO** (questa seduta), **non `CHIUSO`:** serve controverifica famiglia diversa
+(`M12`). Contratto minimo = `STRATEGIA-scheletro-mss-21-08-26.md` §3.2: tabella di fatti (file +
+livello, ⚠️ owner di stato, ⚠️ L5/L6, regole citate senza inventare G/O/E, mancanze capsula/Q1–Q6/gate,
+comandi solo se ricostruibili dalla capsula). Test nominato:
+`T2 / mss:review — seduta con violazione nota la trova; seduta pulita non inventa` in
+`npm run test:mss:tools`.
 
 ✅ **`N5` PROVATO — un verificatore nominato richiede uno stato coerente.** `--verify` ammette
 solo `independently_verified` o `contradicted`; il validator applica la stessa regola al dato
@@ -204,7 +223,7 @@ documentata: ≈ 1 741 righe (`R6` / `D15`); l'attrezzo stampa il delta righe 
 
 ### 2.6 Comandi **non** implementati (non inventarli)
 
-- `mss:review` (`SK-3`) — NON INIZIATO
+_(nessuno al momento — `mss:review` è in §2.4-sexies)_
 
 ---
 

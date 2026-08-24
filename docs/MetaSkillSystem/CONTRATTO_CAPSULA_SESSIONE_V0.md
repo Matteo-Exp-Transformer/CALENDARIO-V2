@@ -245,6 +245,13 @@ e chi la verifica. Il fatto può quindi restare immutato mentre tassonomia o giu
 l'assenza di un'osservazione è un dato valido e non va trasformata in un'asserzione artificiale.
 Per ogni altro valore di `delta`, resta obbligatoria almeno un'asserzione conforme all'asse.
 
+**R1 — busta compatta (mode, non chat).** Con `--template-r1` / giudizi solo tre assi, i campi
+obbligatori di busta che **non** vengono da Git, env whitelist, orologio o `--check` non fingono
+osservazione dalla conversazione: `intent_user`, `area`, `observed_outcome`, `open_items` e
+`subject_runtime` restano `non_osservato:<motivo>`. Gli enum che lo schema esige
+(`session_type`, `capsule_status`, `privacy.classification` e affini) sono **costanti di mode**
+dichiarate in `scripts/mss/capsule.mjs` (`R1_MODE_CONSTANTS`), non classificazioni dedotte dalla chat.
+
 ```text
 annotation:
   annotation_id: mss-ann-<UUIDv7>
