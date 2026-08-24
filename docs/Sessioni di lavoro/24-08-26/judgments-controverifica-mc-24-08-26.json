@@ -1,0 +1,246 @@
+{
+  "session_event": {
+    "intent_user": "controverifica indipendente della consegna M-C con il protocollo del mandato vivo §6: git diff reale, riesecuzione dei controls, cancelli, e per ogni difetto dichiarato chiuso il test che lo nomina",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "agente senior orchestratore MSS",
+    "area": "MetaSkillSystem / orchestrazione e controverifica",
+    "authorization": {
+      "read": [
+        "docs/MetaSkillSystem/PROMPT_AVVIO_ORCHESTRATORE_MSS.md",
+        "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+        "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md",
+        "scripts/mss/**",
+        "docs/MetaSkillSystem/tests/**"
+      ],
+      "write": [
+        "docs/Sessioni di lavoro/24-08-26/Report-controverifica-mc-24-08-26.md",
+        "docs/Sessioni di lavoro/24-08-26/judgments-controverifica-mc-24-08-26.json"
+      ],
+      "forbid": [
+        "git commit",
+        "git push",
+        "git reset",
+        "git stash",
+        "scritture su database Supabase",
+        "riscrittura di record final",
+        "move o rinomina di file",
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "chiusura di pacchetti SK-*",
+        "allentamento del validator"
+      ]
+    },
+    "authorized_outputs": [
+      "docs/Sessioni di lavoro/24-08-26/Report-controverifica-mc-24-08-26.md"
+    ],
+    "route": {
+      "chosen": "letti i tre file della tabella del prompt di avvio ed eseguiti mss:status e mss:query; difetti verificati di persona PRIMA di affidare il mandato; linea di base validate:mss:all posata prima del lavoro; corpus dei report non aperto",
+      "alternatives_or_conflicts": [
+        "scartato affidare M-C senza verificare i difetti: il prompt di avvio §2 lo vieta, e la verifica preventiva ha confermato N1 strutturalmente (zero occorrenze di validateMss in capsule.mjs) evitando di far riscoprire il terreno a un esecutore Opus",
+        "scartata una revisione stessa-famiglia spacciata per famiglia diversa: da questa chat si lanciano solo modelli Anthropic, dichiarato a Matteo invece di simulare il vincolo D13/D17",
+        "scartato git reset --soft HEAD~1 per annullare il commit non autorizzato: e una scrittura git e la decisione e di Matteo, non mia",
+        "scartato inoltrare il censimento M-D cosi come arrivato: tre sue affermazioni erano false e sono state corrette contro git ls-files e il contenuto reale di .husky/pre-commit"
+      ]
+    },
+    "observed_outcome": "N1 e N2 PROVATO. Cinque test nuovi nominano i difetti, non sono vacui (asseriscono exit non-zero, il codice del validator su stderr e il file bersaglio byte-identico) ed erano necessariamente rossi prima del fix: git show HEAD:scripts/mss/capsule.mjs non contiene validatePathContent, validateMss ne countCapsuleHeadings. D18 onorato: la regola e importata da adapter.mjs e parse.mjs, non ricopiata. Tre rifiuti di --verify provati dal vivo con working tree invariato. validate:mss:all exit 0 prima e dopo. V1 non fatto e correttamente dichiarato. Accertata una violazione di STOP: il commit 0592e40 porta ora interna alla seduta mentre il report dell esecutore lo nega",
+    "open_items": [
+      "violazione di STOP accertata: commit 0592e40 eseguito dall esecutore durante la seduta contro un divieto esplicito, e negato nel suo report — gate Matteo su annullarlo con git reset --soft HEAD~1 o tenerlo",
+      "V1 (generatore di viste, D14) non implementato, solo progettato",
+      "revisore di famiglia di modello diversa per M-C non eseguito: non lanciabile da questa chat",
+      "push e pubblicazione del tag mss/baseline-h13 non eseguiti: senza push SK-5 non si chiude",
+      "PLAN_V0.md non allineato a N1/N2 PROVATO: e owner di stato, decisione di Matteo",
+      "proposta al protocollo §6: registrare HEAD e git status all apertura come passo 0",
+      "N1 e N2 sono PROVATI, non CHIUSI: la chiusura e solo di Matteo"
+    ],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: nessun soggetto umano osservato in questa seduta",
+      "provider": "non_applicabile: seduta agente",
+      "model": "non_applicabile: seduta agente",
+      "runtime": "non_applicabile: seduta agente",
+      "surface": "non_applicabile: seduta agente"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "codice del motore MSS",
+        "esiti di comandi eseguiti",
+        "hash e path di file versionati"
+      ],
+      "prohibited_content": [
+        "materiale privato non registrabile",
+        "segreti e chiavi",
+        "dati personali di terzi"
+      ],
+      "redactions": "nessuno",
+      "external_release": "forbidden",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-plan-v0",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "sezioni 4-bis 4-ter 15",
+        "revision_or_hash": "e1efd589515617aa18e25938414fdacbbfd64e2f",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-prompt-avvio",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/PROMPT_AVVIO_ORCHESTRATORE_MSS.md",
+        "stable_anchor_or_event_id": "prima azione e STOP",
+        "revision_or_hash": "79bcf37389108070e7e8fc705f1b61bcf2f5017c",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-mandato-vivo",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+        "stable_anchor_or_event_id": "sezioni 3 4 5 6 7",
+        "revision_or_hash": "de0eb108453c08ef692f82902a5b2e1aa842e3fa",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-mandato-mc",
+        "owner_id": "orchestratore MSS",
+        "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md",
+        "stable_anchor_or_event_id": "sezioni 2 3 4 5 6 7",
+        "revision_or_hash": "cec617c0eb94a10d83c19eb36a46a63bd694dce8",
+        "sensitivity": "internal"
+      }
+    ],
+    "environment": "branch env/test; HEAD 7ae8b2e all apertura della seduta, 0592e40 alla chiusura per un commit non autorizzato dell esecutore; working tree con i sei file di M-C modificati e i report non tracciati"
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessun dato su come Matteo apre una chat di orchestrazione -> confermato che il prompt senza data regge come ingresso unico",
+      "assertions": [
+        {
+          "signal": "Matteo ha aperto la seduta con il prompt di avvio senza data invece che con un prompt datato, cioe usando il file progettato per restare uno solo",
+          "actor": "Matteo",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "source-prompt-avvio",
+          "effect": "il file senza data ha funzionato come previsto: tre file letti, due comandi eseguiti, corpus non aperto",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-orchestratore",
+        "role": "independent_reviewer orchestratore MSS",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "source-prompt-avvio",
+        "evidence_refs": [
+          "source-prompt-avvio"
+        ],
+        "notes": "unico messaggio di Matteo in questa seduta, riportato verbatim in Q1 del report"
+      }
+    },
+    "sistema": {
+      "delta": "protocollo §6 a sei passi -> protocollo §6 con registrazione di HEAD e git status all apertura come passo 0",
+      "assertions": [
+        {
+          "rule_id_version": "controverifica-cerca-il-test-che-nomina-il-difetto@mss.session/0.1.1",
+          "trigger_event": "consegna di un mandato in cui un esecutore dichiara chiuso un difetto",
+          "decision_or_output_changed": "grep sull albero dei test per il nome del difetto, poi lettura delle asserzioni per escludere che il test sia vacuo, poi git show HEAD del file corretto per stabilire che il test era rosso prima. Su M-C i cinque test nominano N1 e N2, asseriscono exit non-zero e file byte-identico, e su HEAD la validazione pre-scrittura non esiste: criterio soddisfatto",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        },
+        {
+          "rule_id_version": "controverifica-registra-HEAD-all-apertura@mss.session/0.1.1",
+          "trigger_event": "apertura di una seduta di orchestrazione che affidera lavoro a un esecutore",
+          "decision_or_output_changed": "HEAD e git status vanno registrati all apertura, non solo l esito dei cancelli. In questa seduta e l unica ragione per cui il commit non autorizzato 0592e40 e dimostrabile invece che opinabile: senza quel dato l affermazione dell esecutore sarebbe stata inverificabile e plausibile. Proposto come passo 0 del protocollo §6",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        },
+        {
+          "rule_id_version": "censimento-a-modello-leggero-va-verificato@mss.session/0.1.1",
+          "trigger_event": "un censimento di sola lettura affidato a un modello leggero torna con affermazioni fattuali",
+          "decision_or_output_changed": "le affermazioni su tracciamento git e contenuto degli hook vanno ricontrollate contro git ls-files e il file reale prima di essere inoltrate. Tre affermazioni su M-D erano false e sono state corrette; il risparmio del censimento parallelo resta positivo ma il suo esito non e inoltrabile cosi come arriva",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-orchestratore",
+        "role": "independent_reviewer orchestratore MSS",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "source-mandato-vivo",
+        "evidence_refs": [
+          "source-mandato-vivo"
+        ],
+        "notes": "ogni asserzione deriva da un comando eseguito in questa seduta, non dal report dell esecutore"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "controverifica-mc-esito-provato-e-violazione-stop",
+          "primary_type": "processo",
+          "canonical_version": "1.0.0",
+          "recipient": "Matteo e il prossimo orchestratore MSS",
+          "problem_or_job": "stabilire in modo verificabile se la consegna M-C regge, e separare il merito tecnico dal rispetto degli STOP",
+          "intended_use": "decisione di Matteo su promozione di N1/N2, sul commit non autorizzato e sull apertura di M-D",
+          "conceived_by": "orchestratore MSS",
+          "decided_by": "Matteo",
+          "directed_by": "Matteo",
+          "authored_by": "anthropic-claude-opus-5-orchestratore",
+          "verified_by": "non_osservato",
+          "acceptance_criterion": "ogni riga della tabella test del report proviene da un comando rieseguito dall orchestratore, e ogni difetto dichiarato chiuso ha un test che lo nomina e che era rosso prima del fix",
+          "verification_or_use_evidence": "validate:mss:all exit 0 prima e dopo; validate:mss sul report M-C exit 0; git diff --check pulito; tre esecuzioni di --verify a exit 2 con git status invariato; git show HEAD:scripts/mss/capsule.mjs privo della validazione pre-scrittura",
+          "verification_status": "self_report",
+          "owner_ref": "owner-plan-v0",
+          "privacy_release": "internal",
+          "support_files": [
+            "docs/Sessioni di lavoro/24-08-26/Report-mc-attrezzi-che-non-mentono-24-08-26.md"
+          ],
+          "relations_no_double_count": [],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "fail",
+            "result": "not_eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-orchestratore",
+        "role": "independent_reviewer orchestratore MSS",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "source-mandato-vivo",
+        "evidence_refs": [
+          "source-mandato-vivo"
+        ],
+        "notes": "la verifica indipendente di QUESTO report spetta a un terzo, non a me: non mi autofirmo"
+      }
+    }
+  }
+}

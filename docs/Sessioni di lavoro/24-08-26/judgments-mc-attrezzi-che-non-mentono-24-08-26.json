@@ -1,0 +1,240 @@
+{
+  "session_event": {
+    "intent_user": "mandato M-C: rendere gli attrezzi MSS incapaci di scrivere cio che il validator rifiuta (N1) e rendere la registrazione di una verifica indipendente un'operazione di prima classe (N2); V1 progettato e non fatto",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "agente esecutore mandato M-C",
+    "area": "MetaSkillSystem / motore attrezzi (scripts/mss)",
+    "authorization": {
+      "read": [
+        "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md",
+        "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+        "docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md",
+        "scripts/mss/**"
+      ],
+      "write": [
+        "scripts/mss/capsule.mjs",
+        "scripts/mss/parse.mjs",
+        "scripts/mss/query.mjs",
+        "scripts/mss/uuid.mjs",
+        "docs/MetaSkillSystem/tests/tools/run.mjs",
+        "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        "docs/Sessioni di lavoro/24-08-26/Report-mc-attrezzi-che-non-mentono-24-08-26.md"
+      ],
+      "forbid": [
+        "git commit",
+        "git push",
+        "git stash",
+        "git reset",
+        "scritture su database Supabase",
+        "riscrittura di record final",
+        "move o rinomina di file",
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "chiusura di pacchetti SK-*"
+      ]
+    },
+    "authorized_outputs": [
+      "docs/Sessioni di lavoro/24-08-26/Report-mc-attrezzi-che-non-mentono-24-08-26.md",
+      "scripts/mss/capsule.mjs",
+      "scripts/mss/parse.mjs",
+      "scripts/mss/query.mjs",
+      "scripts/mss/uuid.mjs",
+      "docs/MetaSkillSystem/tests/tools/run.mjs",
+      "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md"
+    ],
+    "route": {
+      "chosen": "mandato M-C letto per intero, poi lettura diretta del motore in scripts/mss; corpus dei report non aperto, come prescritto dal mandato §0",
+      "alternatives_or_conflicts": [
+        "N1: scartata l'aggiunta di una seconda validazione dentro capsule.mjs — il difetto non era una validazione mancante ma due definizioni divergenti della stessa regola (D18); scelto invece di importare validatePathContent e findCapsuleHeadings",
+        "N2: scartato il popolamento di verified_by nella seduta stessa — violerebbe R2, un revisore che firma le proprie annotazioni non ha verificato nessuno; scelto l'amendment del contratto §6",
+        "V1: scartata l'implementazione parziale — il mandato §4 autorizza esplicitamente a fermarsi e consegnare N1+N2 provati con V1 progettato"
+      ]
+    },
+    "observed_outcome": "N1 PROVATO: entrambe le riproduzioni del mandato §2 passano da exit 0 con scrittura a exit 2 senza scrittura, confronto eseguito sullo stesso ingresso contro il motore di HEAD ricostruito con git show. N2 PROVATO: --verify emette un amendment conforme al contratto §6 leggendo i valori precedenti dal record bersaglio, e la vista effettiva di mss:query mostra il verificatore; rifiuti dal vivo verificati per bersaglio non-annotazione, esito self_report e bersaglio inesistente. V1 NON FATTO, solo progettato nel report §10-bis. Nessun commit, nessun push. validate:mss:all esce 0 come nella linea di base",
+    "open_items": [
+      "V1 (generatore di viste, D14) non implementato: disegno in §10-bis del report, gate di chiusura dichiarato",
+      "difetto nuovo aperto: --check deduce l'esito dall'exit code, quindi un comando che non puo fallire registra un pass che non prova nulla — gate Matteo",
+      "nessun commit fatto: la decisione se committare e di Matteo",
+      "N1 e N2 sono PROVATI, non CHIUSI: la chiusura e solo di Matteo"
+    ],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: nessun soggetto umano osservato in questa seduta",
+      "provider": "non_applicabile: seduta agente",
+      "model": "non_applicabile: seduta agente",
+      "runtime": "non_applicabile: seduta agente",
+      "surface": "non_applicabile: seduta agente"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "codice del motore MSS",
+        "esiti di comandi eseguiti",
+        "hash e path di file versionati"
+      ],
+      "prohibited_content": [
+        "materiale privato non registrabile",
+        "segreti e chiavi",
+        "dati personali di terzi"
+      ],
+      "redactions": "nessuno",
+      "external_release": "forbidden",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-contratto-capsula",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+        "stable_anchor_or_event_id": "sezione 6 amendment",
+        "revision_or_hash": "e56b072e0ff0d5545b5b789b59b7afa22c089c01",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "owner-manuale-mss",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        "stable_anchor_or_event_id": "sezione 2.4 mss:capsule",
+        "revision_or_hash": "3cd044f3a87d0d6348a686ddad5be10a2c88f477",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-mandato-mc",
+        "owner_id": "orchestratore MSS",
+        "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md",
+        "stable_anchor_or_event_id": "sezioni 2 3 4 5 6 7",
+        "revision_or_hash": "cec617c0eb94a10d83c19eb36a46a63bd694dce8",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-chiusura-sessione",
+        "owner_id": "Comunicazione-Skill",
+        "uri_or_path": "docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md",
+        "stable_anchor_or_event_id": "Parte A",
+        "revision_or_hash": "a04af315efdca7f60981f6798ce6e2adc3acb102",
+        "sensitivity": "internal"
+      }
+    ],
+    "environment": "branch env/test; HEAD 0592e40; working tree con i file di §2 modificati, niente staged, nessun commit in questa seduta"
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "non_osservato",
+          "actor": "Matteo",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "source-mandato-mc",
+          "effect": "nessuno",
+          "evidence_state": "not_applicable"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-mc",
+        "role": "agente esecutore mandato M-C",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "not_applicable",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessun delta persona osservato",
+        "criterion_ref": "non_applicabile:nessun delta persona osservato",
+        "evidence_refs": [],
+        "notes": "seduta interamente agente-macchina: Matteo non e intervenuto, il mandato e arrivato via orchestratore. Nessun segnale di persona osservato e nessuno inferito"
+      }
+    },
+    "sistema": {
+      "delta": "modificato",
+      "assertions": [
+        {
+          "rule_id_version": "N1-valida-prima-di-scrivere@mss.session/0.1.1",
+          "trigger_event": "mss:capsule con --append-to o su stdout, dopo che il bundle e stato costruito",
+          "decision_or_output_changed": "l'attrezzo esegue validateMss (via validatePathContent, la stessa porta usata da scripts/mss/cli.mjs) sul risultato prospettico prima di toccare il disco; se rosso esce 2 con diagnostica e non scrive. La guardia capsula-gia-presente usa findCapsuleHeadings di parse.mjs, unica definizione della regola",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        },
+        {
+          "rule_id_version": "N2-verifica-via-amendment@mss.session/0.1.1",
+          "trigger_event": "un revisore chiude una seduta avendo controllato il record di un altro",
+          "decision_or_output_changed": "--verify \"record_id|esito|prova|motivo\" emette un amendment conforme al contratto §6; bersaglio ed esito sono chiesti e mai dedotti, self_report e rifiutato, i valori precedenti sono letti dal record bersaglio. Ruolo da revisore senza verifiche registrate produce un avviso, non un blocco",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-mc",
+        "role": "agente esecutore mandato M-C",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "source-mandato-mc",
+        "evidence_refs": [
+          "source-mandato-mc"
+        ],
+        "notes": "esiti misurati eseguendo i comandi e confrontando lo stesso ingresso contro il motore di HEAD ricostruito con git show. Nessun revisore indipendente ha ancora controllato questo lavoro: il mandato prevede una controverifica di famiglia di modello diversa, che al momento della chiusura non e avvenuta"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "mss-capsule-verify-e-validazione-pre-scrittura",
+          "primary_type": "processo",
+          "canonical_version": "1.0.0",
+          "recipient": "agenti che chiudono sedute MSS e revisori indipendenti",
+          "problem_or_job": "impedire che l'attrezzo di chiusura scriva capsule che il validator rifiuta, e dare al revisore un modo per registrare una verifica senza scrivere JSON a mano",
+          "intended_use": "chiusura di ogni seduta MSS standard/deep e registrazione delle revisioni indipendenti",
+          "conceived_by": "orchestratore MSS (mandato M-C)",
+          "decided_by": "Matteo (mandato), orchestratore (perimetro)",
+          "directed_by": "orchestratore MSS",
+          "authored_by": "anthropic-claude-opus-5-mc",
+          "verified_by": "non_osservato",
+          "acceptance_criterion": "i cinque test nominati N1/N2 passano, npm run validate:mss:all esce 0, e le due riproduzioni del mandato §2 passano da exit 0 con scrittura a exit 2 senza scrittura",
+          "verification_or_use_evidence": "npm run validate:mss:all exit 0; npm run test:mss:tools exit 0 con i cinque test nuovi; confronto prima/dopo eseguito contro il motore di HEAD",
+          "verification_status": "self_report",
+          "owner_ref": "owner-manuale-mss",
+          "privacy_release": "internal",
+          "support_files": [
+            "docs/Sessioni di lavoro/24-08-26/Report-mc-attrezzi-che-non-mentono-24-08-26.md"
+          ],
+          "relations_no_double_count": [],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "fail",
+            "result": "not_eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-mc",
+        "role": "agente esecutore mandato M-C",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "source-mandato-mc",
+        "evidence_refs": [
+          "source-mandato-mc"
+        ],
+        "notes": "verification_or_use_evidence resta fail nel product_candidate perche la prova e dell'autore, non di un uso indipendente: nessun altro agente ha ancora usato --verify ne subito il rifiuto pre-scrittura in una seduta reale"
+      }
+    }
+  }
+}

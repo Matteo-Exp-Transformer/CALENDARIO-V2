@@ -68,13 +68,19 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 
 | | |
 |---|---|
-| **Legge** | `--judgments file.json`, env whitelisted, git porcelain, comandi `--check` |
+| **Legge** | `--judgments file.json`, env whitelisted, git porcelain, comandi `--check`, corpus (solo con `--verify`) |
 | **Scrive** | stdout JSONL; con `--append-to` modifica **solo** report senza capsula esistente |
 | **Obbligatori (generazione)** | `--model <modello>` · `--judgments <file>` (tre assi) |
-| **Opzioni** | `--template` · `--check "ID=>comando"` (legacy: un solo `:`) · `--role` · `--tool` · `--package "id\|ver\|ref"` |
+| **Opzioni** | `--template` · `--check "ID=>comando"` (legacy: un solo `:`) · `--verify "record_id\|esito\|prova\|motivo"` · `--role` · `--tool` · `--package "id\|ver\|ref"` |
 | **Uso sicuro** | `npm run mss:capsule -- --template` · `npm run mss:capsule -- --help` |
 
-**Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. D2/D3 sono **chiusi** (sintassi canonica `ID=>comando`, ambigui rifiutati). **Attenzione `N1`:** il generatore esce `0` e **scrive** anche quando i giudizi violano le regole del validator — dopo `mss:capsule`, esegui sempre `validate:mss` sul report.
+**Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. D2/D3 sono **chiusi** (sintassi canonica `ID=>comando`, ambigui rifiutati).
+
+**`N1` PROVATO 24-08-26 (`M-C`).** L'attrezzo ora esegue `validateMss` sul bundle **prima** di scrivere: con `--append-to` valida il report **prospettico** (`--require-capsule`), altrimenti il solo JSONL. Se esce rosso: exit `2`, diagnostica su stderr, **nessuna scrittura**. La guardia «il report ha già una capsula» usa la stessa definizione del validator (`parse.mjs::findCapsuleHeadings`), quindi riconosce anche le intestazioni numerate (`## 6-bis. Capsula MetaSkillSystem`). Esegui comunque `validate:mss` dopo: è il gate dichiarato, non un doppione.
+
+**`N2` PROVATO 24-08-26 (`M-C`).** Un revisore registra una verifica con `--verify "<mss-rec-…>|<esito>|<evidence_ref>|<motivo>"` (ripetibile): l'attrezzo emette un `amendment` conforme al contratto §6, leggendo i valori precedenti **dal record bersaglio**. Bersaglio ed esito non si deducono; `self_report` è rifiutato (un secondo attore non può ridichiarare l'autodichiarazione altrui). Se `--role` nomina un revisore e la seduta non emette nessun amendment, l'attrezzo **avvisa** e non blocca. Il template resta con `verified_by: []`: è la verità per una seduta che non ha verificato nessuno. Non è `mss:review` (`SK-3`), che resta NON INIZIATO.
+
+⚠️ **Limite aperto (`M-C`, lasciato a Matteo):** `--check` deduce l'esito dall'exit code, quindi un comando che non può fallire registra un `pass` che non prova nulla. Un `controls[]` di comandi infallibili sembra una prova e non lo è.
 
 ### 2.5 Suite e cancelli globali
 
