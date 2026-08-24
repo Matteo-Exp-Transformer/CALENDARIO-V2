@@ -13,16 +13,21 @@ import { spawnSync, execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { REPORT_PATH_RE } from './adapter.mjs'
+import { REPORT_PATH_RE, validatePathContent } from './adapter.mjs'
+import { formatHuman } from './core.mjs'
+import { collectGitHeadHistory } from './git-adapter.mjs'
+import { countCapsuleHeadings } from './parse.mjs'
+import { findRecordInCorpus, REVISORE_RE } from './query.mjs'
 import {
   ENUM,
+  ID_RE,
   REVISION_CURRENT,
   REVISION_LEGACY,
   SCHEMA_CURRENT,
   SCHEMA_LEGACY,
 } from './rules.mjs'
 import { isMainModule, repoRootFromModule } from './runtime.mjs'
-import { newMssIds } from './uuid.mjs'
+import { newAmendmentIds, newMssIds } from './uuid.mjs'
 
 const ROOT = repoRootFromModule(import.meta.url)
 const SEGMENT_NO = 1
@@ -322,6 +327,68 @@ function parsePackageSpec(raw) {
   return { package_id: parts[0], package_version_or_revision: parts[1], source_ref: parts[2] }
 }
 
+/** Errore di parsing --verify: messaggio pulito, nessuno stack trace in CLI. */
+export class ParseVerifySpecError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'ParseVerifySpecError'
+  }
+}
+
+/**
+ * Esiti che un SECONDO attore puo' affermare su un record altrui.
+ *
+ * L'elenco non e' una seconda enum: e' `ENUM.verificationStatus` meno `self_report`. Un revisore
+ * che scrive `self_report` sul record di un altro non sta verificando: sta ridichiarando
+ * l'autodichiarazione altrui, che e' esattamente il dato inventato vietato da `R2`.
+ */
+const VERIFY_STATUSES = ENUM.verificationStatus.filter((s) => s !== 'self_report')
+
+/**
+ * `--verify "<target_record_id>|<status>|<evidence_ref>|<motivo>"`
+ *
+ * Quattro campi tutti obbligatori, perche' sono i quattro che l'attrezzo NON puo' dedurre:
+ * quale record, con che esito, con quale prova e perche'. Il motivo puo' contenere `|`
+ * (si divide solo sui primi tre separatori). I valori precedenti NON si passano: li legge
+ * l'attrezzo dal record bersaglio (vedi `buildVerificationAmendments`).
+ */
+export function parseVerifySpec(raw) {
+  if (typeof raw !== 'string' || !raw.trim()) {
+    throw new ParseVerifySpecError('Formato --verify invalido: stringa vuota')
+  }
+  const parts = []
+  let rest = raw
+  for (let i = 0; i < 3; i++) {
+    const idx = rest.indexOf('|')
+    if (idx === -1) {
+      throw new ParseVerifySpecError(
+        `Formato --verify invalido "${raw}": atteso "target_record_id|status|evidence_ref|motivo"`,
+      )
+    }
+    parts.push(rest.slice(0, idx).trim())
+    rest = rest.slice(idx + 1)
+  }
+  const reason = rest.trim()
+  const [targetRecordId, status, evidenceRef] = parts
+  if (!ID_RE.record.test(targetRecordId)) {
+    throw new ParseVerifySpecError(
+      `Formato --verify invalido: "${targetRecordId}" non e un record_id (atteso mss-rec-<UUIDv7>)`,
+    )
+  }
+  if (!VERIFY_STATUSES.includes(status)) {
+    throw new ParseVerifySpecError(
+      `Formato --verify invalido: esito "${status}" non ammesso — attesi ${VERIFY_STATUSES.join(' | ')}`,
+    )
+  }
+  if (!evidenceRef) {
+    throw new ParseVerifySpecError('Formato --verify invalido: evidence_ref mancante — una verifica senza prova non e una verifica')
+  }
+  if (!reason || PLACEHOLDER_RE.test(reason)) {
+    throw new ParseVerifySpecError('Formato --verify invalido: motivo mancante o placeholder (contratto §6: reason obbligatorio)')
+  }
+  return { targetRecordId, status, evidenceRef, reason }
+}
+
 export function buildJudgmentsTemplate() {
   return {
     _guida: 'Compila session_event e le tre annotazioni (persona, sistema, output). Valori enum in _enums.',
@@ -540,6 +607,9 @@ export function buildCapsuleBundle({
   root = ROOT,
   env = process.env,
   gitContext = collectGitContext(root),
+  verifications = [],
+  lookupRecord,
+  amendmentIds,
 } = {}) {
   if (SCHEMA_CURRENT === SCHEMA_LEGACY || REVISION_CURRENT === REVISION_LEGACY) {
     throw new Error('Rifiutato: coppia legacy disattiva le prove — leggere da rules.mjs')
@@ -642,7 +712,126 @@ export function buildCapsuleBundle({
     }
   })
 
-  return [sessionRecord, ...annotations]
+  const amendments = buildVerificationAmendments({
+    specs: verifications,
+    ids,
+    timestamp,
+    recordedBy,
+    packagesLoaded,
+    amendmentIds,
+    lookup: lookupRecord || ((recordId) => findRecordInCorpus(recordId, { root })),
+  })
+
+  return [sessionRecord, ...annotations, ...amendments]
+}
+
+/**
+ * `N2` — emissione di prima classe di un amendment di verifica (contratto §6).
+ *
+ * Perche' un amendment e non un campo della seduta: `verification.verified_by` di
+ * un'annotazione e' l'autodichiarazione di chi ha condotto QUELLA seduta. Un revisore che se lo
+ * scrivesse addosso non avrebbe verificato nessuno, avrebbe firmato il proprio lavoro — il
+ * sistema passerebbe da «zero verifiche registrate» (onesto) a «verifiche finte registrate»
+ * (mente al comando che lo interroga). La verifica e' per costruzione l'atto di un secondo
+ * attore su un record altrui, e nel contratto ha gia' la sua forma.
+ *
+ * L'attrezzo NON deduce nulla: bersaglio, esito, prova e motivo arrivano da `--verify`. Legge
+ * dal corpus solo i valori PRECEDENTI, che non sono un giudizio ma un fatto gia' scritto —
+ * e ricopiarli a mano e' come si sbaglia `previous_value_or_hash`.
+ *
+ * @param lookup  funzione (record_id) -> { record, path } | null. Iniettabile per i test.
+ */
+export function buildVerificationAmendments({
+  specs = [],
+  ids,
+  timestamp,
+  recordedBy,
+  packagesLoaded,
+  lookup,
+  amendmentIds,
+} = {}) {
+  if (!specs.length) return []
+  const generated = amendmentIds || newAmendmentIds(specs.length, { nowMs: Date.parse(timestamp) || undefined })
+  const errors = []
+  const records = []
+
+  specs.forEach((spec, index) => {
+    const hit = lookup(spec.targetRecordId)
+    if (!hit?.record) {
+      errors.push(
+        `--verify: record bersaglio ${spec.targetRecordId} non trovato nel corpus ` +
+        '(HEAD + working tree). Una verifica su un record inesistente non e registrabile.',
+      )
+      return
+    }
+    const target = hit.record
+    if (target.record_type !== 'annotation') {
+      errors.push(
+        `--verify: ${spec.targetRecordId} e un record "${target.record_type}", non un'annotazione. ` +
+        'Lo stato di verifica vive sulle annotazioni (contratto §5): indica il record dell\'asse verificato.',
+      )
+      return
+    }
+    if (target.finalization !== 'final') {
+      errors.push(
+        `--verify: ${spec.targetRecordId} non e finalization:final — un amendment final su un ` +
+        'bersaglio non finalizzato esce MSS-AMENDMENT-TARGET-NOT-FINAL.',
+      )
+      return
+    }
+    const verification = target.annotation?.verification
+    if (!verification) {
+      errors.push(`--verify: ${spec.targetRecordId} non ha annotation.verification da rettificare.`)
+      return
+    }
+
+    const verifier = {
+      actor_id: recordedBy.actor_id,
+      role: recordedBy.role,
+      agent_runtime: recordedBy.agent_runtime,
+    }
+    const changes = [
+      {
+        field_path: 'annotation.verification.status',
+        previous_value_or_hash: verification.status,
+        corrected_value: spec.status,
+      },
+      {
+        field_path: 'annotation.verification.verified_by',
+        previous_value_or_hash: Array.isArray(verification.verified_by) ? verification.verified_by : [],
+        corrected_value: [...(Array.isArray(verification.verified_by) ? verification.verified_by : []), verifier],
+      },
+      {
+        field_path: 'annotation.verification.verified_at',
+        previous_value_or_hash: verification.verified_at,
+        corrected_value: timestamp,
+      },
+    ]
+
+    records.push({
+      ...sharedTop(ids, timestamp, recordedBy, packagesLoaded),
+      record_type: 'amendment',
+      record_id: generated[index].record_id,
+      capture_key: captureKey(ids.session_id, 'amendment', index + 1),
+      amendment: {
+        amendment_id: generated[index].amendment_id,
+        target_record_id: spec.targetRecordId,
+        relation: 'amends',
+        reason: spec.reason,
+        changes,
+        evidence_refs: [spec.evidenceRef],
+        effective_at: timestamp,
+      },
+    })
+  })
+
+  if (errors.length) {
+    const err = new Error(errors.join('; '))
+    err.code = 'VERIFY_INVALID'
+    err.details = errors
+    throw err
+  }
+  return records
 }
 
 export function recordsToJsonl(records) {
@@ -670,7 +859,13 @@ export function scanForSecrets(records) {
   return [...new Set(hits)]
 }
 
-export function appendCapsuleToReport(reportPath, jsonl, { root = ROOT } = {}) {
+/**
+ * Prepara l'append SENZA scrivere: calcola il contenuto risultante e applica le guardie di path
+ * e di capsula già presente. Separato dalla scrittura perché l'ordine imposto da `N1` è
+ * «validare, poi scrivere»: il contenuto prospettico va passato al validator prima che tocchi
+ * il disco. Un fallimento qui non lascia mezza capsula sul report perché non si è ancora scritto.
+ */
+export function planCapsuleAppend(reportPath, jsonl, { root = ROOT } = {}) {
   const absolute = resolve(root, reportPath)
   const rel = absolute.replace(/\\/g, '/').slice(root.replace(/\\/g, '/').length).replace(/^\//, '')
   if (!REPORT_PATH_RE.test(rel)) {
@@ -680,10 +875,57 @@ export function appendCapsuleToReport(reportPath, jsonl, { root = ROOT } = {}) {
     throw new Error(`Report non trovato: ${absolute}`)
   }
   const content = readFileSync(absolute, 'utf8')
-  if (/## Capsula MetaSkillSystem/i.test(content)) {
-    throw new Error('Il report contiene già una capsula — rifiutato per evitare corruzione')
+  // La definizione di «capsula già presente» è quella del validator (parse.mjs), non una
+  // sottostringa scritta a mano qui: vedi `findCapsuleHeadings`, difetto N1 caso 1.
+  const existing = countCapsuleHeadings(content)
+  if (existing > 0) {
+    throw new Error(
+      `Il report dichiara già ${existing} sezione/i «Capsula MetaSkillSystem» — rifiutato: ` +
+      'appendere la seconda produce MSS-PARSE-JSONL-AMBIGUOUS. Togli la sezione vuota, oppure ' +
+      'incolla il JSONL di stdout dentro quella che hai già scritto.',
+    )
   }
-  writeFileSync(absolute, content.replace(/\s*$/, '') + formatCapsuleBlock(jsonl), 'utf8')
+  return {
+    absolute,
+    rel,
+    previousContent: content,
+    nextContent: content.replace(/\s*$/, '') + formatCapsuleBlock(jsonl),
+  }
+}
+
+export function appendCapsuleToReport(reportPath, jsonl, { root = ROOT } = {}) {
+  const plan = planCapsuleAppend(reportPath, jsonl, { root })
+  writeFileSync(plan.absolute, plan.nextContent, 'utf8')
+}
+
+/** Snapshot HEAD del corpus, come li legge `validate:mss`; assenti o repo non-git → nessuno. */
+function safeHeadHistory(root) {
+  try {
+    return collectGitHeadHistory(root)
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Esegue sul bundle appena costruito lo STESSO validator che girerà dopo su `validate:mss`.
+ *
+ * È il cuore del fix `N1`: `validateJudgments` controlla che i tre giudizi ci SIANO, non che
+ * siano VALIDI. Un `G: 3` o un `verification.status` fuori enum passavano la completezza,
+ * finivano scritti nel report, e `validate:mss` usciva rosso dopo — con l'agente convinto di
+ * aver visto verde. La regola non viene riscritta (`D18`): si importa `validatePathContent`,
+ * lo stesso ingresso usato da `scripts/mss/cli.mjs`.
+ *
+ * Con `--append-to` si valida il report PROSPETTICO (kind `report`, `--require-capsule`), non il
+ * solo JSONL: è l'unico modo di vedere anche i difetti che nascono dall'incontro fra capsula e
+ * report ospite, come la seconda sezione capsula.
+ */
+export function validateCapsuleOutput({ jsonl, root = ROOT, plan = null, historicalSnapshots } = {}) {
+  const snapshots = historicalSnapshots ?? safeHeadHistory(root)
+  const input = plan
+    ? { file: plan.absolute, content: plan.nextContent, kind: 'report', requireCapsule: true }
+    : { file: resolve(root, 'capsula-mss-stdout.jsonl'), content: jsonl, kind: 'jsonl' }
+  return validatePathContent({ workspaceRoot: root, historicalSnapshots: snapshots, ...input })
 }
 
 export function parseCapsuleArgs(argv) {
@@ -694,6 +936,7 @@ export function parseCapsuleArgs(argv) {
     role: 'agente esecutore',
     actorId: null,
     checks: [],
+    verify: [],
     tools: [],
     packages: [],
     appendTo: null,
@@ -709,6 +952,7 @@ export function parseCapsuleArgs(argv) {
     else if (a === '--role') out.role = argv[++i]
     else if (a === '--actor-id') out.actorId = argv[++i]
     else if (a === '--check') out.checks.push(parseCheckSpec(argv[++i]))
+    else if (a === '--verify') out.verify.push(parseVerifySpec(argv[++i]))
     else if (a === '--tool') out.tools.push(argv[++i])
     else if (a === '--package') out.packages.push(parsePackageSpec(argv[++i]))
     else if (a === '--append-to') out.appendTo = argv[++i]
@@ -737,6 +981,7 @@ export function runCapsule(argv = process.argv, options = {}) {
       stdout:
         'Usage: npm run mss:capsule -- [--template] [--judgments file.json] --model <modello> ' +
         '[--role ...] [--actor-id ...] [--check "ID=>comando"] [--tool ...] [--package "id|ver|ref"] ' +
+        '[--verify "mss-rec-…|independently_verified|evidence_ref|motivo"] ' +
         '[--append-to report.md]\n',
       stderr: '',
     }
@@ -816,6 +1061,9 @@ export function runCapsule(argv = process.argv, options = {}) {
       ids: options.ids,
       entropy: options.entropy,
       gitContext: options.gitContext,
+      verifications: args.verify,
+      lookupRecord: options.lookupRecord,
+      amendmentIds: options.amendmentIds,
     })
   } catch (error) {
     return {
@@ -835,21 +1083,70 @@ export function runCapsule(argv = process.argv, options = {}) {
     }
   }
 
+  // `N1` — validare, POI scrivere. Fino al 24-08-26 l'ordine era l'opposto in tutto tranne il
+  // nome: `validateJudgments` guardava che i tre giudizi CI FOSSERO, non che fossero VALIDI, e
+  // un `G: 3` o una seconda sezione capsula finivano sul disco con exit 0, lasciando l'agente
+  // convinto di aver visto verde. Da qui in giù nessun percorso scrive prima del verdetto.
+  let plan = null
   if (args.appendTo) {
     try {
-      appendCapsuleToReport(args.appendTo, jsonl, { root })
+      plan = planCapsuleAppend(args.appendTo, jsonl, { root })
     } catch (error) {
       return { exitCode: 2, stdout: '', stderr: `${error.message}\n` }
     }
   }
 
+  const snapshots = safeHeadHistory(root)
+  const verdict = validateCapsuleOutput({ jsonl, root, plan, historicalSnapshots: snapshots })
+  if (!verdict.ok) {
+    // Un report già rosso PRIMA della capsula non è colpa della capsula: dirlo evita che
+    // l'agente riscriva giudizi corretti inseguendo un difetto che sta nel report ospite.
+    let origine = ''
+    if (plan) {
+      const baseline = validatePathContent({
+        workspaceRoot: root,
+        file: plan.absolute,
+        content: plan.previousContent,
+        kind: 'report',
+        requireCapsule: false,
+        historicalSnapshots: snapshots,
+      })
+      if (!baseline.ok) {
+        origine = 'Nota: il report era già rosso PRIMA della capsula — guarda anche il corpo del report.\n'
+      }
+    }
+    return {
+      exitCode: 2,
+      stdout: '',
+      stderr:
+        'Rifiutato: la capsula non passa validate:mss — nessuna scrittura.\n' +
+        `${formatHuman(verdict)}\n${origine}`,
+      records,
+      jsonl,
+      validation: verdict,
+    }
+  }
+
+  if (plan) writeFileSync(plan.absolute, plan.nextContent, 'utf8')
+
   // Un controllo `non_noto` è onesto ma passa inosservato in mezzo al JSONL: va detto a voce.
   const unrun = checks.filter((c) => c.esito === 'non_noto')
-  const warning = unrun.length
+  let warning = unrun.length
     ? `Avviso: ${unrun.length} controllo/i non eseguito/i, registrati 'non_noto': ${unrun.map((c) => c.control_id).join(', ')}\n`
     : ''
 
-  return { exitCode: 0, stdout: jsonl, stderr: warning, records, jsonl }
+  // `N2` — avviso, non blocco. Una seduta condotta da un revisore che non registra nessuna
+  // verifica è il segnale che la revisione è avvenuta e non è stata scritta. Bloccare qui
+  // produrrebbe amendment di comodo, cioè lo stesso dato inventato che `R2` vieta.
+  if (REVISORE_RE.test(String(args.role || '')) && !args.verify.length) {
+    warning +=
+      `Avviso: --role "${args.role}" dichiara un revisore ma la seduta non emette nessun amendment ` +
+      'di verifica. Se hai verificato un record altrui, registralo con ' +
+      '--verify "mss-rec-…|independently_verified|evidence_ref|motivo"; se non hai verificato ' +
+      'nulla, va bene così.\n'
+  }
+
+  return { exitCode: 0, stdout: jsonl, stderr: warning, records, jsonl, validation: verdict }
 }
 
 function main() {

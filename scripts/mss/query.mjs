@@ -178,6 +178,21 @@ function collect(root = ROOT) {
   return { files, records, sessions: [...sessions.values()], anomalies, headCount: head.size, workCount: work.size }
 }
 
+/**
+ * Cerca un record per `record_id` nell'intero corpus (HEAD + working tree).
+ *
+ * Esportata per `N2`: chi emette un amendment di verifica deve LEGGERE dal record bersaglio i
+ * valori precedenti (`previous_value_or_hash`), non ricordarseli. Un valore precedente sbagliato
+ * fa scattare MSS-AMENDMENT-PREVIOUS-MISMATCH ed e' esattamente il tipo di dato inventato che
+ * `R2` vieta. La lettura del corpus vive qui, non duplicata in `capsule.mjs`.
+ */
+export function findRecordInCorpus(recordId, { root = ROOT, data } = {}) {
+  if (!recordId) return null
+  const corpus = data || collect(root)
+  const hit = corpus.records.find((rec) => rec.r?.record_id === recordId)
+  return hit ? { record: hit.r, path: hit.path, origin: hit.origin } : null
+}
+
 // ------------------------------------------------------------------ vista effettiva (contratto §6)
 //
 // NON reimplementa la catena degli amendment: la DELEGA a core.mjs::applyAmendmentsView(), che e'
@@ -539,6 +554,16 @@ function renderModelli(data) {
 
 const STATI_CONTRATTO = ['self_report', 'unverified', 'independently_verified', 'contradicted', 'not_applicable']
 
+/**
+ * Criterio unico di riconoscimento «questa seduta e' condotta da un revisore»: `recorded_by.role`.
+ *
+ * Esportato perche' `scripts/mss/capsule.mjs` deve porsi la STESSA domanda a fine seduta (`N2`:
+ * ruolo da revisore ma nessun amendment di verifica → avviso). Due regex diverse per la stessa
+ * domanda si sarebbero disallineate come si erano disallineate le due definizioni di «capsula
+ * gia' presente» in `N1`.
+ */
+export const REVISORE_RE = /reviewer|revisor/i
+
 function verificaModel(data) {
   const anns = annotations(data)
   const conVerification = anns.filter((a) => a.r.annotation?.verification)
@@ -606,7 +631,6 @@ function verificaModel(data) {
   // vengono attribuiti a chi l'ha condotta, non solo quelli il cui singolo esecutore nomina un
   // revisore. E una domanda diversa: non «quali controlli ha eseguito un revisore» ma «quanti
   // controlli sono registrati in una seduta condotta da un revisore».
-  const REVISORE_RE = /reviewer|revisor/i
   const revisori = new Map()
   for (const e of events(data)) {
     const ruolo = String(e.r.recorded_by?.role || '')

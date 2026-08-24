@@ -51,3 +51,22 @@ export function newMssIds({ nowMs, entropy, ids = {} } = {}) {
     ann_output: make('mss-ann-', 'annOutput'),
   }
 }
+
+/**
+ * Coppie di id per gli amendment di una seduta: un `mss-rec-` per il record e un `mss-amd-` per
+ * la rettifica, come chiede il contratto §6. Il numero non e' fisso (una seduta di revisione puo'
+ * verificare piu' record), quindi non entra in `newMssIds`, che ha una forma fissa.
+ *
+ * `ids` accetta una lista di override `{ record, amendment }` per i test golden.
+ */
+export function newAmendmentIds(count, { nowMs, entropy, ids = [] } = {}) {
+  const out = []
+  for (let i = 0; i < count; i++) {
+    const override = ids[i] || {}
+    out.push({
+      record_id: prefixedId('mss-rec-', override.record || generateUuidV7(nowMs, entropy)),
+      amendment_id: prefixedId('mss-amd-', override.amendment || generateUuidV7(nowMs, entropy)),
+    })
+  }
+  return out
+}

@@ -121,14 +121,35 @@ export function parseJsonlText(text, { file = '<memory>', allowEmpty = false } =
   return { records, diagnostics }
 }
 
-export function extractCapsulesFromMarkdown(markdown, file) {
-  const diagnostics = []
+/**
+ * Trova le intestazioni «Capsula MetaSkillSystem» dichiarate da un markdown.
+ *
+ * Esportata perche' e' l'UNICA definizione nel repo di «questo report dichiara una capsula»:
+ * il validator la usa per rifiutare un report con piu' sezioni capsula, `scripts/mss/capsule.mjs`
+ * la usa per rifiutare l'append su un report che ne ha gia' una. Due definizioni divergenti erano
+ * il difetto `N1` caso 1 (24-08-26): la guardia dell'attrezzo cercava la sottostringa
+ * `## Capsula MetaSkillSystem` e non vedeva le intestazioni numerate che il validator conta
+ * (`## 6-bis. Capsula MetaSkillSystem`, `## 6. Capsula MetaSkillSystem`, …). Risultato: l'attrezzo
+ * usciva 0 e scriveva una SECONDA sezione, e `validate:mss` dopo diceva MSS-PARSE-JSONL-AMBIGUOUS.
+ */
+export function findCapsuleHeadings(markdown) {
   const headings = []
-  let headingMatch
   const headingRe = new RegExp(CAPSULE_HEADING_RE)
-  while ((headingMatch = headingRe.exec(markdown))) {
+  let headingMatch
+  while ((headingMatch = headingRe.exec(String(markdown ?? '')))) {
     headings.push({ index: headingMatch.index, end: headingRe.lastIndex })
   }
+  return headings
+}
+
+/** Quante sezioni capsula dichiara un markdown, secondo la definizione del validator. */
+export function countCapsuleHeadings(markdown) {
+  return findCapsuleHeadings(markdown).length
+}
+
+export function extractCapsulesFromMarkdown(markdown, file) {
+  const diagnostics = []
+  const headings = findCapsuleHeadings(markdown)
 
   if (headings.length > 1) {
     diagnostics.push({

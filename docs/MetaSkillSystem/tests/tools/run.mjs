@@ -21,10 +21,12 @@ import {
   runCapsule,
   runChecks,
   parseCheckSpec,
+  parseVerifySpec,
   collectGitContext,
   buildSourceRefsFromGit,
   buildJudgmentsTemplate,
 } from '../../../../scripts/mss/capsule.mjs'
+import { countCapsuleHeadings } from '../../../../scripts/mss/parse.mjs'
 import { validateMss } from '../../../../scripts/mss/core.mjs'
 import { REVISION_CURRENT } from '../../../../scripts/mss/rules.mjs'
 import {
@@ -739,6 +741,161 @@ const tests = [
     }))
     const jsonl = recordsToJsonl(records)
     assert.doesNotMatch(jsonl, new RegExp(FAKE_SENTINEL))
+  }],
+  ['capsule: N1 — report che dichiara gia una capsula numerata: exit non-zero e nessuna scrittura', () => {
+    // Riproduzione reale del 24-08-26. Il report dichiara la sezione come prescrive
+    // CHIUSURA_SESSIONE.md §6-bis, cioe con l'intestazione NUMERATA. La vecchia guardia cercava
+    // la sottostringa `## Capsula MetaSkillSystem` e non la vedeva: l'attrezzo usciva 0, scriveva
+    // una SECONDA sezione, e validate:mss diceva poi MSS-PARSE-JSONL-AMBIGUOUS.
+    withTempGitRepo(({ repo }) => {
+      const judgmentsRel = 'judgments-n1.json'
+      writeRepoFile(repo, judgmentsRel, readFileSync(JUDGMENTS_MINIMAL, 'utf8'))
+      const reportRel = 'docs/Sessioni di lavoro/24-08-26/Report-n1-capsula-doppia.md'
+      const jsonl = recordsToJsonl(buildCapsuleBundle(goldenCapsuleOptions()))
+      const baseline = `# Report N1\n\n## 6-bis. Capsula MetaSkillSystem\n\n\`\`\`jsonl\n${jsonl}\`\`\`\n`
+      writeRepoFile(repo, reportRel, baseline)
+
+      const result = runCapsule([
+        process.argv[0], 'capsule.mjs',
+        '--judgments', judgmentsRel,
+        '--model', 'fixture-model',
+        '--append-to', reportRel,
+      ], { root: repo, env: { TERM_PROGRAM: 'cursor' } })
+
+      assert.notEqual(result.exitCode, 0, `atteso exit non-zero, avuto ${result.exitCode}`)
+      assert.match(result.stderr, /Capsula MetaSkillSystem/)
+      const after = readFileSync(join(repo, ...reportRel.split('/')), 'utf8')
+      assert.equal(after, baseline, 'il report non deve essere toccato')
+      assert.equal(countCapsuleHeadings(after), 1, 'nessuna seconda sezione capsula')
+    })
+  }],
+  ['capsule: N1 — giudizi completi ma fuori dominio (G: 3) non vengono scritti', () => {
+    // L'altra riproduzione del 24-08-26: validateJudgments guarda che i tre giudizi CI SIANO,
+    // non che siano VALIDI. Il dominio contrattuale ferma G a 2 (core.mjs). Prima del fix
+    // l'attrezzo usciva 0 e scriveva; validate:mss diceva poi MSS-SYSTEM-ASSERTION.
+    withTempGitRepo(({ repo }) => {
+      const judgments = readJson(JUDGMENTS_MINIMAL)
+      judgments.annotations.sistema.assertions[0].G = 3
+      const judgmentsRel = 'judgments-n1-goe.json'
+      writeRepoFile(repo, judgmentsRel, JSON.stringify(judgments, null, 2))
+      const reportRel = 'docs/Sessioni di lavoro/24-08-26/Report-n1-goe-fuori-dominio.md'
+      const baseline = '# Report N1 G/O/E\n\nCorpo del report.\n'
+      writeRepoFile(repo, reportRel, baseline)
+
+      const result = runCapsule([
+        process.argv[0], 'capsule.mjs',
+        '--judgments', judgmentsRel,
+        '--model', 'fixture-model',
+        '--append-to', reportRel,
+      ], { root: repo, env: { TERM_PROGRAM: 'cursor' } })
+
+      assert.notEqual(result.exitCode, 0, `atteso exit non-zero, avuto ${result.exitCode}`)
+      assert.match(result.stderr, /MSS-SYSTEM-ASSERTION/)
+      assert.equal(result.stdout, '', 'nessuna capsula su stdout')
+      const after = readFileSync(join(repo, ...reportRel.split('/')), 'utf8')
+      assert.equal(after, baseline)
+      assert.equal(countCapsuleHeadings(after), 0)
+    })
+  }],
+  ['capsule: N2 — il revisore emette un amendment e --verifica mostra il verificatore', () => {
+    // La verifica e per costruzione l'atto di un secondo attore su un record altrui: passa da
+    // amendment (contratto §6), non da verified_by scritto sulle proprie annotazioni.
+    const bersaglio = validBundle()
+    const target = bersaglio.find((r) => r.record_id === IDS.recS)
+    const records = buildCapsuleBundle(goldenCapsuleOptions({
+      role: 'independent_reviewer_MC',
+      verifications: [parseVerifySpec(
+        `${IDS.recS}|independently_verified|source-contract|rieseguiti i comandi dichiarati nei controls`,
+      )],
+      lookupRecord: (id) => (id === IDS.recS ? { record: target, path: FIXED_PATH } : null),
+      amendmentIds: [{
+        record: '0198b000-0001-7000-8000-0000000000a1',
+        amendment: '0198b000-0001-7000-8000-0000000000a2',
+      }],
+    }))
+
+    const amd = records.find((r) => r.record_type === 'amendment')
+    assert.ok(amd, 'la seduta deve emettere un amendment di verifica')
+    assert.equal(amd.amendment.target_record_id, IDS.recS)
+    assert.equal(amd.amendment.relation, 'amends')
+    // I valori precedenti sono LETTI dal bersaglio, non ricordati: previous_value_or_hash
+    // sbagliato = MSS-AMENDMENT-PREVIOUS-MISMATCH.
+    const statusChange = amd.amendment.changes.find((c) => c.field_path === 'annotation.verification.status')
+    assert.equal(statusChange.previous_value_or_hash, target.annotation.verification.status)
+    assert.equal(statusChange.corrected_value, 'independently_verified')
+
+    const data = queryData([...bersaglio, amd])
+    const vista = buildVistaEffettiva(data)
+    const human = renderVerifica(data, vista).join('\n')
+    assert.match(human, /Nella vista EFFETTIVA \(dopo gli amendment\)/)
+    assert.match(human, /verificato da cursor-fixture-model-sk7/)
+    const payload = buildQueryPayload(data, vista)
+    assert.ok(
+      payload.verifica.vista_effettiva.applicati.some(
+        (a) => a.field_path === 'annotation.verification.verified_by' && a.target_record_id === IDS.recS,
+      ),
+      'la vista effettiva deve applicare verified_by',
+    )
+  }],
+  ['capsule: N2 — nessun amendment inventato quando il revisore non lo chiede, solo un avviso', () => {
+    // Bloccare produrrebbe amendment di comodo: lo stesso dato inventato che R2 vieta.
+    // Il template resta con verified_by: [] — e la verita per una seduta che non ha verificato.
+    withTempGitRepo(({ repo }) => {
+      const judgmentsRel = 'judgments-n2.json'
+      writeRepoFile(repo, judgmentsRel, readFileSync(JUDGMENTS_MINIMAL, 'utf8'))
+      const result = runCapsule([
+        process.argv[0], 'capsule.mjs',
+        '--judgments', judgmentsRel,
+        '--model', 'fixture-model',
+        '--role', 'independent_reviewer_MC',
+      ], { root: repo, env: { TERM_PROGRAM: 'cursor' } })
+
+      assert.equal(result.exitCode, 0, result.stderr)
+      assert.equal(result.records.filter((r) => r.record_type === 'amendment').length, 0)
+      assert.match(result.stderr, /non emette nessun amendment/)
+      for (const record of result.records.filter((r) => r.record_type === 'annotation')) {
+        assert.deepEqual(record.annotation.verification.verified_by, [])
+      }
+      // Un esecutore normale non deve ricevere l'avviso.
+      const esecutore = runCapsule([
+        process.argv[0], 'capsule.mjs',
+        '--judgments', judgmentsRel,
+        '--model', 'fixture-model',
+      ], { root: repo, env: { TERM_PROGRAM: 'cursor' } })
+      assert.equal(esecutore.exitCode, 0, esecutore.stderr)
+      assert.doesNotMatch(esecutore.stderr, /non emette nessun amendment/)
+    })
+  }],
+  ['capsule: N2 — --verify rifiuta bersaglio inesistente, esito fuori enum e self_report', () => {
+    assert.throws(
+      () => parseVerifySpec('non-un-id|independently_verified|source-contract|motivo'),
+      /non e un record_id/,
+    )
+    assert.throws(
+      () => parseVerifySpec(`${IDS.recS}|verificato_a_occhio|source-contract|motivo`),
+      /non ammesso/,
+    )
+    // self_report su un record altrui non e una verifica: e la firma del proprio lavoro (R2).
+    assert.throws(
+      () => parseVerifySpec(`${IDS.recS}|self_report|source-contract|motivo`),
+      /non ammesso/,
+    )
+    assert.throws(() => parseVerifySpec(`${IDS.recS}|contradicted|source-contract|`), /motivo mancante/)
+    assert.throws(
+      () => buildCapsuleBundle(goldenCapsuleOptions({
+        verifications: [parseVerifySpec(`${IDS.recS}|contradicted|source-contract|motivo reale`)],
+        lookupRecord: () => null,
+      })),
+      /non trovato nel corpus/,
+    )
+    // Il session_event non porta verification: lo stato di verifica vive sulle annotazioni (§5).
+    assert.throws(
+      () => buildCapsuleBundle(goldenCapsuleOptions({
+        verifications: [parseVerifySpec(`${IDS.recEvt}|contradicted|source-contract|motivo reale`)],
+        lookupRecord: () => ({ record: validBundle()[0], path: FIXED_PATH }),
+      })),
+      /annotazione/,
+    )
   }],
   ['B4 — check-doc-paths: allowlist sopra il tetto dichiarato esce rosso e cita D21', () => {
     const source = readFileSync(REAL_CHECK_DOC_PATHS, 'utf8')
