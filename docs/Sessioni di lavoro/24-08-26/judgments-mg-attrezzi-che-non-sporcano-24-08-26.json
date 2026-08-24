@@ -1,0 +1,111 @@
+{
+  "session_event": {
+    "intent_user": "Proseguire i lavori MSS con priorita a igiene e manutenzione, chiudendo M-G e aggiornando il cruscotto di Matteo.",
+    "event_kind": "session_close",
+    "session_type": "deep",
+    "capsule_status": "completa",
+    "role_key": "agente-senior-orchestratore-mss",
+    "area": "MetaSkillSystem / attrezzi di controllo e affidabilita delle capsule",
+    "environment": "repo locale CalendarBackup-v2 su env/test; nessuna operazione Supabase",
+    "authorization": {
+      "read": ["docs/MetaSkillSystem/", "docs/Sessioni di lavoro/", "scripts/mss/"],
+      "write": ["scripts/mss/", "docs/MetaSkillSystem/tests/", "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md", "docs/Sessioni di lavoro/24-08-26/"],
+      "forbid": ["src/", "database", "migrazioni", "commit", "push", "PLAN_V0.md"]
+    },
+    "authorized_outputs": ["fix M-G", "test nominati N3-N6", "report e capsula", "cruscotto aggiornato"],
+    "route": {
+      "chosen": "esecutore delegato, controverifica fredda del senior, correzione dei bypass trovati dalla revisione, poi registrazione del risultato senza chiusura formale",
+      "alternatives_or_conflicts": ["non aperto M-F prima di completare M-G", "non dichiarato CHIUSO: manca una controverifica di famiglia di modello diversa"]
+    },
+    "observed_outcome": "N3-N6 sono provati da test nominati; la chiusura formale resta aperta per il solo requisito di controverifica tra famiglie diverse.",
+    "open_items": ["controverifica di famiglia di modello diversa per dichiarare M-G CHIUSO", "M-F viste generate e cruscotto non manuale", "R1 resta raccomandato e non aperto"],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: soggetto non applicabile",
+      "provider": "non_applicabile: soggetto non applicabile",
+      "model": "non_applicabile: soggetto non applicabile",
+      "runtime": "non_applicabile: soggetto non applicabile",
+      "surface": "non_applicabile: soggetto non applicabile"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": ["path repo", "esiti dei test", "identificatori N3-N6"],
+      "prohibited_content": ["dati personali", "segreti", "materiale privato non registrabile"],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [{
+      "ref_id": "owner-plan-v0",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+      "stable_anchor_or_event_id": "sezione 15 / decisioni M11-M14",
+      "revision_or_hash": "working tree 24-08-2026",
+      "sensitivity": "internal"
+    }],
+    "source_refs": [{
+      "ref_id": "source-mg-mandate",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MG-attrezzi-che-non-sporcano-24-08-26.md",
+      "stable_anchor_or_event_id": "sezioni 2-6",
+      "revision_or_hash": "working tree 24-08-2026",
+      "sensitivity": "internal"
+    }]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [{
+        "signal": "nessuna nuova osservazione Persona: la seduta ha riguardato manutenzione tecnica",
+        "actor": "non_applicabile: soggetto non valutato",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "source-mg-mandate",
+        "effect": "nessuna promozione o inferenza Persona",
+        "evidence_state": "not_applicable"
+      }],
+      "asserted_by": {"actor_id": "openai-codex-senior", "role": "orchestratore", "basis": "direct_observation"},
+      "verification": {"status": "not_applicable", "verified_by": [], "verified_at": "non_applicabile:nessuna valutazione Persona", "criterion_ref": "source-mg-mandate", "evidence_refs": [], "notes": "seduta tecnica"}
+    },
+    "sistema": {
+      "delta": "modificato",
+      "assertions": [{
+        "rule_id_version": "M-G/N3-N6",
+        "trigger_event": "controlli che potevano attribuire un esito al soggetto sbagliato o accettare dati incoerenti",
+        "decision_or_output_changed": "check-expect, avvisi Windows, verifica coerente anche dopo amendment e doctor owner isolato dal blocco Git",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }],
+      "asserted_by": {"actor_id": "openai-codex-senior", "role": "orchestratore", "basis": "direct_observation"},
+      "verification": {"status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "source-mg-mandate", "evidence_refs": [], "notes": "revisione read-only indipendente nello stesso runtime; non equivale a famiglia di modello diversa"}
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [{
+        "output_id": "m-g-attrezzi-n3-n6-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "working tree 24-08-2026",
+        "recipient": "orchestratore MSS e Matteo",
+        "problem_or_job": "evitare capsule e checklist che sembrano provare qualcosa ma riportano un soggetto o un esito sbagliato",
+        "intended_use": "chiudere M-G dopo controverifica di famiglia diversa e preparare M-F",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Matteo",
+        "authored_by": "openai-codex-senior",
+        "verified_by": "non_osservato: famiglia di modello diversa non disponibile in questa seduta",
+        "acceptance_criterion": "un test non vacuo nominato per N3, N4, N5 e N6 e suite MSS verde",
+        "verification_or_use_evidence": "npm run test:mss:tools e npm run test:mss verdi; revisione fredda separata",
+        "verification_status": "self_report",
+        "owner_ref": "owner-plan-v0",
+        "privacy_release": "internal",
+        "support_files": ["scripts/mss/capsule.mjs", "scripts/mss/core.mjs", "scripts/mss/doctor.mjs", "docs/MetaSkillSystem/tests/tools/run.mjs"],
+        "relations_no_double_count": [],
+        "product_candidate": {"recipient": "pass", "problem_or_job": "pass", "canonical_version": "pass", "fixed_acceptance_criterion": "pass", "verification_or_use_evidence": "fail", "result": "not_eligible"}
+      }],
+      "asserted_by": {"actor_id": "openai-codex-senior", "role": "orchestratore", "basis": "direct_observation"},
+      "verification": {"status": "self_report", "verified_by": [], "verified_at": "non_applicabile:self_report", "criterion_ref": "source-mg-mandate", "evidence_refs": [], "notes": "manca solo la famiglia diversa richiesta da M12"}
+    }
+  }
+}

@@ -77,7 +77,7 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 
 **Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. D2/D3 sono **chiusi** (sintassi canonica `ID=>comando`, ambigui rifiutati).
 
-⚠️ **`N3` APERTO — ma NON è ciò che questo manuale ha detto fino al 24-08-26.** La diagnosi
+✅ **`N3`/`N4` PROVATI — il controllo dichiara ora ciò che prova.** La diagnosi
 precedente («le virgolette si perdono nel trasporto») è **falsa ed è stata falsificata con misura
 diretta** in [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) §6.
 Le virgolette **arrivano intatte** a `process.argv`. La rottura è **a valle**, in `spawnCheckCommand`
@@ -90,24 +90,32 @@ Le virgolette **arrivano intatte** a `process.argv`. La rottura è **a valle**, 
 | **virgolette singole** | **exit 1 su Windows** — `shell: true` usa `cmd.exe`, che non le riconosce |
 
 **In pratica:** un path con spazi nei `controls[]` **si registra**, con virgolette **doppie**. La
-trappola sono le **virgolette singole**, perché sono l'abitudine POSIX. Il difetto residuo è che
-l'attrezzo non distingue «comando malformato» da «comando fallito» — **stessa radice di `N4`** — e non
-avvisa. Assegnato a `M-G`.
+trappola sono le **virgolette singole**, perché sono l'abitudine POSIX. Su Windows l'attrezzo emette
+un avviso leggibile anche per un path probabilmente non quotato: non attribuisce in silenzio il
+fallimento al bersaglio. Puoi associare a ogni `--check` immediatamente precedente
+`--check-expect <exit>` (intero ≥ 0): un controllo che deve fallire registra `pass` solo se esce
+con l'exit code dichiarato.
 
-⚠️ **`N4` APERTO — `--check` deduce l'esito dall'exit code.** Un comando che non può fallire
-(`git status --short`) registra un `pass` che non prova nulla. Un `controls[]` pieno di comandi
-infallibili sembra una prova e non lo è: scegli comandi **capaci di fallire**.
+✅ **`N4` PROVATO — `--check` confronta l'exit code atteso.** Senza `--check-expect` resta
+compatibile e attende `0`; con l'opzione registra sia exit reale sia atteso nel criterio. Un comando
+che non può fallire (`git status --short`) non diventa per questo una prova utile: scegli comunque
+comandi **capaci di fallire**.
 
-⚠️ **`mss:doctor`, passo `owner` — falso rosso APERTO (24-08-26).** Il passo cerca la stringa «non
-ricostruibile» in **tutto** l'output di `mss:status`, ma quella stringa la stampa la sezione **Git**
-di una repo senza commit. In una repo appena `git init`ata il passo è rosso e accusa l'owner, che è
-presente e leggibile. Prova: un commit, senza toccare l'owner, lo rende verde. Assegnato a `M-G`.
+✅ **`N6` PROVATO — `mss:doctor`, passo `owner`, legge solo gli owner.** Una repo appena
+`git init`ata può dichiarare Git non ricostruibile senza far diventare rosso il passo owner: il
+controllo analizza soltanto il blocco di stato derivato dagli owner e segnala l'owner solo quando è
+davvero assente o non interpretabile.
 
 ⚠️ **Due separatori diversi nello stesso attrezzo:** `--check` usa `=>`, `--verify` usa `|`.
 
 **`N1` PROVATO 24-08-26 (`M-C`).** L'attrezzo ora esegue `validateMss` sul bundle **prima** di scrivere: con `--append-to` valida il report **prospettico** (`--require-capsule`), altrimenti il solo JSONL. Se esce rosso: exit `2`, diagnostica su stderr, **nessuna scrittura**. La guardia «il report ha già una capsula» usa la stessa definizione del validator (`parse.mjs::findCapsuleHeadings`), quindi riconosce anche le intestazioni numerate (`## 6-bis. Capsula MetaSkillSystem`). Esegui comunque `validate:mss` dopo: è il gate dichiarato, non un doppione.
 
 **`N2` PROVATO 24-08-26 (`M-C`).** Un revisore registra una verifica con `--verify "<mss-rec-…>|<esito>|<evidence_ref>|<motivo>"` (ripetibile): l'attrezzo emette un `amendment` conforme al contratto §6, leggendo i valori precedenti **dal record bersaglio**. Bersaglio ed esito non si deducono; `self_report` è rifiutato (un secondo attore non può ridichiarare l'autodichiarazione altrui). Se `--role` nomina un revisore e la seduta non emette nessun amendment, l'attrezzo **avvisa** e non blocca. Il template resta con `verified_by: []`: è la verità per una seduta che non ha verificato nessuno. Non è `mss:review` (`SK-3`), che resta NON INIZIATO.
+
+✅ **`N5` PROVATO — un verificatore nominato richiede uno stato coerente.** `--verify` ammette
+solo `independently_verified` o `contradicted`; il validator applica la stessa regola al dato
+effettivo dopo gli amendment, così un record `unverified` o `not_applicable` non può dichiarare un
+verificatore da nessuna strada.
 
 ⚠️ **Limite aperto (`M-C`, lasciato a Matteo):** `--check` deduce l'esito dall'exit code, quindi un comando che non può fallire registra un `pass` che non prova nulla. Un `controls[]` di comandi infallibili sembra una prova e non lo è.
 
