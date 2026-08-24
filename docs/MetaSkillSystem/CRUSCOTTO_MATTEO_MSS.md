@@ -8,15 +8,15 @@
 `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**: prova eseguibile, test nominato e controverifica Cursor/Composer sono registrati.
 
 ## Cosa devi fare tu
-R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T5` (valutare mandato `SK-4` — bypass residui e schema gate in prosa; oppure `SK-8` promozione documentale — solo se Matteo apre esplicitamente; non aprire WP-1).
+R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T7` (attesa Matteo: push remoto o riapertura esplicita `D27`/`WP-1`; backlog opzionale `SK-2`, hook Q/R, `H13-E2`; nessun pacchetto SK-* si apre automaticamente).
 
 ## Lavagna
 
 | Fatte | Con riserva | Da fare |
 |---|---|---|
-| `M-F` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T5`: valutare mandato `SK-4` — bypass residui e schema gate in prosa; oppure `SK-8` promozione documentale — solo se Matteo apre esplicitamente; non aprire WP-1 |
+| `M-F` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T7`: attesa Matteo: push remoto o riapertura esplicita `D27`/`WP-1`; backlog opzionale `SK-2`, hook Q/R, `H13-E2`; nessun pacchetto SK-* si apre automaticamente |
 
 ## Prossimo passo
 
-Completare `T5`. Non riaprire `WP-1` e non dichiarare `H-1.3` PASS pulito.
+Completare `T7`. Non riaprire `WP-1` e non dichiarare `H-1.3` PASS pulito.
 <!-- mss:generated cruscotto-matteo fine -->

@@ -1,0 +1,78 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "R1/T6@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Revisione indipendente Cursor del ciclo T6 — mandato R1",
+        "decision_or_output_changed": "Scheda anti-errore, routing minimo e test nominato capsule R1 confermati; completamento operativo T6 valido; verdetto M12 storico Cursor/Composer non riaperto; amendment esecutore sul record storico resta riserva semantica ACCETTATA.",
+        "G": 1,
+        "O": 1,
+        "E": 1
+      },
+      {
+        "rule_id_version": "SK-4/T6@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Revisione indipendente Cursor — prove B1-B3 e D18",
+        "decision_or_output_changed": "Due legacy nuovi staged identici ricevono MSS-LEGACY-NEW-FORBIDDEN; storico HEAD leggibile; review.mjs importa REPORT_PATH_RE condiviso; test nominati H-1 e tools verdi.",
+        "G": 1,
+        "O": 1,
+        "E": 1
+      },
+      {
+        "rule_id_version": "SK-8/T6@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Revisione indipendente Cursor — portabilita suite",
+        "decision_or_output_changed": "Wrapper esegue una sola suite completa nel child da cwd temporanea esterna; test nominato non vacuo; npm run test:mss ~27s (non raddoppiato).",
+        "G": 1,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "revisione-indipendente-ciclo-t6-codex-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-revisione-indipendente-ciclo-t6-codex-24-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "controverificare indipendentemente (famiglia Cursor) il ciclo T6 Codex e classificare le riserve M12",
+        "intended_use": "gate umano su firma SK-4/SK-8 e decisione commit senza fidarsi dei soli atti OpenAI",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/24-08-26/Prompt-revisione-indipendente-ciclo-t6-codex-24-08-26.md",
+        "authored_by": "cursor-composer-revisione-indipendente-t6",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Passo 0 + gate globali exit 0 + prove mirate B1-B3/D18/SK-8 + validate require-capsule su 7 report + matrice riserve con raccomandazione",
+        "verification_or_use_evidence": "controlli rieseguiti registrati nella capsula del report; probe ORPHAN documentato",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/24-08-26/Report-orchestratore-t6-r1-sk4-sk8-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-r1-completamento-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-controverifica-r1-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-sk4-completamento-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-controverifica-sk4-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-sk8-promozione-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-controverifica-sk8-t6-24-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "unica controverifica famiglia diversa sull'intero ciclo T6; non sostituisce firma formale SK-4/SK-8"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

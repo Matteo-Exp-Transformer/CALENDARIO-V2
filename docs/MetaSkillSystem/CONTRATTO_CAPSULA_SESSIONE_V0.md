@@ -130,6 +130,10 @@ Su questa coppia il validator storico non richiede `controls`. **Vietato** usarl
 con la coppia viva `controls` è obbligatorio (§4). Dopo `SK-4` E2 il motore rifiuterà la coppia
 legacy su record nuovi (`MSS-LEGACY-NEW-FORBIDDEN`).
 
+Per questo gate, **storico** significa che lo stesso record canonico è già presente in Git `HEAD`.
+La sola presenza nella vista staged o nel worktree non lo rende storico: due file legacy nuovi
+staged insieme non possono qualificarsi a vicenda.
+
 ### Regole ID, compact e retry
 
 - UUIDv7 è generato localmente dal writer; il prefisso rende il tipo leggibile, l'UUID evita il

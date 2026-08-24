@@ -1,0 +1,57 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "SK-8@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Controverifica indipendente della promozione SK-8 T6",
+        "decision_or_output_changed": "Il wrapper avvia una sola suite completa nel child da cwd temporanea esterna, conserva output ed exit e il test nominato fallisce senza expected cwd o se eseguito dalla root repository.",
+        "G": 1,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "controverifica-sk8-t6-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-controverifica-sk8-t6-24-08-26.md",
+        "recipient": "orchestratore MSS e Matteo",
+        "problem_or_job": "validare indipendentemente il wrapper SK-8 e la sua riduzione di costo",
+        "intended_use": "attestare M12 tecnico mantenendo la firma formale SK-8 a Matteo",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato parent controverifica M12 SK-8 T6",
+        "authored_by": "openai-codex-sk8-t6-controverifica",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "wrapper una sola volta, cwd esterna, prove negative rosse, test/mss validator/diff verdi e costo inferiore a 62,20 s",
+        "verification_or_use_evidence": "comandi rieseguiti e registrati nei controls della capsula",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/tests/h1/run.mjs",
+          "docs/Sessioni di lavoro/24-08-26/Report-sk8-promozione-t6-24-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "controverifica della prova SK-8; la firma formale del pacchetto resta separata"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

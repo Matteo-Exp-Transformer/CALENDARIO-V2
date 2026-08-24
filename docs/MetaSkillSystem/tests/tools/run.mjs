@@ -20,6 +20,7 @@ import {
 } from '../../../../scripts/mss/move.mjs'
 import {
   classifyPath,
+  findSessionReports,
   reviewSession,
   runReview,
 } from '../../../../scripts/mss/review.mjs'
@@ -1477,6 +1478,27 @@ const tests = [
     const payload = JSON.parse(cli.stdout)
     assert.equal(payload.clean, true)
     assert.equal(payload.problems.length, 0)
+  }],
+
+  ['SK-4 D18/B2/B3 — mss:review usa il perimetro REPORT_PATH_RE condiviso', () => {
+    const paths = [
+      `${SESSIONI}/24-08-26/deep/nested/Report-sk4.md`,
+      `${SESSIONI}/24-08-26/deep/nested/Verbale-sk4.md`,
+      `${SESSIONI}/Report-senza-cartella-data.md`,
+      `${SESSIONI}/24-08-26/deep/nested/Nota-sk4.md`,
+      'altrove/24-08-26/Report-sk4.md',
+    ]
+    const selected = new Set(findSessionReports(paths))
+    for (const path of paths) {
+      assert.equal(
+        selected.has(path),
+        REPORT_PATH_RE.test(path),
+        `mss:review diverge dal perimetro condiviso per ${path}`,
+      )
+    }
+    assert.ok(selected.has(paths[0]), 'B2: Report- in sotto-cartella deve essere selezionato')
+    assert.ok(selected.has(paths[1]), 'B3: Verbale- in sotto-cartella deve essere selezionato')
+    assert.equal(selected.has(paths[2]), false, 'manca la cartella-data: deve restare fuori perimetro')
   }],
 ]
 

@@ -1,0 +1,56 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "SK-8@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T6: promuovere documentalmente la robustezza della suite MSS rispetto alla cwd",
+        "decision_or_output_changed": "La suite H-1 contiene un test nominato che rilancia l'intero entrypoint da una directory temporanea esterna, impedisce la ricorsione con un flag figlio e prova la root derivata dalla posizione del file",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "sk8-promozione-t6-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-sk8-promozione-t6-24-08-26.md",
+        "recipient": "orchestratore MSS e Matteo",
+        "problem_or_job": "rendere riproducibile e riconoscibile la robustezza di test:mss da cwd diverse",
+        "intended_use": "impedire regressioni che reintroducano dipendenza da process.cwd nella suite H-1",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/24-08-26/Prompt-orchestratore-codex-R1-SK4-SK8-24-08-26.md",
+        "authored_by": "openai-gpt-5.6-sol-sk8-t6",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "test nominato non vacuo verde da cwd esterna, suite e cancelli MSS verdi",
+        "verification_or_use_evidence": "comandi registrati nei controls della capsula e prova cwd esplicita nel report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/tests/h1/run.mjs"
+        ],
+        "relations_no_double_count": [
+          "prova di promozione SK-8; non nuova implementazione del resolver"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

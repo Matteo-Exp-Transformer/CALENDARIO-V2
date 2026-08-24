@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "R1@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T6: completare R1 riducendo gli errori di chiusura Meta",
+        "decision_or_output_changed": "L'ingresso MSS instrada a manuale, mandato e scheda breve; una chiusura reale usa soltanto i tre giudizi e delega capsula, controlli e verifica a mss:capsule",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "r1-completamento-t6-24-08-26",
+        "primary_type": "processo",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-r1-completamento-t6-24-08-26.md",
+        "recipient": "agenti MetaSkillSystem e orchestratore T6",
+        "problem_or_job": "chiudere sedute Meta senza riscrivere la capsula o introdurre retry evitabili",
+        "intended_use": "seguire un percorso compatto e verificabile per report, tre giudizi, controlli e amendment di verifica",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/24-08-26/Prompt-orchestratore-codex-R1-SK4-SK8-24-08-26.md",
+        "authored_by": "openai-gpt-5.6-sol-r1-t6",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "scheda anti-errore, routing minimo e report reale validato con capsula R1 e verify su path completo",
+        "verification_or_use_evidence": "controlli e amendment generati nella capsula del report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/SCHEDA_CHIUSURA_META_R1.md",
+          "docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md",
+          "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md"
+        ],
+        "relations_no_double_count": [
+          "guida operativa e prova di uso; non nuovo motore R1"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

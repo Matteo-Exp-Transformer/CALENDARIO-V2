@@ -16,6 +16,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { REPORT_PATH_RE } from './adapter.mjs'
 import { CONFIG } from './config.mjs'
 import { findCapsuleHeadings } from './parse.mjs'
 import { auditQuestions } from './report-questions.mjs'
@@ -157,11 +158,8 @@ export function collectTouchedFiles(root = ROOT, { base = 'HEAD' } = {}) {
   return [...changed].sort()
 }
 
-const REPORT_NAME_RE = /(?:^|\/)(Report|Verbale)-[^/]+\.md$/i
-
-export function findSessionReports(touchedFiles, sessionsDir = CONFIG.sessionsDir) {
-  const prefix = toPosix(sessionsDir).replace(/\/?$/, '/')
-  return touchedFiles.filter((p) => p.startsWith(prefix) && REPORT_NAME_RE.test(p))
+export function findSessionReports(touchedFiles) {
+  return touchedFiles.map(toPosix).filter((p) => REPORT_PATH_RE.test(p))
 }
 
 /**
@@ -291,7 +289,7 @@ export function reviewSession({
     // Seduta sostanziale senza Report-* tra i toccati: fatto, non giudizio.
     const hasSubstantive = files.some((f) => {
       const p = toPosix(f)
-      return !p.startsWith(`${CONFIG.sessionsDir}/`) || !REPORT_NAME_RE.test(p)
+      return !REPORT_PATH_RE.test(p)
     })
     if (hasSubstantive) {
       gaps.push({

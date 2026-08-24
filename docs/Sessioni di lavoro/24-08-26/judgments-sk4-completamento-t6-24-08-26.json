@@ -1,0 +1,61 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "SK-4/D18@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T6: controprovare B1-B3 e chiudere i bypass enforcement residui",
+        "decision_or_output_changed": "Il gate legacy distingue i record committati in HEAD dalla vista staged; il perimetro Report|Verbale ricorsivo ha una sola implementazione esportata da adapter.mjs e importata dai consumatori",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "sk4-completamento-t6-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-sk4-completamento-t6-24-08-26.md",
+        "recipient": "Matteo, orchestratore T6 e revisore M12",
+        "problem_or_job": "chiudere i bypass B1-B3 con attacchi riproducibili e gate automatici non vacui",
+        "intended_use": "controverificare SK-4 e decidere la chiusura formale senza fidarsi della narrativa storica",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/24-08-26/Prompt-orchestratore-codex-R1-SK4-SK8-24-08-26.md",
+        "authored_by": "openai-gpt-5.6-sol-sk4-t6",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "B1-B3 negati dal gate dedicato, storico HEAD leggibile, D18 senza regex locale e suite MSS verdi",
+        "verification_or_use_evidence": "controlli generati nella capsula del report e test nominati SK-4 nelle suite H-1/tools",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/adapter.mjs",
+          "scripts/mss/core.mjs",
+          "scripts/mss/review.mjs",
+          "docs/MetaSkillSystem/tests/h1/run.mjs",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md"
+        ],
+        "relations_no_double_count": [
+          "prova di enforcement SK-4; il report resta registro della seduta"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

@@ -46,6 +46,7 @@ import {
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '../../../..')
+const SK8_TEST_NAME = 'SK-8 — test:mss esegue l’intera suite da cwd diversa risolvendo la root dalla posizione del file'
 // I path di seduta SINTETICI seguono la config (R8). Restano letterali solo le ANCORE
 // STORICHE qui sotto: report reali di questo progetto, inchiodati per sha256 dal protocollo
 // congelato. Non sono path da parametrizzare, sono pezzi di storia con un nome preciso.
@@ -1493,6 +1494,101 @@ function testPrecommitIntegration() {
   return failures
 }
 
+function legacyBundleWithoutControls() {
+  const records = structuredClone(validBundle())
+  for (const record of records) {
+    record.schema_version = 'mss.session/0.1.0'
+    record.system_revision = 'mss-v0.1-wp0.1-freeze-1'
+    for (const pkg of record.packages_loaded || []) {
+      if (pkg.package_id === 'metaskill-system') {
+        pkg.package_version_or_revision = 'mss-v0.1-wp0.1-freeze-1'
+      }
+    }
+  }
+  delete records[0].event.controls
+  return records
+}
+
+function testSk4BypassEnforcement() {
+  const failures = []
+  const legacyReport = reportWithBundle(legacyBundleWithoutControls(), 'SK-4 B1 legacy')
+  const firstLegacy = `${SESSIONI}/24-08-26/sk4/a/Report-b1-legacy-a.md`
+  const secondLegacy = `${SESSIONI}/24-08-26/sk4/b/Report-b1-legacy-b.md`
+
+  // B1: due file nuovi identici non possono qualificarsi a vicenda come «storico».
+  const stagedLegacy = validateStagedMssFiles(repoRoot, [firstLegacy, secondLegacy].map((path) => ({
+    status: 'A', path, content: legacyReport, worktreeContent: legacyReport, headContent: null,
+  })), { historicalSnapshots: [], requireCapsule: true })
+  for (const path of [firstLegacy, secondLegacy]) {
+    const result = stagedLegacy.find((entry) => entry.path === path)?.result
+    if (!result?.denyCodes.includes(RULE.LEGACY_NEW_FORBIDDEN)) {
+      failures.push(`B1 ${path}: record legacy nuovo non negato dal gate dedicato; codes=${result?.denyCodes.join(',') || ''}`)
+    }
+  }
+
+  // Lo stesso contenuto proveniente davvero da HEAD resta leggibile: nessuna riscrittura storica.
+  const historicalPath = `${SESSIONI}/09-08-26/Report-sk4-legacy-storico.md`
+  const historical = validatePathContent({
+    workspaceRoot: repoRoot,
+    file: join(repoRoot, historicalPath),
+    content: legacyReport,
+    kind: 'report',
+    headContent: legacyReport,
+    requireCapsule: true,
+  })
+  if (!historical.ok) {
+    failures.push(`B1 storico HEAD non leggibile: ${historical.denyCodes.join(',')}`)
+  }
+
+  // B2+B3: entrambi i prefissi, a profondità arbitraria, sono nel gate staged.
+  const invalid = `# SK-4 path attack\n\n**Modalità:** deep\n\nNessuna capsula.\n`
+  const pathAttacks = [
+    `${SESSIONI}/24-08-26/sk4/deep/nested/Report-b2-staged.md`,
+    `${SESSIONI}/24-08-26/sk4/deep/nested/Verbale-b3-staged.md`,
+  ]
+  const stagedPaths = validateStagedMssFiles(repoRoot, pathAttacks.map((path) => ({
+    status: 'A', path, content: invalid, worktreeContent: invalid, headContent: null,
+  })), { historicalSnapshots: [], requireCapsule: true })
+  for (const path of pathAttacks) {
+    const result = stagedPaths.find((entry) => entry.path === path)?.result
+    if (!result?.denyCodes.includes(RULE.REPORT_NO_CAPSULE)) {
+      failures.push(`${path}: file staged fuori enforcement; codes=${result?.denyCodes.join(',') || ''}`)
+    }
+  }
+
+  // Il confronto staged/worktree usa lo stesso perimetro per Report e Verbale.
+  const valid = reportWithBundle(validBundle(), 'SK-4 staged/worktree')
+  for (const prefix of ['Report', 'Verbale']) {
+    const path = `${SESSIONI}/24-08-26/sk4/deep/nested/${prefix}-worktree.md`
+    const result = validateStagedMssFiles(repoRoot, [{
+      status: 'A', path, content: valid, worktreeContent: `${valid}\nmodifica non staged\n`, headContent: null,
+    }], { historicalSnapshots: [], requireCapsule: true })[0]?.result
+    if (!result?.denyCodes.includes(RULE.STAGED_WORKTREE_MISMATCH)) {
+      failures.push(`${prefix} worktree non confrontato con staged: codes=${result?.denyCodes.join(',') || ''}`)
+    }
+  }
+  return failures
+}
+
+function testSk8SuiteFromDifferentCwd() {
+  const failures = []
+  const childFlag = process.env.MSS_SK8_DIFFERENT_CWD_CHILD === '1'
+  const expectedCwd = process.env.MSS_SK8_EXPECTED_CWD
+  if (!childFlag) {
+    failures.push('la suite completa non e stata eseguita dal child SK-8')
+  }
+  if (!expectedCwd || resolve(process.cwd()) !== resolve(expectedCwd)) {
+    failures.push(`child cwd inattesa: actual=${process.cwd()} expected=${expectedCwd || '<manca>'}`)
+  }
+  if (resolve(process.cwd()) === repoRoot) {
+    failures.push('probe vacua: il child e stato eseguito dalla root repository')
+  }
+  if (!existsSync(join(repoRoot, 'package.json')) || !existsSync(join(fixturesDir, 'manifest.json'))) {
+    failures.push(`root derivata dalla posizione del file non risolve gli anchor: ${repoRoot}`)
+  }
+  return failures
+}
+
 function testStopHookIntegration() {
   const root = mkdtempSync(join(tmpdir(), 'mss-stop-'))
   try {
@@ -2130,6 +2226,8 @@ function main() {
     ['LOCK semantics', testLockSemantics],
     ['adapter contract', testAdapterContract, 'hook-precommit-cursor'],
     ['pre-commit integration', testPrecommitIntegration, 'hook-precommit-cursor'],
+    ['SK-4 B1-B3 — legacy nuovi falliscono, storico resta leggibile, Report|Verbale ricorsivi staged/worktree', testSk4BypassEnforcement],
+    [SK8_TEST_NAME, testSk8SuiteFromDifferentCwd],
     ['H-1.1 append-only integration', testH11AppendOnlyIntegration],
     ['H-1.1 manifest integrity', testH11ManifestIntegrity],
     ['stop hook integration', testStopHookIntegration, 'hook-stop-cursor'],
@@ -2200,4 +2298,38 @@ function main() {
   console.log(`\nH-1 suite green: ${all.length} fixture cases + ${eseguiti} contract/integration groups${coda}`)
 }
 
-main()
+function runSuiteOnceFromDifferentCwd() {
+  const foreignCwd = mkdtempSync(join(tmpdir(), 'mss-sk8-foreign-cwd-'))
+  let exitCode = 1
+  try {
+    const child = spawnSync(process.execPath, [fileURLToPath(import.meta.url)], {
+      cwd: foreignCwd,
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        MSS_SK8_DIFFERENT_CWD_CHILD: '1',
+        MSS_SK8_EXPECTED_CWD: foreignCwd,
+      },
+    })
+    if (child.stdout) process.stdout.write(child.stdout)
+    if (child.stderr) process.stderr.write(child.stderr)
+    if (child.error) {
+      console.error(`SK-8 wrapper: impossibile avviare il child: ${child.error.message}`)
+    } else {
+      exitCode = Number.isInteger(child.status) ? child.status : 1
+    }
+  } finally {
+    rmSync(foreignCwd, { recursive: true, force: true })
+  }
+  process.exitCode = exitCode
+}
+
+if (process.env.MSS_SK8_DIFFERENT_CWD_CHILD === '1') {
+  if (!process.env.MSS_SK8_EXPECTED_CWD) {
+    console.error('SK-8 child flag rifiutato: MSS_SK8_EXPECTED_CWD obbligatoria')
+    process.exit(1)
+  }
+  main()
+} else {
+  runSuiteOnceFromDifferentCwd()
+}

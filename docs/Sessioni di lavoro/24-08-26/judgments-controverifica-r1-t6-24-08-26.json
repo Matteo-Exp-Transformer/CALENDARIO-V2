@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "R1@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Controverifica indipendente della consegna R1 T6",
+        "decision_or_output_changed": "La prova R1, la scheda breve, il routing minimo e la capsula generata sono confermati; l'amendment T6 sul record storico non e una controverifica indipendente di famiglia diversa e resta una riserva semantica.",
+        "G": 1,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "controverifica-r1-t6-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-controverifica-r1-t6-24-08-26.md",
+        "recipient": "orchestratore MSS e Matteo",
+        "problem_or_job": "verificare la consegna R1 T6 senza fidarsi del report dell'esecutore",
+        "intended_use": "attestare il gate M12 della consegna T6 e rendere esplicita la riserva sull'amendment storico",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato parent di controverifica R1 T6",
+        "authored_by": "openai-codex-r1-t6-controverifica",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "diff reale, controls rieseguiti, validate:mss:all verde, test R1 nominato non vacuo, una sola capsula generata e amendment append-only supportato",
+        "verification_or_use_evidence": "controlli e verifica append-only generati nella capsula di questo report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/SCHEDA_CHIUSURA_META_R1.md",
+          "docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md",
+          "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-r1-completamento-t6-24-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "controverifica della consegna T6; non una nuova chiusura del record R1 storico"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

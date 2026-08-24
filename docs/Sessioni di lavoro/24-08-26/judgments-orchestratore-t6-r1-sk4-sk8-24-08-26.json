@@ -1,0 +1,79 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "R1/T6@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Completamento operativo R1 nella sequenza D25",
+        "decision_or_output_changed": "R1 dispone di scheda breve, routing e puntatore manuale; resta CHIUSO CON RISERVE (M12) con autorità della controverifica storica.",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      },
+      {
+        "rule_id_version": "SK-4/T6@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Prove B1-B3 e D18 con controverifica separata",
+        "decision_or_output_changed": "SK-4 è PROVATO T6 (M12): nuovi legacy staged fail-closed, storico HEAD leggibile e perimetro report condiviso; firma Matteo pendente.",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      },
+      {
+        "rule_id_version": "SK-8/T6@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Prova test:mss da cwd esterna con controverifica separata",
+        "decision_or_output_changed": "SK-8 è PROVATO T6 (M12): la suite risolve la root dall'entrypoint e gira una sola volta da cwd esterna; firma Matteo pendente.",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "orchestratore-t6-r1-sk4-sk8-24-08-26",
+        "primary_type": "registro",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-orchestratore-t6-r1-sk4-sk8-24-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "orchestrare in sequenza D25 il completamento R1, la correzione SK-4 e la promozione SK-8 con controverifiche e owner allineato",
+        "intended_use": "lasciare a Matteo la decisione formale su SK-4/SK-8 e l'autorizzazione separata a commit/push",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt-orchestratore-codex-R1-SK4-SK8-24-08-26.md",
+        "authored_by": "openai-gpt-5.6-sol-orchestratore-t6",
+        "verified_by": "esecutori e revisori separati per i tre mandati; report orchestratore in self_report",
+        "acceptance_criterion": "Passo 0 + sequenza R1→SK-4→SK-8 + gate MSS verdi + owner/vista allineati + nessuna firma o commit/push automatici",
+        "verification_or_use_evidence": "sei report di mandato/controverifica, controls della capsula, validate:mss:all e git diff --check",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/PLAN_V0.md",
+          "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-r1-completamento-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-controverifica-r1-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-sk4-completamento-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-controverifica-sk4-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-sk8-promozione-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-controverifica-sk8-t6-24-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Report di sintesi orchestratore: non sostituisce le sei prove di mandato e controverifica."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

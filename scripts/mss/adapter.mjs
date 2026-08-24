@@ -138,6 +138,7 @@ export function validatePathContent({
   requireCapsule = false,
   headContent,
   historicalRecords = [],
+  committedRecords,
   historicalSnapshots = [],
   validateGlobal = true,
 }) {
@@ -177,6 +178,7 @@ export function validatePathContent({
       workspaceRoot,
       lockSeverity: 'warn',
       historicalRecords: externalHistory,
+      committedRecords,
       historicalSnapshots,
     },
   )
@@ -427,6 +429,7 @@ export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historica
   const headView = recordsFromSnapshots(workspaceRoot, [...headMap.values()])
   const stagedView = recordsFromSnapshots(workspaceRoot, [...stagedMap.values()])
   const historicalRecords = stagedView.records
+  const committedRecords = headView.records
 
   for (const entry of normalized) {
     const previousPath = entry.previousPath ? normalizePath(entry.previousPath) : null
@@ -476,6 +479,7 @@ export function validateStagedMssFiles(workspaceRoot, stagedEntries, { historica
       headContent: entry.headContent,
       requireCapsule: fixtureMatch ? false : requireCapsule,
       historicalRecords,
+      committedRecords,
       historicalSnapshots,
       validateGlobal: false,
     })

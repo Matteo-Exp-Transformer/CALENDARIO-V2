@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "SK-4/M12/D18@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Controverifica indipendente T6 dei bypass B1-B3",
+        "decision_or_output_changed": "Confermati: record legacy nuovi non si auto-qualificano dalla vista staged; storico canonicale HEAD resta esente; review usa REPORT_PATH_RE esportata.",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "controverifica-sk4-t6-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-controverifica-sk4-t6-24-08-26.md",
+        "recipient": "orchestratore T6 e Matteo",
+        "problem_or_job": "decidere se le prove SK-4 soddisfano M12 senza fidarsi del report dell'esecutore",
+        "intended_use": "gate indipendente prima della sola firma formale di Matteo",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/24-08-26/Prompt-orchestratore-codex-R1-SK4-SK8-24-08-26.md",
+        "authored_by": "codex-gpt-5",
+        "verified_by": "codex-gpt-5",
+        "acceptance_criterion": "B1-B3 nominati e non vacui, D18 unica regex, controlli e validate:mss:all verdi",
+        "verification_or_use_evidence": "report di controverifica e amendment --verify al record sistema dell'esecutore",
+        "verification_status": "independently_verified",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/adapter.mjs",
+          "scripts/mss/core.mjs",
+          "scripts/mss/review.mjs",
+          "docs/MetaSkillSystem/tests/h1/run.mjs",
+          "docs/MetaSkillSystem/tests/tools/run.mjs"
+        ],
+        "relations_no_double_count": [
+          "M12 indipendente del completamento SK-4; non sostituisce la firma formale di Matteo"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

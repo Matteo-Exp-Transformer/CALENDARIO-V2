@@ -95,11 +95,11 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S1 | `SK-1` — punto di ripristino (tag annotato) | **ESEGUITO E PUBBLICATO** 24-08-26 | tag annotato `mss/baseline-h13` su `HEAD` pre-`M-A`/`M-B`, pubblicato su `origin` il 24-08-26 con decisione `M5` di Matteo: `git ls-remote --tags origin "mss/*"` lo conferma dal remoto, non solo in locale |
 | S2 | `SK-2` — `mss:status` (sola lettura) | `IMPLEMENTATO, non allineato` | il comando esiste e gira; il suo output ripete numeri/stati stale e non controlla roadmap/handoff |
 | S3 | `SK-3` — `mss:review` (sola lettura) | **`CHIUSO` 24-08-26 (`T2`, `M12`)** | ✅ `npm run mss:review` esiste ed è sola lettura (stato Git invariato) · ✅ test nominato `T2 / mss:review — …` in `test:mss:tools` (seduta sporca trova owner/L5/L6/capsula assente; seduta pulita `problems.length === 0`) · ✅ M12: gate rieseguiti verdi e controverifica OpenAI/gpt-5.6-sol, famiglia diversa dall’esecutore Cursor/Composer |
-| S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`APERTO` — D1 chiuso in P1, chiusura formale pendente** | B1–B3 restano provati · ✅ pre-commit passa `requireCapsule: true` come CI (suite H-1/tools) · restano bypass/schema gate in prosa · chiusura storica `D20` rettificata, non cancellata |
+| S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`CHIUSO` 25-08-26 — firma Matteo post-revisione Cursor T6** | ✅ B1: due record legacy nuovi staged insieme ricevono entrambi `MSS-LEGACY-NEW-FORBIDDEN`, mentre lo storico canonico già in `HEAD` resta leggibile · ✅ B2/B3: `Report-` e `Verbale-` ricorsivi entrano nei gate staged/worktree · ✅ D18: `mss:review` importa `REPORT_PATH_RE` da `adapter.mjs` · test nominati in `test:mss` e `test:mss:tools` · revisione indipendente Cursor `PASS_CON_RISERVE` · firma verbatim Matteo 25-08-26 |
 | S5 | `SK-5` — controlli MSS in CI su `env/test` | **`CHIUSO` 24-08-26 — decisione `M13` di Matteo.** Nessuna prova tecnica restava da produrre: era l'unico dei quattro pacchetti «in attesa di firma» davvero pronto | `npm run validate` è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. ✅ **24-08-26: primo push eseguito (decisione `M5`) e job `mss` osservato VERDE su GitHub Actions reale** con questa forma — non più una simulazione locale. Verifica: `gh run list --branch env/test` |
 | S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica/--fail` rispondono · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ copertura test del lettore parziale (suite tools, non H-1 intero) · rettificato 22-08-26: capsula `SK-6` corretta con `amendment`; criterio revisori su `recorded_by.role` · ✅ **23-08-26 vista effettiva:** `query.mjs` delega `core.mjs::applyAmendmentsView()` · ✅ **23-08-26 P1:** `--fail` usa denominatori calcolati, non literal storici · revisioni/controlli: numero mobile → `npm run mss:query -- --verifica` · **Matteo ha dichiarato `SK-6` CHIUSO (`D16`)** |
 | S7 | `SK-7` — `mss:capsule` (generazione) | **`CHIUSO` 24-08-26 — decisione `M3` di Matteo dopo controverifica** | ✅ attrezzo e report SK-7 esistono · ✅ fix B: `parseCheckSpec` canonico `ID=>comando`, legacy un solo `:`, ambigui rifiutati; il comando può contenere ulteriori `=>` · ✅ `runChecks` non passa comandi vuoti · ✅ rettifica privacy append-only su report SK-7 · ✅ `source_refs` escludono untracked non pubblicabili · ✅ test/tools, H-1, docs, lint, validator capsule e validate globale rieseguiti verdi il 24-08-26 |
-| S8 | `SK-8` — radice robusta della suite | **`IMPLEMENTATO, non dichiarato`** | `npm run test:mss` verde da profondità diverse (risoluzione da posizione file); manca prova registrata e promozione documentale |
+| S8 | `SK-8` — radice robusta della suite | **`CHIUSO` 25-08-26 — firma Matteo post-revisione Cursor T6** | ✅ test nominato `SK-8 — test:mss esegue l’intera suite da cwd diversa…`: wrapper dalla root, una sola suite completa nel child da cwd temporanea esterna, root risolta da `import.meta.url`; prove negative su flag incompleto e cwd repo · revisione indipendente Cursor `PASS` · firma verbatim Matteo 25-08-26 |
 | S9 | `SK-9` — `mss:move` | **`CHIUSO` 24-08-26 (`M-E`, `M12`)** | ✅ `npm run mss:move -- <sorgente> <destinazione>` sposta un file e aggiorna i riferimenti vivi · ✅ `npm run test:mss:tools` include il caso nominato `T1/R6` (move, rifiuti, rollback, costo < baseline) · ✅ controverifica Codex/OpenAI, famiglia diversa da Cursor/Composer, con sandbox indipendente: move+ref aggiornato, rifiuto rosso, rollback su validate rosso |
 | S10 | `SK-10` — manuale utente + intervista di bootstrap | **`PROVATO` 24-08-26 (`M-D`); riserva `N6` chiusa da `M-G` CHIUSO (`M12`)** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ✅ **`P2B` fatto:** `mss:export` copia il motore e verifica la chiusura degli import; `mss:doctor` è la checklist di primo run; i path cablati sono parametrici via `scripts/mss/config.mjs` con **default identici a prima** · ✅ prova in repo vergine **rifatta dall'orchestratore in una terza cartella con nomi propri**: `npm run validate:mss:all` verde in repo ospite configurata · ✅ default invariato provato confrontando `REPORT_PATH_RE` col letterale di `git show HEAD:scripts/mss/adapter.mjs` · ✅ prima consegna **respinta** dalla controverifica (test `R8` ambientale non dichiarato come verifica di progetto → checklist rossa proprio in una repo ospite configurata), riparata nel completamento · ✅ **riserva `N6` rimossa:** passo `owner` di `mss:doctor` non accusa più Git — chiuso in `M-G` con controverifica famiglia diversa. Atti `M-D`: [`Report-md-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-md-portabilita-24-08-26.md) · [`Report-completamento-md-r8-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md) · [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) · atti `M-G`: vedi §15 |
 | S11 | `SK-11` — test automatici degli attrezzi MSS | **`CHIUSO` 24-08-26 — decisione Matteo (`T4`)** | ✅ `npm run test:mss:tools` e `npm run test:mss` verdi (conteggio mobile: eseguire i comandi) · ✅ hook Claude e guard PROD coperti dai casi nominati `A1`–`A4`; `M-C` copre `N1`/`N2`; `M-D` copre `R8`/`R2`; `M-G` copre `N3`–`N6` · ✅ `P4`: caso nominato `capsule: P4/SK-11 — template R1 privacy resta di mode e non classifica la chat`, con input contraddittorio e contratto privacy letterale · ✅ `T3` / M12: controverifica Cursor/Composer, famiglia diversa dall’esecutore OpenAI/gpt-5.6 · ✅ **`T4`:** Matteo ha firmato la chiusura formale dopo M12 — nessuna prova tecnica residua |
@@ -108,10 +108,10 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 
 | Pacchetto | Stato operativo dopo audit | Cosa deve accadere prima di una nuova chiusura |
 |---|---|---|
-| `SK-4` | **APERTO**: B1–B3 restano veri; **P1 D1** ha allineato pre-commit e CI su `requireCapsule: true` (prove in suite H-1/tools). | Restano bypass non coperti e schema gate in prosa; chiusura formale solo Matteo. |
+| `SK-4` | **CHIUSO 25-08-26**: B1 staged chiuso; B2/B3 e D18 con test nominati; revisione Cursor T6 + firma Matteo. | Nulla. Chiuso. Eventuale rettifica semantica SK4-ASSERT (Output axis) resta backlog opzionale post `--verify`. |
 | `SK-5` | **CHIUSO 24-08-26 (`M13`)**: `npm run validate` è `validate:app`+`validate:mss:all`; il job CI `mss` esegue un unico step `npm run validate:mss:all`, ed è stato **osservato verde su GitHub Actions reale** dopo il primo push (decisione `M5`). | Nulla. Chiuso. |
 | `SK-7` | **CHIUSO 24-08-26 (`M3`)**: fix B D2/D3 e privacy append-only controverificati; sintassi canonica e source refs pubblicabili coperti da test. | Revisione indipendente (`D17`) resta consigliata, non gate. |
-| `SK-8` | **IMPLEMENTATO, non dichiarato**: la suite gira già da una root diversa grazie alla risoluzione dalla posizione del file. | Registrare una prova riproducibile e promuovere lo stato documentale. |
+| `SK-8` | **CHIUSO 25-08-26**: suite da cwd esterna con test nominato; revisione Cursor T6 + firma Matteo. | Nulla. Chiuso. |
 | `SK-11` | **CHIUSO 24-08-26 (`T4`)**: suite verde; hook `A1`–`A4`; copertura `M-C`/`M-D`/`M-G`; `P4` con M12 (`T3`); firma formale di Matteo. | Nulla. Chiuso. |
 
 Analisi, prove e motivazione dell'ordine:
@@ -797,6 +797,15 @@ valida e conferma esplicita che le tre condizioni `M12` sono soddisfatte. Atti:
 `non_osservato:…`; `session_type` / `capsule_status` / template `privacy` enum sono costanti di mode
 (`R1_MODE_CONSTANTS`), non fatti della chat. Il verdetto M12 di R1 **non** si riapre.
 
+**Completamento operativo T6:** il target §16.2 è ora provato anche come flusso di chiusura reale:
+scheda anti-errore di una pagina, ingresso Meta minimo, file giudizi con i soli tre assi, controlli
+eseguiti da `mss:capsule`, `--verify` con path completo risolvibile e una sola capsula generata.
+Atti: [`Report-r1-completamento-t6-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-r1-completamento-t6-24-08-26.md) e
+[`Report-controverifica-r1-t6-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-r1-t6-24-08-26.md).
+Esito T6: `PASS_CON_RISERVE`; lo stato autorevole resta **CHIUSO CON RISERVE — M12 soddisfatto**.
+L'amendment emesso dall'esecutore T6 è append-only e tecnicamente valido, ma non conta come nuova
+indipendenza M12: la controverifica Cursor/Composer storica resta la prova di famiglia diversa.
+
 ### Ottavo ciclo del 24-08-2026 — `T2` / `mss:review` **CHIUSO** (`M12`)
 
 **`T2` / `SK-3` è `CHIUSO`.** Esecutore Cursor/Composer; controverifica M12 OpenAI/gpt-5.6-sol. Atti:
@@ -843,7 +852,70 @@ tecnica residua per `SK-11`. Atti: report `T4` di questa seduta.
 - **`SK-11` è `CHIUSO`:** decisione formale di Matteo, non sostituisce M12 ma lo consuma.
 - **Invariati:** `H-1.3` = `PASS_CON_RISERVE`; `WP-1` = NO-GO; `SEP-G5` non PASS.
 
-**Prossima azione autorizzata: `T5`** (valutare mandato `SK-4` — bypass residui e schema gate in prosa; oppure `SK-8` promozione documentale — solo se Matteo apre esplicitamente; non aprire WP-1).
+**Prossima azione autorizzata: `T6`** (R1 poi SK-4 poi SK-8 — Codex orchestratore; SK-10 e WP-1 fuori per `D25`–`D27`).
+Mandato Codex: [`Prompt-orchestratore-codex-R1-SK4-SK8-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Prompt-orchestratore-codex-R1-SK4-SK8-24-08-26.md).
+`SK-10` resta **differito**. Prodotto app e `WP-1` **non** si aprono in questo ciclo.
+
+### Duodecimo ciclo del 24-08-2026 — decisione strategica Matteo (`T6`)
+
+Matteo ha fissato la sequenza di lavoro prima di qualsiasi pilota:
+
+1. **`R1` al 100%** — capsula come sottoprodotto, non compito extra; ridurre errori agente su chiusura.
+2. **`SK-4`** — chiudere bypass enforcement residui (B1–B3 e schema gate in prosa).
+3. **`SK-8`** — promozione documentale della suite da root diverse.
+
+**Esplicitamente fuori da questo ciclo:** `SK-10` (portabilità/export, più avanti); rilascio prodotto
+CalendarBackup (`main` vs `env/test`); `WP-1` piloti reali.
+
+**Obiettivo dichiarato:** usare MSS senza pagare costi inutili di token e minimizzare retry su
+capsule/report; poi sviluppo e testing come pilota **solo quando le fondamenta sono pronte**.
+
+**Esecutore del ciclo:** Codex in seduta orchestratore con sub-agent; famiglia diversa per M12 su
+ogni mandato tecnico.
+
+#### Esito operativo del ciclo `T6`
+
+1. **R1:** target operativo completato e controverificato `PASS_CON_RISERVE`; stato invariato
+   **CHIUSO CON RISERVE — M12 soddisfatto**. La chiusura reale ha usato solo tre giudizi e una capsula
+   generata; la scheda breve evita header manuale, separatori errati e `evidence_ref` a basename.
+2. **SK-4:** **`CHIUSO` 25-08-26**. B1 chiuso (`committedRecords` solo da `HEAD`); B2/B3 e D18 con
+   test nominati. Revisione indipendente Cursor `PASS_CON_RISERVE`; firma Matteo verbatim
+   «Firmo SK-4 e SK-8 come CHIUSO dopo revisione Cursor del 25-08-26.»
+3. **SK-8:** **`CHIUSO` 25-08-26**. Suite da cwd esterna senza raddoppio; revisione Cursor `PASS`;
+   stessa firma formale di Matteo.
+
+Atti esecutore/revisore:
+
+- R1: [`Report-r1-completamento-t6-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-r1-completamento-t6-24-08-26.md) · [`Report-controverifica-r1-t6-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-r1-t6-24-08-26.md)
+- SK-4: [`Report-sk4-completamento-t6-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-sk4-completamento-t6-24-08-26.md) · [`Report-controverifica-sk4-t6-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-sk4-t6-24-08-26.md)
+- SK-8: [`Report-sk8-promozione-t6-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-sk8-promozione-t6-24-08-26.md) · [`Report-controverifica-sk8-t6-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-sk8-t6-24-08-26.md)
+
+**Riserva pre-commit T6-ORPHAN (chiusa al commit):** prima del commit unico del 25-08-26,
+`--verify` sui record esecutori untracked restituiva `MSS-AMENDMENT-ORPHAN`. Dopo il commit il batch
+append-only è autorizzato; esito registrato in
+[`Report-batch-verify-t6-post-commit-25-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-batch-verify-t6-post-commit-25-08-26.md).
+
+**Riserva SK4-ASSERT (backlog opzionale):** nel report controverifica SK-4 l'asserzione Output cita
+`independently_verified` su un amendment non emesso; la narrativa §7 è corretta. Rettifica semantica
+append-only solo se un mandato futuro la richiede — `--verify` non tocca i campi Output.
+
+**Revisione famiglia diversa:** [`Report-revisione-indipendente-ciclo-t6-codex-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-revisione-indipendente-ciclo-t6-codex-24-08-26.md)
+(Cursor/Composer 25-08-26) — verdetto `PASS_CON_RISERVE` sul ciclo intero.
+
+#### Chiusura formale ciclo `T6` — 25-08-2026
+
+- **Firma Matteo (verbatim):** «Firmo SK-4 e SK-8 come CHIUSO dopo revisione Cursor del 25-08-26.»
+- **Commit unico** del working tree T6 su `env/test` (no push finché Matteo non autorizza).
+- **Ciclo `T6`:** **CHIUSO**.
+
+**Prossima azione autorizzata: `T7`** (attesa Matteo: push remoto o riapertura esplicita `D27`/`WP-1`; backlog opzionale `SK-2`, hook Q/R, `H13-E2`; nessun pacchetto SK-* si apre automaticamente). `SK-10`, prodotto/`src/` e `H-1.3` PASS pulito restano fuori perimetro.
+
+### Tredicesimo ciclo del 25-08-2026 — `T6` eseguito e **CHIUSO** (`M12` + firma Matteo)
+
+Revisione indipendente Cursor [`Report-revisione-indipendente-ciclo-t6-codex-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-revisione-indipendente-ciclo-t6-codex-24-08-26.md):
+`PASS_CON_RISERVE` sul ciclo intero. Firma verbatim Matteo: «Firmo SK-4 e SK-8 come CHIUSO dopo revisione Cursor del 25-08-26.»
+Commit unico del working tree T6 su `env/test` (no push finché Matteo non autorizza). Batch `--verify` post-commit in
+[`Report-batch-verify-t6-post-commit-25-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-batch-verify-t6-post-commit-25-08-26.md).
 
 **Dato messo agli atti su richiesta di Matteo, da trattare in seduta separata:** `main` è fermo al
 23-06-26. `env/test` è **127 commit avanti**, di cui 24 toccano `src/`: **12 778 righe di app**
@@ -871,6 +943,14 @@ prima del `git stash clear`. Worktree: uno solo, pulito.
 | `D23` | Contenuto di `Q1` alla chiusura | **path del mandato + revisione/hash + delta della chat** | il mandato già salvato non viene ricopiato; il verbatim resta obbligatorio solo per i messaggi di Matteo che non esistono in alcun file. Effetto: meno duplicazione senza perdere la provenienza. Fonte: stesso report §7 + `CHIUSURA_SESSIONE.md` §11 |
 | `D24` | Comportamento dell'hook senior a controlli verdi | **silenzio condizionato** | con domande complete e validatore MSS verde l'hook tace; parla soltanto se una risposta manca o la capsula è davvero rossa. Effetto: niente turno «mente fredda» duplicato. Fonte: stesso report §7 + `.claude/hooks/fine-sessione-senior.mjs` v6 |
 | `M3` | Chiusura `SK-7` | **CHIUSO** | Matteo autorizza la chiusura dopo controverifica indipendente: D2/D3, privacy append-only e riferimenti pubblicabili sono provati; `D17` resta un avviso, non un gate. |
+
+### Decisioni di Matteo — 24-08-2026 sera (`D25`–`D27`, CHIUSE)
+
+| ID | Decisione | Scelta | Conseguenza operativa |
+|---|---|---|---|
+| `D25` | Sequenza prossimo lavoro MSS | **`R1` → `SK-4` → `SK-8`** | un mandato per famiglia; `SK-10` differito; nessun altro pacchetto SK-* si apre in parallelo senza sì esplicito |
+| `D26` | Prodotto CalendarBackup | **in pausa** | nessun mandato su `src/`, rilascio `main`, merge env/test in questa fase MSS |
+| `D27` | Pilota (`WP-1`) | **solo dopo fondamenta** | obiettivo = MSS usabile a basso costo e basso tasso errore; `WP-1` resta NO-GO finché `D27` non viene riaperto in chat dedicata |
 
 **Principio `D18`, da applicare a tutti i pacchetti `SK-*`:** un attrezzo che ha bisogno di una regola
 già scritta **la importa**. Se non è esportata, si esporta. Due implementazioni della stessa regola

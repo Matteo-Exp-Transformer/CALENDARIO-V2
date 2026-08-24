@@ -77,6 +77,10 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 
 **Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. D2/D3 sono **chiusi** (sintassi canonica `ID=>comando`, ambigui rifiutati).
 
+Per chiudere una seduta standard/deep senza ricostruire questo capitolo, seguire la scheda operativa
+di una pagina [`SCHEDA_CHIUSURA_META_R1.md`](SCHEDA_CHIUSURA_META_R1.md). La scheda è un promemoria
+anti-errore: struttura del report e domande restano proprietarie di `CHIUSURA_SESSIONE.md`.
+
 **R1 — ingresso compatto.** `npm run mss:capsule -- --template-r1` produce il file giudizi
 minimo: soltanto `persona`, `sistema`, `output`. Con quel formato il generatore compone UUID,
 timestamp, runtime, Git, `source_refs` e risultati dei `--check`; non inventa intent, soggetto o

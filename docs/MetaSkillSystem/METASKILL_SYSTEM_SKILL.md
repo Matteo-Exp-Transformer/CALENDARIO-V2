@@ -16,7 +16,9 @@ description: >-
 
 Se devi lavorare sul MetaSkillSystem **senza** rileggere tutto il corpus, apri per primo
 [`MANUALE_OPERATIVO_MSS_V0.md`](MANUALE_OPERATIVO_MSS_V0.md): comandi, flussi light/standard/revisione,
-owner vs viste, limiti correnti e confine P2A/P2B. Poi `npm run mss:status` e `PLAN_V0.md` §15.
+owner vs viste, limiti correnti e confine P2A/P2B. Poi apri il **mandato esatto ricevuto**; per una
+chiusura standard/deep usa la [scheda R1 anti-errore](SCHEDA_CHIUSURA_META_R1.md). Esegui
+`npm run mss:status` e leggi solo le sezioni owner richieste dal mandato: non esplorare il corpus.
 
 ## Ordine di lavoro
 

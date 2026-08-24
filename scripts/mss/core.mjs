@@ -979,7 +979,12 @@ function validateBundleRecords(entries, file, workspaceRoot, out, options) {
   const byCapture = new Map()
   const logicalEntries = []
   const historicalById = new Map()
-  const committedById = buildCommittedById(options.historicalRecords || [])
+  // «Storico leggibile» significa presente in HEAD, non soltanto visibile nella
+  // vista staged. Tenere separati i due insiemi impedisce a due record legacy
+  // nuovi, staged insieme, di qualificarsi a vicenda come già committati.
+  const committedById = buildCommittedById(
+    options.committedRecords ?? options.historicalRecords ?? [],
+  )
 
   for (const historicalEntry of options.historicalRecords || []) {
     const record = historicalEntry?.record || historicalEntry
@@ -1460,9 +1465,11 @@ export function validateGlobalRecordView(entries = []) {
 export function validateMss(input, options = {}) {
   const workspaceRoot = options.workspaceRoot || process.cwd()
   const diagnostics = []
+  const historicalRecords = mergeArtifactHeadRecords(input, options)
   const validationOptions = {
     ...options,
-    historicalRecords: mergeArtifactHeadRecords(input, options),
+    historicalRecords,
+    committedRecords: options.committedRecords ?? historicalRecords,
   }
 
   if (input.stagedContent != null && input.worktreeContent != null) {
