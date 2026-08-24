@@ -343,6 +343,16 @@ amendment:
 - `amends` corregge o integra campi puntuali; ciò che non è citato resta corrente.
 - `supersedes` sostituisce l'intero significato corrente del target, che resta comunque leggibile.
 - Motivo, autore (`recorded_by`) e data (`created_at`/`effective_at`) sono obbligatori.
+- **`previous_value_or_hash` porta il valore, mai un digest** — chiude la riserva `H13-POST-L01`.
+  Il campo contiene il **valore effettivo** che il target ha prima della rettifica, nella sua forma
+  nativa (stringa, numero, oggetto, array). Il confronto avviene fra la **forma canonica** del valore
+  sul target e la forma canonica di questo campo (`canonicalJson` su entrambi i lati), quindi
+  l'ordine delle chiavi di un oggetto non conta e nessuna codifica va dichiarata. **Nessun algoritmo
+  di hash è previsto o supportato:** scrivere qui un digest — sha256 o altro — produce
+  `MSS-AMENDMENT-PREVIOUS-MISMATCH`, perché verrebbe confrontato come stringa letterale contro il
+  valore vero. Il nome del campo conserva `_or_hash` per compatibilità storica con i record già
+  scritti: è un residuo del nome, non una seconda forma ammessa. Prova nelle due direzioni:
+  `npm run test:mss` (gruppo `H13-POST-L01 — previous_value_or_hash è il valore, mai un digest`).
 - Una vista applica la catena in ordine di `effective_at`; rettifiche concorrenti incompatibili
   restano `conflict_unresolved`, non vengono risolte per ordine arbitrario.
 - Un errore scoperto prima di `final` può correggere il draft. Dopo `final`, solo append.

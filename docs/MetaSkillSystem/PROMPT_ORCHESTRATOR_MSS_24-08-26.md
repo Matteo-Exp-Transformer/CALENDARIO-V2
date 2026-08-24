@@ -152,6 +152,13 @@ aperto. `V1` non è un debito, è una **fabbrica di debito**.
 Ordine vincolante, derivato dalle priorità dichiarate da Matteo: *prima ciò che è piccolo e veloce,
 poi ciò che fa risparmiare token, poi ciò che dà agilità agli agenti, poi ciò che è strutturale.*
 
+> ⭐ **ORDINE AGGIORNATO dalla decisione `M11` (24-08-2026 sera tardi): `M-G` → `M-F` → `M-E`.**
+> `M-F` **sale** e `M-E` **scende**. Motivo misurato, non di gusto: `M-E` costruisce `mss:move`, che
+> paga su un'operazione **rara**; `M-F` (viste generate) e il completamento di `R1` pagano a **ogni
+> seduta** — e nella stessa seduta si è misurato che il costo di una seduta non è nei cancelli (87 s)
+> ma nella lettura (~2 080 righe) e nella capsula scritta a mano (1 348 righe di JSON il solo 24-08).
+> La colonna «#» qui sotto conserva i nomi originali: **l'ordine di esecuzione è quello di `M11`.**
+
 | # | Mandato | Copre | Categoria | Modello suggerito |
 |---|---|---|---|---|
 | `M-A` | ~~**Protezioni**~~ **FATTO 24-08** | `A1` `A2` `A3` `A4` | piccolo, sicurezza | esecutore **Sonnet** (fix meccanici, perimetro chiuso) |
@@ -191,8 +198,16 @@ mandato: un report, una capsula, `controls[]` con una riga per fix.
    il budget era troppo stretto.
 6. **Vietato scrivere numeri mobili nei documenti.** Conteggi di test, sedute, record e path si
    **citano come comando**, mai come valore. È la regola che `V2`/`V3` hanno violato.
-7. **Nessuna chiusura di pacchetto senza Matteo.** Tu puoi dichiarare `PROVATO`; `CHIUSO` è sempre e
-   solo una sua decisione (`M*`).
+7. ⭐ **Chiusura di pacchetto — RIBALTATA dalla decisione `M12` (24-08-2026 sera tardi).**
+   La regola precedente («`CHIUSO` è sempre e solo una decisione di Matteo») **non vale più**, e la
+   sua conservazione era un difetto: il 24-08 il sistema ha chiesto a Matteo di firmare **tre
+   pacchetti su quattro che non erano pronti**. Da ora un pacchetto è `CHIUSO` **da te**, senza
+   passare da lui, quando ha tutti e tre: **(a)** una prova che gira a comando, **(b)** un test che
+   **nomina il difetto** che copre, **(c)** una controverifica condotta da una **famiglia di modello
+   diversa**. Se manca anche solo uno dei tre, non è chiuso — e **non si chiede a Matteo di firmare
+   al posto della prova mancante**. Restano sue: ciò che è ambiguo, ciò che è contestato, ciò che
+   tocca dati reali o produzione, e ciò dove porta una competenza propria. Parole sue: «*non voglio
+   dover dire chiuso di task già completate dove non ho competenze da portare*».
 
 ---
 

@@ -74,7 +74,7 @@ lavoro del masterplan.
 | 2 | `WP-0.1` — hardening pre-pilota | `CHIUSO NEL DISEGNO` 09-08-26 | efficacia da osservare nel primo pilota |
 | 3 | `H-1` — validator + hook rapidi | **chiusura invalidata dalla revisione H-1.1** | resta storia del primo hardening |
 | 3.1 | `H-1.1` — integrità append-only e semantica | **`CHIUSO NEL DISEGNO` 10-08-26** | revisione completa esterna prima di WP-1 |
-| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS_CON_RISERVE` 10-08-26** (riserva H13-POST-L01; bypass E2 dichiarati) | track L5 in git; **non** apre WP-1; G5 non PASS |
+| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS_CON_RISERVE` 10-08-26** — ✅ **riserva `H13-POST-L01` CHIUSA il 24-08-26** (`M13`): il contratto §6 dichiara che `previous_value_or_hash` porta il **valore**, confrontato in forma canonica, e che nessun digest è supportato; test nelle due direzioni `H13-POST-L01 — previous_value_or_hash è il valore, mai un digest` in `npm run test:mss`, verificato non vacuo (sostituendo il digest col valore il gruppo diventa rosso). ⚠️ restano i **bypass E2 dichiarati**: `PASS` pulito non è dichiarato | bypass E2; **non** apre WP-1; G5 non PASS |
 | 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NO-GO** (H-1.3 con riserve ≠ via libera) | ricostruzione fredda senza perdita/invenzione |
 | 5 | `WP-2` — mining storico normalizzato | `BLOCCATO DA PRIMO PILOTA` | eventi citano fonti e schema/versione |
 | 6 | `WP-3` — kernel, manifest, pacchetti e chiavi | `NON INIZIATO` | autorità e precedenze formalizzate |
@@ -96,7 +96,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S2 | `SK-2` — `mss:status` (sola lettura) | `IMPLEMENTATO, non allineato` | il comando esiste e gira; il suo output ripete numeri/stati stale e non controlla roadmap/handoff |
 | S3 | `SK-3` — `mss:review` (sola lettura) | `NON INIZIATO` | su una seduta con violazione nota la trova; su una pulita non inventa nulla |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`APERTO` — D1 chiuso in P1, chiusura formale pendente** | B1–B3 restano provati · ✅ pre-commit passa `requireCapsule: true` come CI (suite H-1/tools) · restano bypass/schema gate in prosa · chiusura storica `D20` rettificata, non cancellata |
-| S5 | `SK-5` — controlli MSS in CI su `env/test` | **`PROVATO` 24-08-26 — CI reale osservata verde con la forma nuova; chiusura formale solo Matteo** | `npm run validate` è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. ✅ **24-08-26: primo push eseguito (decisione `M5`) e job `mss` osservato VERDE su GitHub Actions reale** con questa forma — non più una simulazione locale. Verifica: `gh run list --branch env/test` |
+| S5 | `SK-5` — controlli MSS in CI su `env/test` | **`CHIUSO` 24-08-26 — decisione `M13` di Matteo.** Nessuna prova tecnica restava da produrre: era l'unico dei quattro pacchetti «in attesa di firma» davvero pronto | `npm run validate` è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. ✅ **24-08-26: primo push eseguito (decisione `M5`) e job `mss` osservato VERDE su GitHub Actions reale** con questa forma — non più una simulazione locale. Verifica: `gh run list --branch env/test` |
 | S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica/--fail` rispondono · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ copertura test del lettore parziale (suite tools, non H-1 intero) · rettificato 22-08-26: capsula `SK-6` corretta con `amendment`; criterio revisori su `recorded_by.role` · ✅ **23-08-26 vista effettiva:** `query.mjs` delega `core.mjs::applyAmendmentsView()` · ✅ **23-08-26 P1:** `--fail` usa denominatori calcolati, non literal storici · revisioni/controlli: numero mobile → `npm run mss:query -- --verifica` · **Matteo ha dichiarato `SK-6` CHIUSO (`D16`)** |
 | S7 | `SK-7` — `mss:capsule` (generazione) | **`CHIUSO` 24-08-26 — decisione `M3` di Matteo dopo controverifica** | ✅ attrezzo e report SK-7 esistono · ✅ fix B: `parseCheckSpec` canonico `ID=>comando`, legacy un solo `:`, ambigui rifiutati; il comando può contenere ulteriori `=>` · ✅ `runChecks` non passa comandi vuoti · ✅ rettifica privacy append-only su report SK-7 · ✅ `source_refs` escludono untracked non pubblicabili · ✅ test/tools, H-1, docs, lint, validator capsule e validate globale rieseguiti verdi il 24-08-26 |
 | S8 | `SK-8` — radice robusta della suite | **`IMPLEMENTATO, non dichiarato`** | `npm run test:mss` verde da profondità diverse (risoluzione da posizione file); manca prova registrata e promozione documentale |
@@ -109,7 +109,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | Pacchetto | Stato operativo dopo audit | Cosa deve accadere prima di una nuova chiusura |
 |---|---|---|
 | `SK-4` | **APERTO**: B1–B3 restano veri; **P1 D1** ha allineato pre-commit e CI su `requireCapsule: true` (prove in suite H-1/tools). | Restano bypass non coperti e schema gate in prosa; chiusura formale solo Matteo. |
-| `SK-5` | **PROVATO 24-08-26**: `npm run validate` è `validate:app`+`validate:mss:all`; il job CI `mss` esegue un unico step `npm run validate:mss:all`, ed è stato **osservato verde su GitHub Actions reale** dopo il primo push (decisione `M5`). | Non resta nessuna prova tecnica da produrre: la chiusura formale è una decisione di Matteo. |
+| `SK-5` | **CHIUSO 24-08-26 (`M13`)**: `npm run validate` è `validate:app`+`validate:mss:all`; il job CI `mss` esegue un unico step `npm run validate:mss:all`, ed è stato **osservato verde su GitHub Actions reale** dopo il primo push (decisione `M5`). | Nulla. Chiuso. |
 | `SK-7` | **CHIUSO 24-08-26 (`M3`)**: fix B D2/D3 e privacy append-only controverificati; sintassi canonica e source refs pubblicabili coperti da test. | Revisione indipendente (`D17`) resta consigliata, non gate. |
 | `SK-8` | **IMPLEMENTATO, non dichiarato**: la suite gira già da una root diversa grazie alla risoluzione dalla posizione del file. | Registrare una prova riproducibile e promuovere lo stato documentale. |
 | `SK-11` | **APERTO**: suite verde; **P1 D5** ha rimosso numeri stale da §4-bis; 24-08-26 hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4`. | Test per privacy template (resta scoperto, P4); conteggi sempre da comando, non da owner. |
@@ -666,6 +666,54 @@ sostituiti dal comando che li produce. È un tampone: torneranno alla prima sedu
   prima volta**.
 - ~~`SK-6` (`mss:query`)~~ → **costruito e revisionato** il 22-08-26, da due famiglie di modello,
   poi dichiarato **CHIUSO** da Matteo con `D16` il 23-08-26.
+
+### Quarto ciclo del 24-08-2026 — seduta di **punto della situazione** (misura, non costruzione)
+
+Seduta di analisi aperta da Matteo con «*ho bisogno di fare il punto della situazione*». Non ha
+costruito un mandato: ha **misurato il costo del sistema** e prodotto le decisioni `M11`–`M14`.
+Atti: [`Report-punto-situazione-mss-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-punto-situazione-mss-24-08-26.md).
+
+**I numeri che hanno mosso le decisioni** (misurati, non stimati — riprodurli col comando):
+
+| Misura | Valore | Conseguenza |
+|---|---|---|
+| `npm run validate` end-to-end | **87 s** (app 60% · MSS 40%) | il costo di una seduta **non** è nei cancelli |
+| pre-commit | **~1 s** | non lancia test né typecheck |
+| accoppiamento `scripts/mss/` → `src/` o npm | **zero import** | il motore è Node puro |
+| lettura obbligatoria di un agente MSS prima di agire | **~2 080 righe** | qui è il costo vero |
+| capsule scritte a mano il 24-08 | **1 348 righe di JSON** | `R1` al 50% è il collo di bottiglia |
+| documenti vs codice, 21→24-08 | **+24 214 righe** vs **+4 373** | rapporto 5,5 : 1 |
+| effetto del mandato orchestratore | 23-08 **7,2 : 1** → 24-08 **5,4 : 1** | la direzione presa funziona già |
+
+**Il ribaltamento che ne discende:** l'ipotesi di partenza di Matteo — *esportare il MSS in una repo
+sua per alleggerire i test a ogni `validate`* — è **falsificata dalla misura**. Lo split
+risparmierebbe **52 secondi** su una seduta di quattro ore, e il corpus (460 report, 124 093 righe)
+non è trasferibile perché è la materia prima che il motore legge. Vedi `M14`.
+
+### Decisioni di Matteo — 24-08-2026 sera tardi (`M11`–`M14`, CHIUSE)
+
+| ID | Decisione | Scelta | Conseguenza operativa |
+|---|---|---|---|
+| `M11` | Ordine dei mandati residui | **`M-G` → `M-F` → `M-E`** (`M-F` sale, `M-E` scende) | `M-E` costruisce `mss:move`, prezioso ma per un'operazione **rara**; `M-F` (viste generate) e il completamento di `R1` pagano a **ogni** seduta. Sostituisce l'ordine di `PROMPT_ORCHESTRATOR_MSS_24-08-26.md` §4 |
+| `M12` | ⭐ **Chi chiude un pacchetto** | **si chiude da solo** | Un pacchetto con **prova eseguibile** + **test che nomina il difetto** + **controverifica di famiglia diversa** è `CHIUSO` **senza passare da Matteo**. Motivazione sua, verbatim: «*io al momento sento di non avere le competenze per validare una funzione, mi sto fidando delle controverifiche di modelli diversi che testano da 0 il prodotto. quindi non voglio dover dire chiuso di task già completate dove non ho competenze da portare*». **Ribalta la regola §5.7 del mandato vivo.** A Matteo restano: ciò che è ambiguo, ciò che è contestato, e ciò dove porta una competenza propria |
+| `M13` | Le quattro «chiusure in attesa di firma» | **`SK-5` CHIUSO · le altre tre no** · **`H13-POST-L01` sistemata** | Verificato prima di chiedere: solo `SK-5` era pronto. `SK-10` ha la riserva `N6` (vive in `M-G`), `SK-4` e `SK-11` hanno copertura reale mancante. **È la prova sul campo di `M12`:** il sistema chiedeva a Matteo di firmare tre pacchetti non pronti. `H13-POST-L01` chiusa a livello contratto + test nelle due direzioni |
+| `M14` | Export del MSS in una repo dedicata | **archiviato come non-problema** | Non c'è risparmio da inseguire (52 s). Si riapre **solo** per riuso esterno reale, e in quel caso la strada è `mss:export` in repo ospite **dopo** `M-G` — non un trasloco. Il corpus resta dove si lavora |
+
+**Non deciso, e non va dato per deciso:** aprire `R1` (capsula come sottoprodotto) come **mandato
+dichiarato** è **raccomandato dall'orchestratore e ancora aperto**. È il singolo intervento con il
+ritorno più alto misurato in questa seduta.
+
+**Dato messo agli atti su richiesta di Matteo, da trattare in seduta separata:** `main` è fermo al
+23-06-26. `env/test` è **127 commit avanti**, di cui 24 toccano `src/`: **12 778 righe di app**
+scritte, testate (118/118 e2e sul cantiere Servizio) e **mai rilasciate ai clienti** — 62 giorni.
+Non è un difetto del MSS; è il cantiere che il MSS ha oscurato. Non aprirlo di iniziativa.
+
+**Igiene eseguita:** gli **8 stash** pendenti (dal 04-05-26) sono stati valutati uno per uno e
+**azzerati**. Nessuno conteneva lavoro vero: `stash@{0}` portava lo schema `0.1.1` e tre script npm
+**già in HEAD**; `stash@{2}` avrebbe **rimosso** l'hook di chiusura dal pre-commit; `stash@{5}` era
+superato (le icone sono state rimappate, non rimosse); i restanti erano 1-3 file su lavori chiusi.
+Archiviati come patch in `docs/_lavoro/stash-archivio-24-08-26/` (cartella privata, gitignored)
+prima del `git stash clear`. Worktree: uno solo, pulito.
 
 ### Decisioni di Matteo — 23-08-2026 (`D16`–`D24`, CHIUSE)
 

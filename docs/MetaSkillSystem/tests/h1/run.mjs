@@ -428,6 +428,51 @@ function ownerRefAmendment({ recordId, amendmentId, ordinal, corrected, previous
   return record
 }
 
+/**
+ * H13-POST-L01 — la riserva che teneva `H-1.3` in PASS_CON_RISERVE dal 10-08-26.
+ *
+ * Il difetto non era nel codice ma nel contratto: `previous_value_or_hash` si chiama «or_hash» e il
+ * contratto non dichiarava quale delle due forme valesse, quindi due lettori potevano intenderlo
+ * diversamente. `core.mjs` confronta `canonicalJson` su entrambi i lati: il campo è SEMPRE il valore.
+ *
+ * Il test prova la dichiarazione nelle due direzioni — il valore passa, il suo digest viene negato —
+ * perché una sola delle due lascerebbe la porta aperta all'interpretazione che il contratto esclude.
+ */
+function testH13PreviousIsValueNotDigest() {
+  const failures = []
+  const previousValue = 'owner-contract'
+
+  const withValue = ownerRefAmendment({
+    recordId: 'mss-rec-0198b130-0001-7000-8000-000000000031',
+    amendmentId: 'mss-amd-0198b130-0001-7000-8000-000000000051',
+    ordinal: 9,
+    corrected: 'source-contract',
+    previous: previousValue,
+  })
+  const valueResult = validateRecords([...validBundle(), withValue])
+  if (valueResult.denyCodes.includes(RULE.AMENDMENT_PREVIOUS_MISMATCH)) {
+    failures.push(`H13-POST-L01: il valore nativo e stato negato; codes=${valueResult.denyCodes.join(',')}`)
+  }
+
+  const digest = createHash('sha256').update(previousValue).digest('hex')
+  if (digest === previousValue) {
+    failures.push('H13-POST-L01: test vacuo — il digest coincide con il valore')
+  }
+  const withDigest = ownerRefAmendment({
+    recordId: 'mss-rec-0198b130-0001-7000-8000-000000000032',
+    amendmentId: 'mss-amd-0198b130-0001-7000-8000-000000000052',
+    ordinal: 10,
+    corrected: 'source-contract',
+    previous: digest,
+  })
+  const digestResult = validateRecords([...validBundle(), withDigest])
+  if (!digestResult.denyCodes.includes(RULE.AMENDMENT_PREVIOUS_MISMATCH)) {
+    failures.push(`H13-POST-L01: un digest sha256 e stato accettato come previous; codes=${digestResult.denyCodes.join(',')}`)
+  }
+
+  return failures
+}
+
 function testH13AmendmentSemantics() {
   const failures = []
   const good = ownerRefAmendment({
@@ -2100,6 +2145,7 @@ function main() {
     ['H-1.2 cross-file identity', testH12CrossFileIdentity],
     ['H-1.2 final amendment target', testH12FinalAmendmentTargetsFinal],
     ['H-1.3 amendment semantics', testH13AmendmentSemantics],
+    ['H13-POST-L01 — previous_value_or_hash è il valore, mai un digest', testH13PreviousIsValueNotDigest],
     ['H-1.2 supplemental relations', testH12SupplementalRelations],
     ['H-1.2 manifest snapshot trust', testH12ManifestSnapshotTrust],
     ['H-1.3 manifest lifecycle + supplemental relations', testH13ManifestLifecycleAndRelations],

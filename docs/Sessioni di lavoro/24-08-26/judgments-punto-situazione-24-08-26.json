@@ -1,0 +1,244 @@
+{
+  "session_event": {
+    "intent_user": "Fare il punto della situazione: come si muove oggi un agente nel MSS, se conviene snellire per risparmiare nelle chat, se Matteo sta lavorando bene e quali documenti gli mancano, e se ha senso esportare il MSS in una repo dedicata. Poi chiudere la seduta e sistemare la riserva vecchia.",
+    "event_kind": "session_close",
+    "session_type": "standard",
+    "capsule_status": "completa",
+    "role_key": "agente-senior-punto-situazione",
+    "area": "MetaSkillSystem / misura del costo del sistema, governo delle chiusure, cruscotto per Matteo",
+    "environment": "repo locale CalendarBackup-v2 su env/test, HEAD 48551ec all'apertura, nessuna operazione Supabase",
+    "authorization": {
+      "read": ["docs/MetaSkillSystem/", "docs/Sessioni di lavoro/", "scripts/mss/", "docs/Comunicazione-Skill/", "package.json", ".husky/"],
+      "write": [
+        "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+        "docs/MetaSkillSystem/tests/h1/run.mjs",
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+        "docs/Sessioni di lavoro/24-08-26/Report-punto-situazione-mss-24-08-26.md"
+      ],
+      "forbid": ["src/", "migrazioni", "qualunque scrittura su database", "riscrittura di record final", "apertura di R1 come mandato", "dichiarare H-1.3 PASS pulito", "aprire il cantiere del rilascio fermo"]
+    },
+    "authorized_outputs": ["un report di seduta", "una capsula", "un cruscotto per Matteo come artefatto", "il fix della riserva H13-POST-L01"],
+    "route": {
+      "chosen": "misurare prima di rispondere: due sub-agenti in parallelo su cronometraggio dei cancelli e inventario dei documenti di Matteo, poi rispondere alle quattro domande con i numeri, poi chiudere la riserva H13-POST-L01 dichiarandola nel contratto e inchiodandola con un test nelle due direzioni",
+      "alternatives_or_conflicts": [
+        "scartato rispondere alle quattro domande a memoria: tre risposte su quattro sarebbero state sbagliate, in particolare quella sullo split di repo",
+        "scartato progettare lo split di repo sulla premessa dichiarata da Matteo: la premessa e stata falsificata dalla misura (52 s di risparmio)",
+        "scartato modificare core.mjs per H13-POST-L01: il difetto era nel contratto, non nel codice, e toccare il motore avrebbe messo a rischio le fixture inchiodate per sha256",
+        "scartato chiedere a Matteo di firmare le quattro chiusure in attesa: verificate prima, solo una era pronta"
+      ]
+    },
+    "observed_outcome": "misurati validate 87 s, pre-commit 1 s, zero accoppiamento del motore con src o npm, ~2 080 righe di lettura obbligatoria e 1 348 righe di JSON scritte a mano il 24-08; ipotesi split repo falsificata; regola di chiusura dei pacchetti ribaltata con M12; SK-5 chiuso; riserva H13-POST-L01 chiusa con test che la nomina, verificato non vacuo; test:mss passa da 46 a 47 gruppi; 8 stash valutati e azzerati dopo archiviazione come patch",
+    "open_items": [
+      "R1 come mandato dichiarato e raccomandato e NON deciso: non darlo per aperto",
+      "H-1.3 non e PASS pulito: la riserva H13-POST-L01 e chiusa, i bypass E2 restano dichiarati",
+      "le due parole nuove proseguo in chat / proseguo da archivio sono concordate ma non scritte nel vocabolario",
+      "il rilascio fermo da 62 giorni resta agli atti per una seduta separata, per scelta di Matteo",
+      "M-G resta il prossimo mandato, poi M-F, poi M-E"
+    ],
+    "controls": [
+      {
+        "control_id": "TEST-MSS",
+        "criterio": "npm run test:mss verde con il gruppo nuovo che nomina H13-POST-L01",
+        "esito": "pass",
+        "numeratore": 47,
+        "denominatore": 47,
+        "esecutore": "agente senior, comando eseguito in seduta",
+        "evidence_refs": []
+      },
+      {
+        "control_id": "TEST-NON-VACUO",
+        "criterio": "sostituendo il digest col valore, il gruppo H13-POST-L01 deve diventare rosso",
+        "esito": "pass",
+        "numeratore": 1,
+        "denominatore": 1,
+        "esecutore": "agente senior, falsificazione eseguita e poi ripristinata",
+        "evidence_refs": []
+      },
+      {
+        "control_id": "VALIDATE-MSS-ALL",
+        "criterio": "npm run validate:mss:all exit 0",
+        "esito": "pass",
+        "numeratore": 1,
+        "denominatore": 1,
+        "esecutore": "agente senior, comando eseguito in seduta",
+        "evidence_refs": []
+      }
+    ],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: soggetto non applicabile in questa seduta",
+      "provider": "non_applicabile: soggetto non applicabile",
+      "model": "non_applicabile: soggetto non applicabile",
+      "runtime": "non_applicabile: soggetto non applicabile",
+      "surface": "non_applicabile: soggetto non applicabile"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": ["path di repo", "esiti di comandi", "identificatori di pacchetto e difetto", "decisioni di Matteo citate verbatim"],
+      "prohibited_content": ["dati personali", "segreti", "materiale privato non registrabile"],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-plan-v0",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "sezione 15: quarto ciclo 24-08-2026 e decisioni M11-M14",
+        "revision_or_hash": "seduta punto della situazione 24-08-26",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": [
+      {
+        "ref_id": "source-contratto",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+        "stable_anchor_or_event_id": "sezione 6: forma di previous_value_or_hash",
+        "revision_or_hash": "seduta punto della situazione 24-08-26",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-core",
+        "owner_id": "MSS",
+        "uri_or_path": "scripts/mss/core.mjs",
+        "stable_anchor_or_event_id": "riga 875: confronto canonicalJson su entrambi i lati",
+        "revision_or_hash": "seduta punto della situazione 24-08-26",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-mandato",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+        "stable_anchor_or_event_id": "sezione 4 ordine M11 e sezione 5.7 regola M12",
+        "revision_or_hash": "seduta punto della situazione 24-08-26",
+        "sensitivity": "internal"
+      }
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "signal": "Matteo ha rifiutato di firmare chiusure che non sa valutare e ha nominato il motivo da solo: si fida delle controverifiche di modelli diversi e non vuole decidere dove non porta competenza. Non ha chiesto piu controllo: ha chiesto meno decisioni finte",
+          "actor": "Matteo",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "source-mandato",
+          "effect": "ribaltata la regola di chiusura dei pacchetti (M12); il sistema smette di chiedergli firme che sostituiscono una prova mancante",
+          "evidence_state": "observed"
+        },
+        {
+          "signal": "Matteo ha respinto due volte la struttura del cruscotto dicendo quale sezione non capiva e come andava riscritta, invece di accettarla o rifiutarla in blocco",
+          "actor": "Matteo",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "source-mandato",
+          "effect": "la struttura finale del cruscotto e sua, non dell'agente: ultima chat, cosa devo fare, lavagna a tre colori, cantieri, da quanto e fermo",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-senior",
+        "role": "agente senior",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:self_report",
+        "evidence_refs": [],
+        "notes": "osservato direttamente nei messaggi della seduta, riportati verbatim in Q1 del report"
+      }
+    },
+    "sistema": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "rule_id_version": "M12/chiusura-pacchetto-senza-firma-di-matteo",
+          "trigger_event": "delle quattro chiusure in attesa di firma, tre non erano pronte: il sistema stava chiedendo a Matteo di firmare al posto di una prova mancante",
+          "decision_or_output_changed": "un pacchetto e CHIUSO dall'orchestratore quando ha prova eseguibile, test che nomina il difetto e controverifica di famiglia diversa; la regola 5.7 del mandato vivo e stata sostituita",
+          "G": 2,
+          "O": 1,
+          "E": 1
+        },
+        {
+          "rule_id_version": "H13-POST-L01/previous-value-non-digest",
+          "trigger_event": "il contratto non dichiarava la forma di previous_value_or_hash mentre core.mjs confronta canonicalJson su entrambi i lati: ambiguita di documento, non di codice",
+          "decision_or_output_changed": "il contratto dichiara che il campo porta il valore e che nessun digest e supportato; un gruppo di test lo inchioda nelle due direzioni e la sua non vacuita e stata provata per falsificazione",
+          "G": 1,
+          "O": 1,
+          "E": 1
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-senior",
+        "role": "agente senior",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:self_report",
+        "evidence_refs": [],
+        "notes": "ogni riga deriva da comandi eseguiti in questa seduta e dal diff, non da report altrui"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "punto-situazione-mss-e-cruscotto-matteo",
+          "primary_type": "processo",
+          "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-punto-situazione-mss-24-08-26.md",
+          "recipient": "Matteo e il prossimo orchestratore MSS",
+          "problem_or_job": "sapere quanto costa davvero il sistema invece di stimarlo, e dare a Matteo un documento che gli lasci solo le decisioni che gli competono",
+          "intended_use": "orientare l'ordine dei mandati residui e togliere dal suo tavolo le firme che sostituiscono prove mancanti",
+          "conceived_by": "Matteo",
+          "decided_by": "Matteo",
+          "directed_by": "Matteo",
+          "authored_by": "anthropic-claude-opus-5-senior",
+          "verified_by": "non_osservato",
+          "acceptance_criterion": "npm run validate:mss:all verde con il gruppo H13-POST-L01 presente e non vacuo, e npm run validate:mss verde su questo report",
+          "verification_or_use_evidence": "test:mss 47 gruppi verde; falsificazione del gruppo nuovo osservata rossa e poi ripristinata; validate:mss:all exit 0",
+          "verification_status": "self_report",
+          "owner_ref": "owner-plan-v0",
+          "privacy_release": "internal",
+          "support_files": [
+            "docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md",
+            "docs/MetaSkillSystem/tests/h1/run.mjs",
+            "docs/MetaSkillSystem/PLAN_V0.md"
+          ],
+          "relations_no_double_count": [],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "fail",
+            "result": "not_eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "anthropic-claude-opus-5-senior",
+        "role": "agente senior",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:self_report",
+        "evidence_refs": [],
+        "notes": "self_report: nessun secondo attore ha verificato in modo indipendente questa seduta di misura"
+      }
+    }
+  }
+}
