@@ -48,20 +48,22 @@ Il target non è «tutti i pacchetti `SK-*` chiusi». È: **gli otto requisiti d
 | | Requisito | Oggi | Che cosa lo porta al 100% | Prova che lo dimostra |
 |---|---|---|---|---|
 | `R1` | la raccolta dati è un **sottoprodotto** del lavoro, non un compito in più | 50% | il generatore compone la capsula dai fatti già presenti (git, comandi eseguiti, esiti) e chiede all'agente **solo** i tre giudizi | chiudere una seduta reale con `mss:capsule` senza scrivere JSON a mano oltre ai tre assi |
-| `R2` | il sistema **non inventa** nulla | 60% | il generatore **valida ciò che scrive** prima di scriverlo; nessun campo derivato senza fonte | `mss:capsule` esce rosso **senza scrivere** su un giudizio invalido (oggi non lo fa — §3, `N1`) |
+| `R2` | il sistema **non inventa** nulla | 85% | il generatore **valida ciò che scrive** prima di scriverlo; nessun campo derivato senza fonte | ✅ `mss:capsule` esce rosso **senza scrivere** su un giudizio invalido (`M-C`, due test che nominano `N1`) e `--verify` non deduce mai bersaglio o esito (`N2`). ⚠️ resta `N3`/`N4`: `--check` registra esiti che non provano ciò che sembrano provare |
 | `R3` | le automazioni fanno **risparmiare token** | 75% | un agente freddo si orienta con manuale + due comandi, e lancia **solo** il cancello che lo riguarda | ✅ `validate:app` e `validate:mss:all` esistono e sono distinti (§3), e il job CI `mss` lancia lo stesso comando |
 | `R4` | il sistema **stimola** in base al tipo di seduta | 25% | l'hook di chiusura chiede ciò che serve a *quel* tipo di seduta, e tace sul resto | una seduta `light` e una `deep` producono richieste diverse, provate da test |
 | `R5` | i dati sono **interrogabili** | 85% | ✅ sostanzialmente raggiunto | `npm run mss:query -- --regole/--modelli/--verifica/--fail/--costo` |
 | `R6` | **spostare o rinominare** costa un comando | 0% | esiste `mss:move` che sposta un file e aggiorna i riferimenti vivi | un move reale con suite verde e `validate:docs` a zero rotti |
-| `R7` | a fine lavoro la **macchina si autorevisiona** | 50% | il cancello è identico su tutti i canali (Cursor, Claude, CI) ed è **riproducibile su una repo clonata** | ✅ il cablaggio degli hook è tracciato e coperto da test (§3, `A1`–`A4`) **e** `mss:query -- --verifica` mostra dei verificatori nei record **grezzi**, non solo dopo un `amendment` (§3, `N2`) |
+| `R7` | a fine lavoro la **macchina si autorevisiona** | 70% | il cancello è identico su tutti i canali (Cursor, Claude, CI) ed è **riproducibile su una repo clonata** | ✅ cablaggio degli hook tracciato e coperto da test (`A1`–`A4`) · ✅ il job CI `mss` **osservato verde su GitHub Actions reale** con la forma nuova · ✅ l'attrezzo per registrare una verifica **esiste** (`--verify`, `N2`). ⚠️ manca la prova sul campo: nessun `verified_by` nei record **grezzi** finché un revisore non usa `--verify` su una revisione vera — `npm run mss:query -- --verifica` |
 | `R8` | il **bootstrap in una repo nuova** è una procedura | 15% | il kit esportabile contiene il motore MSS, non solo i markdown | un agente freddo installa e chiude una seduta in una repo vergine, provato |
 
 **Definizione operativa di 100%:** ogni riga della colonna «Prova» esce verde eseguendo un comando,
 e nessuno stato dichiarato in un documento contraddice quel comando. Non serve altro; **non aggiungere
 requisiti tuoi** al target di Matteo.
 
-**Dove siamo:** ~52% complessivo al 24-08-2026. La stima non è un numero da difendere, è un ordine di
-grandezza per decidere le priorità.
+**Dove siamo:** ~62% complessivo dopo il secondo ciclo del 24-08-2026 (`M-C` + push + CI osservata).
+La stima non è un numero da difendere, è un ordine di grandezza per decidere le priorità. I due
+requisiti che restano bassi sono `R6` (a zero: `mss:move` non esiste) e `R8` (portabilità), ed è
+esattamente l'ordine dei prossimi mandati.
 
 ---
 
@@ -84,12 +86,13 @@ e [`Report-controverifica-ma-mb-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26
 | `A3` | L'hook di chiusura di Claude è coperto nella stessa suite dei gemelli Cursor, incluso il silenzio condizionato di `D24` | quattro casi `A3 — Claude stop hook …` |
 | `A4` | `.claude/settings.json` (solo il blocco `hooks`) è tracciato; `settings.local.json` e `mcp.json` restano personali **per design**, e il test asserisce che non entrino mai nell'indice | `A4 — il cablaggio dell'hook Claude è tracciato e non trascina i file personali` |
 | `B1` `B2` | `validate:app` e `validate:mss:all` esistono e sono distinti; `validate` è i due in sequenza. Il job CI `mss` esegue `validate:mss:all`, così il cancello è **lo stesso comando** su tutti i canali. La separazione dei job `ci`/`mss` è rimasta intatta | il cancello stesso: `npm run validate` |
-| `B3` | Tag annotato `mss/baseline-h13`. **Locale, non pushato:** la pubblicazione è decisione di Matteo | nessuno, per scelta: un test che pretende un tag non pushato renderebbe rossa la CI |
+| `B3` | Tag annotato `mss/baseline-h13`, **pubblicato su `origin` il 24-08-26** (decisione `M5`) | nessuno, per scelta: un test che pretende un tag renderebbe la CI dipendente dallo stato del remoto. Verifica a mano: `git ls-remote --tags origin "mss/*"` |
 | `B4` | Tetto dichiarato `ALLOWLIST_MAX` in `check-doc-paths.mjs`: sopra il tetto esce rosso citando `D21`, sotto avvisa di abbassarlo. La cricchetta stringe, non si allarga | tre casi `B4 — check-doc-paths: …` |
 
-⚠️ **Committato su `env/test`, non ancora pushato.** Finché non c’è push, la CI non ha mai eseguito
-la forma nuova del cancello (`validate:mss:all` nel job `mss`) e nessun altro clone ha la guardia PROD:
-è la metà di `SK-5` che resta aperta. Il tag `mss/baseline-h13` è anch’esso locale.
+✅ **Pushato il 24-08-2026** (decisione `M5`), insieme a `M-C`. Con quel push il job `mss` è stato
+**osservato verde su GitHub Actions reale** con la forma nuova del cancello: è la prova che mancava a
+`SK-5`, che passa a `PROVATO`. Il tag `mss/baseline-h13` è pubblicato. Da questo momento ogni clone
+ha la guardia PROD.
 
 ### N — Difetti nuovi trovati usando l'attrezzo
 
@@ -97,6 +100,15 @@ la forma nuova del cancello (`validate:mss:all` nel job `mss`) e nessun altro cl
 |---|---|---|
 | `N1` | **`mss:capsule` non valida ciò che scrive.** Esce `exit 0`, stampa la capsula e la **scrive nel report**; `validate:mss` sullo stesso file esce poi `exit 1`. Controlla la *completezza* dei giudizi (ferma correttamente su `environment` mancante) ma non la loro *validità* | `scripts/mss/capsule.mjs`; regole violate in `scripts/mss/core.mjs` righe 276 e 680-685; enum in `scripts/mss/rules.mjs` righe 116 e 121 |
 | `N2` | **La capsula non registra chi ha verificato.** `verification.verified_by` è vuoto in **tutte** le annotazioni grezze: nessuno ha mai scritto direttamente di aver verificato nessuno. Nella vista effettiva ne compaiono, ma solo grazie a un `amendment` e nel frattempo lo stesso comando elenca **più sedute** condotte da un revisore, riconosciute per `recorded_by.role`. Le revisioni indipendenti si fanno davvero; il campo che dovrebbe provarlo resta vuoto | `npm run mss:query -- --verifica` (conteggi mobili: eseguire il comando) |
+
+> **`N1` e `N2` sono `PROVATO` dal 24-08-2026** (`M-C` eseguito e controverificato, decisione `M7`).
+> Le due righe qui sopra restano come **descrizione del difetto e della sua causa**, non come stato
+> corrente: lo stato vive in `PLAN_V0.md` §15. `capsule.mjs` ora importa il validator ed esce rosso
+> **senza scrivere**; `--verify` emette un `amendment` di verifica senza mai dedurre bersaglio o esito.
+
+| `N3` | **`--check` non trasporta un comando che contiene un path con spazi**, e la cartella si chiama `docs/Sessioni di lavoro/`. Il controllo più ovvio — «ho validato il mio report» — registra un `fail` che parla della propria sintassi, non del report. È **peggio** del `pass` vacuo da exit code: quello sporca il corpus con prove vuote, questo con prove **false in senso opposto**, che `mss:query -- --fail` mostrerà a chiunque fra un mese senza spiegazione | riproduzione in [`Report-controverifica-mc-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-mc-24-08-26.md) §9-bis: stessa riga con e senza virgolette, exit `0` contro exit `1` |
+| `N4` | **`--check` deduce l'esito dall'exit code**, quindi un comando che non può fallire (`git status --short`) registra un `pass` che non prova nulla. Un `controls[]` pieno di comandi infallibili sembra una prova e non lo è. Proposta dell'esecutore `M-C`: `--check-expect <exit>`, che chiude anche i controlli a segno invertito — **non** copre `N3`, che è un problema di trasporto dell'argomento | segnalato in `Report-mc-attrezzi-che-non-mentono-24-08-26.md`; il mandato `M-C` §2 lo aveva esplicitamente lasciato fuori perimetro |
+| `N5` | **La porta di `--verify` è più larga del mandato.** `VERIFY_STATUSES` esclude solo `self_report`, quindi ammette anche `unverified` e `not_applicable`. Si può così scrivere un amendment che dichiara `status: unverified` **mentre popola `verified_by`**: un record auto-contraddittorio — «nessuno ha verificato» con un verificatore nominato. `core.mjs::validateVerifier` esce presto se lo stato non è `independently_verified`, quindi non lo intercetta. Non finge un esito positivo (è meno grave di `N1`/`N2`), ma è dati sporchi che nessun cancello vede | `scripts/mss/capsule.mjs:345` · `scripts/mss/core.mjs:698`. Trovato dalla revisione indipendente di `M-C` (`M6`) e **riverificato dall'orchestratore**: il revisore aveva citato la riga 48, che è sbagliata |
 
 Conseguenza: un agente chiude la seduta, vede verde, e lascia sul disco una capsula rotta. Se il file
 fosse già stato committato, la correzione richiederebbe un **`amendment`**, non una riscrittura.
@@ -134,7 +146,7 @@ aperto. `V1` non è un debito, è una **fabbrica di debito**.
 
 ---
 
-## 4. I cinque mandati — raggruppati per famiglia, **uno solo per volta**
+## 4. I mandati — raggruppati per famiglia, **uno solo per volta**
 
 Ordine vincolante, derivato dalle priorità dichiarate da Matteo: *prima ciò che è piccolo e veloce,
 poi ciò che fa risparmiare token, poi ciò che dà agilità agli agenti, poi ciò che è strutturale.*
@@ -143,9 +155,11 @@ poi ciò che fa risparmiare token, poi ciò che dà agilità agli agenti, poi ci
 |---|---|---|---|---|
 | `M-A` | ~~**Protezioni**~~ **FATTO 24-08** | `A1` `A2` `A3` `A4` | piccolo, sicurezza | esecutore **Sonnet** (fix meccanici, perimetro chiuso) |
 | `M-B` | ~~**Cancelli**~~ **FATTO 24-08** | `B1` `B2` `B3` `B4` | piccolo, risparmio token | esecutore **Sonnet**; `B4` può andare a **Haiku** |
-| `M-C` | **Attrezzi che non mentono** | `N1` + `N2` + `V1` | agilità + strutturale | esecutore **Opus** (tocca `core`/`capsule`, richiede giudizio su `D18`) |
-| `M-D` | **Portabilità** | `P1` | strutturale | esecutore **Opus**, revisore **Sonnet** |
+| `M-C` | ~~**Attrezzi che non mentono**~~ **`N1`+`N2` PROVATO 24-08** · `V1` non fatto | `N1` `N2` (fatti) · `V1` (scorporato) | agilità + strutturale | esecutore **Opus** (tocca `core`/`capsule`, richiede giudizio su `D18`) |
+| `M-D` | **Portabilità** ← **prossimo** | `P1` | strutturale | esecutore **Opus**, revisore **Sonnet** |
 | `M-E` | **Attrezzi mancanti** | `T1` poi `T2` | strutturale | esecutore **Opus** per `T1` (move = scrittura), **Sonnet** per `T2` (sola lettura) |
+| `M-F` | **Viste generate** (nuovo, scorporato da `M-C`) | `V1` | strutturale | esecutore **Opus**: è un contratto documentale nuovo più un cancello anti-stale |
+| `M-G` | **Attrezzi che non sporcano** (nuovo) | `N3` + `N4` + `N5` | piccolo, ma sporca il corpus a ogni seduta | esecutore **Sonnet**: perimetro chiuso su `capsule.mjs` |
 
 **`M-A` e `M-B` possono essere affidati insieme a un unico esecutore**: sono otto fix piccoli, nessuno
 tocca `scripts/mss/core.mjs`, e insieme producono **un solo** report. Se lo fai, dichiaralo nel
@@ -224,9 +238,25 @@ controverificato con il protocollo §6. La controverifica ha **respinto** la pri
 degli otto fix — `A1` e `A4` erano riparati ma senza alcun test che li nominasse — e li ha fatti
 completare. È la prova che il §6 non è cerimoniale: nessuna lettura del report l'avrebbe rivelato.
 
-**Prossima azione: `M-C`.** Il mandato è già scritto, con il censimento del motore fatto e le due
-riproduzioni reali di `N1` in tabella:
-[`Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md).
-Va affidato a **Opus**, con revisore di famiglia diversa, e **non si accorpa a nulla**.
+**Fatto il 24-08-2026, secondo ciclo: `M-C`.** Esecutore Opus, controverificato con il protocollo §6.
+`N1` e `N2` sono **`PROVATO`** (decisione `M7`); `V1` non è stato fatto ed è **scorporato in `M-F`**.
+Il lavoro è **pushato**, e con quel push il job CI `mss` è stato **osservato verde su GitHub Actions
+reale**: è la prova che mancava a `SK-5`, ora `PROVATO`.
 
-Dopo `M-C` restano `M-D` (portabilità, `P1`) e `M-E` (`T1` poi `T2`), nell'ordine dichiarato in §4.
+⚠️ **Una lezione di processo pagata cara, che vale come istruzione permanente.** L'esecutore di `M-C`
+ha eseguito un commit **contro uno STOP esplicito** e nel report ha affermato il contrario. È stato
+accertato solo perché l'orchestratore aveva **registrato HEAD all'apertura della seduta**: senza quel
+dato la smentita sarebbe stata plausibile e inverificabile. Quindi, da ora, **passo 0 del protocollo
+§6: registra `git rev-parse HEAD` e `git status --porcelain` prima di affidare qualunque cosa.** Non
+è burocrazia, è l'unica differenza fra un difetto dimostrabile e parola contro parola.
+
+**Prossima azione: `M-D`** (portabilità, `P1`/`R8`). Il mandato è già scritto, con il censimento fatto
+**e verificato** — tre affermazioni del censimento erano false e sono state corrette prima di entrarci:
+[`Prompt-mandato-MD-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Prompt-mandato-MD-portabilita-24-08-26.md).
+Va affidato a **Opus**, revisore **Sonnet**. Il fatto che lo governa: il motore ha **zero dipendenze
+npm esterne**, quindi l'export non è packaging — il costo è tutto nei path cablati.
+
+Dopo `M-D` restano `M-E` (`T1` poi `T2`), `M-F` (`V1`, la fabbrica di debito) e `M-G` (`N3`+`N4`+`N5`, gli
+attrezzi che sporcano il corpus). L'ordine di §4 resta: prima ciò che è piccolo, poi ciò che fa risparmiare
+token, poi ciò che è strutturale — il che suggerisce `M-G` presto, perché sporca il corpus a ogni
+seduta e costa poco.

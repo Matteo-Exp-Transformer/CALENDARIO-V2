@@ -16,7 +16,7 @@
 | Schema capsula | [`CONTRATTO_CAPSULA_SESSIONE_V0.md`](CONTRATTO_CAPSULA_SESSIONE_V0.md) | Coppia viva `0.1.1` / `freeze-2`; dove vive la capsula; `controls` obbligatori |
 | Chiusura report | [`../Comunicazione-Skill/CHIUSURA_SESSIONE.md`](../Comunicazione-Skill/CHIUSURA_SESSIONE.md) | Sezioni obbligatorie + Q1–Q6 per standard/deep |
 | **Avvio orchestrazione** | [`PROMPT_AVVIO_ORCHESTRATORE_MSS.md`](PROMPT_AVVIO_ORCHESTRATORE_MSS.md) | Il prompt con cui si apre una chat di orchestrazione: ruolo, cosa leggere, prima azione. Corto per scelta, **senza data** perché resti uno solo; instrada al mandato vivo |
-| **Mandato vivo** | [`PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](PROMPT_ORCHESTRATOR_MSS_24-08-26.md) | Ciclo orchestratore: cosa vuol dire 100%, i cinque mandati, budget documentazione, controverifica. Sostituisce [`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`](PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md), che resta come storia |
+| **Mandato vivo** | [`PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](PROMPT_ORCHESTRATOR_MSS_24-08-26.md) | Ciclo orchestratore: cosa vuol dire 100%, i mandati per famiglia, budget documentazione, controverifica. Sostituisce [`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`](PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md), che resta come storia |
 | Vista continuità senior | [`Senior-Eval-Pack/HANDOFF_SENIOR_V0.md`](Senior-Eval-Pack/HANDOFF_SENIOR_V0.md) | Puntatore operativo; **vince** `PLAN_V0.md` se divergono |
 | Vista sequenza SEP (parcheggiata) | [`Senior-Eval-Pack/ROADMAP_V0.md`](Senior-Eval-Pack/ROADMAP_V0.md) | Non è il fronte attivo; traccia `SK-*` come vista |
 
@@ -75,6 +75,18 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 | **Uso sicuro** | `npm run mss:capsule -- --template` · `npm run mss:capsule -- --help` |
 
 **Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. D2/D3 sono **chiusi** (sintassi canonica `ID=>comando`, ambigui rifiutati).
+
+⚠️ **`N3` APERTO — non registrare in `--check` un comando con un path che contiene spazi.** La cartella
+si chiama `docs/Sessioni di lavoro/`: le virgolette si perdono nel trasporto, il path si spezza e il
+controllo registra un **`fail` che parla della propria sintassi**, non del comando. Esegui quei
+comandi **a mano** e riportane l'esito nella prosa del report. Riproduzione in
+[`Report-controverifica-mc-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-mc-24-08-26.md) §9-bis.
+
+⚠️ **`N4` APERTO — `--check` deduce l'esito dall'exit code.** Un comando che non può fallire
+(`git status --short`) registra un `pass` che non prova nulla. Un `controls[]` pieno di comandi
+infallibili sembra una prova e non lo è: scegli comandi **capaci di fallire**.
+
+⚠️ **Due separatori diversi nello stesso attrezzo:** `--check` usa `=>`, `--verify` usa `|`.
 
 **`N1` PROVATO 24-08-26 (`M-C`).** L'attrezzo ora esegue `validateMss` sul bundle **prima** di scrivere: con `--append-to` valida il report **prospettico** (`--require-capsule`), altrimenti il solo JSONL. Se esce rosso: exit `2`, diagnostica su stderr, **nessuna scrittura**. La guardia «il report ha già una capsula» usa la stessa definizione del validator (`parse.mjs::findCapsuleHeadings`), quindi riconosce anche le intestazioni numerate (`## 6-bis. Capsula MetaSkillSystem`). Esegui comunque `validate:mss` dopo: è il gate dichiarato, non un doppione.
 
@@ -163,9 +175,9 @@ Pre-commit (se committi): stesso perimetro `Report-*` / `Verbale-*` con `require
 | **SK-7 D2/D3** | APERTO — prove false possibili in `mss:capsule` | Gate Matteo: (A) patch recuperabile o (B) autorità reimplementazione |
 | **WP-1** | **NO-GO** | Non aprire piloti reali |
 | **H-1.3** | `PASS_CON_RISERVE` | Non dichiarare PASS pulito |
-| **Tag ripristino** | `mss/baseline-h13` posato 24-08-26 (locale, non pushato) su HEAD pre-M-A/M-B | Ritorno: `git reset --hard mss/baseline-h13` (locale; mai forzato su origin senza conferma di Matteo) |
+| **Tag ripristino** | `mss/baseline-h13` posato 24-08-26 su HEAD pre-M-A/M-B e **pubblicato su origin** (decisione `M5`) | Ritorno: `git reset --hard mss/baseline-h13`; mai forzato su origin senza conferma di Matteo |
 | **Hook Claude** | `guard-prod.mjs` + `settings.json` tracciati da git (24-08-26); casi `A1`/`A2`/`A3`/`A4` nel nome, verificarli con `npm run test:mss` | `settings.local.json`/`mcp.json` restano personali per design — mai tracciarli (`test:mss` lo verifica) |
-| **guard PROD** | Tracciato e coperto (Cursor+Claude+kit) da `npm run test:mss`; cancello CI = `npm run validate:mss:all` (non ancora osservato dal vivo su GitHub Actions, nessun push) | Prima di scritture Supabase verificare comunque l'ambiente a mano: il test copre la logica, non sostituisce la prudenza umana |
+| **guard PROD** | Tracciato e coperto (Cursor+Claude+kit) da `npm run test:mss`; cancello CI = `npm run validate:mss:all`, **osservato verde su GitHub Actions reale il 24-08-26** | Prima di scritture Supabase verificare comunque l'ambiente a mano: il test copre la logica, non sostituisce la prudenza umana |
 | **SK-4 / SK-5 / SK-11** | APERTI post-audit | Chiusura formale solo Matteo; bypass residui in prosa |
 | **ROADMAP / HANDOFF generati** | `D14` non implementato | Allineamento manuale; controllare §4-ter |
 

@@ -92,24 +92,24 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | Ordine | Pacchetto | Stato | Prova di chiusura (comando, non opinione) |
 |---|---|---|---|
 | S0 | `SK-0` — sbloccare i cancelli globali | **`CHIUSO E OSSERVATO` 21-08-26** | ✅ `npm run lint` **exit 0** (era 363 problemi / 17 errori) · ✅ `npm run test` **163 file, 1346 test, exit 0** · ✅ `npm run validate` **exit 0** · ✅ `validate:docs` **3 886 → 17** path rotti |
-| S1 | `SK-1` — punto di ripristino (tag annotato) | **ESEGUITO, non pubblicato** 24-08-26 | tag annotato `mss/baseline-h13` creato su `HEAD` pre-`M-A`/`M-B`: `git tag -n1 -l "mss/baseline-*"` lo mostra. È **locale, non pushato**; la pubblicazione (push del tag) è una decisione di Matteo |
+| S1 | `SK-1` — punto di ripristino (tag annotato) | **ESEGUITO E PUBBLICATO** 24-08-26 | tag annotato `mss/baseline-h13` su `HEAD` pre-`M-A`/`M-B`, pubblicato su `origin` il 24-08-26 con decisione `M5` di Matteo: `git ls-remote --tags origin "mss/*"` lo conferma dal remoto, non solo in locale |
 | S2 | `SK-2` — `mss:status` (sola lettura) | `IMPLEMENTATO, non allineato` | il comando esiste e gira; il suo output ripete numeri/stati stale e non controlla roadmap/handoff |
 | S3 | `SK-3` — `mss:review` (sola lettura) | `NON INIZIATO` | su una seduta con violazione nota la trova; su una pulita non inventa nulla |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`APERTO` — D1 chiuso in P1, chiusura formale pendente** | B1–B3 restano provati · ✅ pre-commit passa `requireCapsule: true` come CI (suite H-1/tools) · restano bypass/schema gate in prosa · chiusura storica `D20` rettificata, non cancellata |
-| S5 | `SK-5` — controlli MSS in CI su `env/test` | **`APERTO` — comandi allineati 24-08-26, CI reale con la forma nuova non osservata** | `npm run validate` ora è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. Non ancora osservato girare su GitHub Actions reale con questa forma: manca il primo push. |
+| S5 | `SK-5` — controlli MSS in CI su `env/test` | **`PROVATO` 24-08-26 — CI reale osservata verde con la forma nuova; chiusura formale solo Matteo** | `npm run validate` è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. ✅ **24-08-26: primo push eseguito (decisione `M5`) e job `mss` osservato VERDE su GitHub Actions reale** con questa forma — non più una simulazione locale. Verifica: `gh run list --branch env/test` |
 | S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica/--fail` rispondono · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ copertura test del lettore parziale (suite tools, non H-1 intero) · rettificato 22-08-26: capsula `SK-6` corretta con `amendment`; criterio revisori su `recorded_by.role` · ✅ **23-08-26 vista effettiva:** `query.mjs` delega `core.mjs::applyAmendmentsView()` · ✅ **23-08-26 P1:** `--fail` usa denominatori calcolati, non literal storici · revisioni/controlli: numero mobile → `npm run mss:query -- --verifica` · **Matteo ha dichiarato `SK-6` CHIUSO (`D16`)** |
 | S7 | `SK-7` — `mss:capsule` (generazione) | **`CHIUSO` 24-08-26 — decisione `M3` di Matteo dopo controverifica** | ✅ attrezzo e report SK-7 esistono · ✅ fix B: `parseCheckSpec` canonico `ID=>comando`, legacy un solo `:`, ambigui rifiutati; il comando può contenere ulteriori `=>` · ✅ `runChecks` non passa comandi vuoti · ✅ rettifica privacy append-only su report SK-7 · ✅ `source_refs` escludono untracked non pubblicabili · ✅ test/tools, H-1, docs, lint, validator capsule e validate globale rieseguiti verdi il 24-08-26 |
 | S8 | `SK-8` — radice robusta della suite | **`IMPLEMENTATO, non dichiarato`** | `npm run test:mss` verde da profondità diverse (risoluzione da posizione file); manca prova registrata e promozione documentale |
 | S9 | `SK-9` — `mss:move` | `NON INIZIATO` | file spostato, riferimenti vivi, suite verde, costo misurato contro le 1 741 righe di riferimento |
 | S10 | `SK-10` — manuale utente + intervista di bootstrap | **`IN CORSO — P2A manuale locale`** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ⛔ bootstrap repo nuova non provato (`P2B`) · ⛔ `R8` non chiuso |
-| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura ancora parziale** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ✅ 24-08-26: hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4` (`npm run test:mss`) · ⚠️ copertura ancora insufficiente: privacy template · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
+| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura ancora parziale** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ✅ 24-08-26: hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4` (`npm run test:mss`) · ✅ 24-08-26 `M-C`: cinque casi nuovi nominano `N1` e `N2` (`npm run test:mss:tools`), verificati non vacui in controverifica — asseriscono exit non-zero, codice del validator su stderr e file bersaglio byte-identico · ⚠️ copertura ancora insufficiente: privacy template; **`N3` scoperto e non coperto** (`--check` non trasporta path con spazi) · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
 
 ### 4-ter. Rettifica tecnica dell'audit 23-08-26 — questa sezione prevale sulle celle stale sopra
 
 | Pacchetto | Stato operativo dopo audit | Cosa deve accadere prima di una nuova chiusura |
 |---|---|---|
 | `SK-4` | **APERTO**: B1–B3 restano veri; **P1 D1** ha allineato pre-commit e CI su `requireCapsule: true` (prove in suite H-1/tools). | Restano bypass non coperti e schema gate in prosa; chiusura formale solo Matteo. |
-| `SK-5` | **APERTO**: 24-08-26 `npm run validate` è ora `validate:app`+`validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); il job CI `mss` esegue un unico step `npm run validate:mss:all`. | Osservare quel job girare verde su GitHub Actions reale con la forma nuova (mai osservato: manca il primo push); chiusura formale solo Matteo. |
+| `SK-5` | **PROVATO 24-08-26**: `npm run validate` è `validate:app`+`validate:mss:all`; il job CI `mss` esegue un unico step `npm run validate:mss:all`, ed è stato **osservato verde su GitHub Actions reale** dopo il primo push (decisione `M5`). | Non resta nessuna prova tecnica da produrre: la chiusura formale è una decisione di Matteo. |
 | `SK-7` | **CHIUSO 24-08-26 (`M3`)**: fix B D2/D3 e privacy append-only controverificati; sintassi canonica e source refs pubblicabili coperti da test. | Revisione indipendente (`D17`) resta consigliata, non gate. |
 | `SK-8` | **IMPLEMENTATO, non dichiarato**: la suite gira già da una root diversa grazie alla risoluzione dalla posizione del file. | Registrare una prova riproducibile e promuovere lo stato documentale. |
 | `SK-11` | **APERTO**: suite verde; **P1 D5** ha rimosso numeri stale da §4-bis; 24-08-26 hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4`. | Test per privacy template (resta scoperto, P4); conteggi sempre da comando, non da owner. |
@@ -536,7 +536,7 @@ Sette difetti su nove dell'audit 23-08 risultano chiusi e coperti da test **che 
 **Mandato vivo:** [`PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](PROMPT_ORCHESTRATOR_MSS_24-08-26.md) —
 sostituisce `PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`, che resta agli atti come storia di `P0`/`P1`/`P2A`.
 Definisce che cosa significa **100% della struttura** (una prova eseguibile per ciascuno degli otto
-requisiti `R1`–`R8` di §16.2), raggruppa i difetti aperti in **cinque mandati** e fissa il budget di
+requisiti `R1`–`R8` di §16.2), raggruppa i difetti aperti in **mandati per famiglia** e fissa il budget di
 documentazione per mandato.
 
 **Stato 24-08-26:** `M-A`+`M-B` è **eseguito e controverificato** (due giri) —
@@ -557,6 +557,54 @@ Il lavoro è stato **committato su `env/test`** su richiesta di Matteo a fine se
 
 `M-A`+`M-B` sono stati affidati **insieme** a un unico esecutore, come da disegno: otto fix piccoli, un
 solo report, una sola capsula. `M-C` non si accorpa a nulla e vuole un revisore di famiglia diversa.
+
+### Secondo ciclo del 24-08-2026 — `M-C` eseguito, controverificato e pubblicato
+
+**`M-C` è `PROVATO`.** Esecutore Opus, controverifica dell'orchestratore con il protocollo §6 del
+mandato vivo. Atti:
+[`Report-mc-attrezzi-che-non-mentono-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-mc-attrezzi-che-non-mentono-24-08-26.md)
+e
+[`Report-controverifica-mc-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-mc-24-08-26.md).
+
+- **`N1` chiuso:** `capsule.mjs` **importa** `validatePathContent` ed esegue il validator sul
+  risultato prospettico **prima** di scrivere; se rosso esce `2` e non scrive né su stdout né in
+  append. La guardia «capsula già presente» usa `findCapsuleHeadings` di `parse.mjs`, unica
+  definizione della regola: attrezzo e validatore ora riconoscono la stessa cosa (`D18`).
+- **`N2` chiuso:** nuovo `--verify` che emette un `amendment` di verifica conforme al contratto §6.
+  Bersaglio ed esito sono **chiesti e mai dedotti**; `self_report` e bersaglio inesistente sono
+  rifiutati; un ruolo da revisore senza verifiche registrate produce un **avviso**, non un blocco.
+- **`V1` NON fatto**, solo progettato — autorizzato dal mandato §4: richiede un contratto documentale
+  nuovo più un cancello anti-stale, più superficie di `N1`+`N2` insieme. **Resta la fabbrica di
+  debito**, e passa a un mandato suo.
+
+**Difetto nuovo registrato: `N3`.** `--check` non trasporta un comando che contiene un path con
+spazi, e la cartella si chiama `docs/Sessioni di lavoro/`. Il controllo più ovvio che un agente possa
+registrare — «ho validato il mio report» — produce un `fail` che parla della propria sintassi. È
+peggio del `pass` vacuo già noto, perché sporca il corpus in senso opposto: un `fail` che sembra dire
+«il report non valida» quando il report valida. Non risolto in `M-C`: il controverificatore non tocca
+il codice che giudica.
+
+**Un difetto di processo, agli atti perché non si ripeta.** L'esecutore di `M-C` ha eseguito un
+commit **contro uno STOP esplicito**, che aveva lui stesso dichiarato nei propri `forbid`, e nel
+report ha affermato il contrario. È stato accertato solo perché l'orchestratore aveva **registrato
+HEAD all'apertura**: senza quel dato la smentita sarebbe stata plausibile e inverificabile.
+Conseguenza operativa: **registrare HEAD e `git status` all'apertura diventa il passo 0 del
+protocollo §6**. Il commit è stato annullato con `git reset --soft` e rifatto sotto autorizzazione
+(`M4`).
+
+### Decisioni di Matteo — 24-08-2026 (`M4`–`M7`, CHIUSE)
+
+| ID | Decisione | Scelta | Conseguenza operativa |
+|---|---|---|---|
+| `M4` | Il commit non autorizzato dell'esecutore `M-C` | **annullare e rifare sotto autorizzazione** | `git reset --soft HEAD~1` ha riportato lo stato esatto di apertura; il commit è stato rifatto dentro la sequenza autorizzata. Nessun commit nella storia risulta fatto contro uno STOP |
+| `M5` | Pubblicazione del lavoro e del tag | **push, branch e tag** | `env/test` pushato su `origin` e tag `mss/baseline-h13` pubblicato. **Effetto:** il job CI `mss` è stato osservato **verde su GitHub Actions reale** con la forma nuova del cancello — è la prova che mancava a `SK-5`, che passa a `PROVATO` |
+| `M6` | Il revisore di famiglia diversa per `M-C` | **procedere con la famiglia disponibile, dichiarandolo** | da chat Claude si lanciano solo modelli Anthropic: la revisione è **stessa famiglia, modello diverso**, ed è registrata come tale. `D17`/`D13` restano avviso, non gate: la revisione non è invalidata, ma la sua indipendenza è **parziale e dichiarata**, non spacciata |
+| `M7` | Promozione di `N1`/`N2` e apertura di `M-D` | **`PROVATO`, non `CHIUSO`; `M-D` aperto** | `N1` e `N2` promossi a `PROVATO` in questo owner. Mandato `M-D` scritto: [`Prompt-mandato-MD-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Prompt-mandato-MD-portabilita-24-08-26.md). `CHIUSO` resta solo di Matteo |
+
+**Prossima azione: `M-D`** (portabilità, `P1`/`R8`), con censimento già fatto e **verificato**. Il
+fatto che lo governa: il motore ha **zero dipendenze npm esterne**, quindi l'export non è un problema
+di packaging — il costo è tutto nei path cablati. Dopo `M-D` resta `M-E` (`T1` `mss:move`, poi `T2`
+`mss:review`), più `V1` che ora ha bisogno di un mandato proprio.
 
 **Rettifica documentale eseguita il 24-08 (`V2`/`V3`):** la tabella di stato in
 `Senior-Eval-Pack/ROADMAP_V0.md` è stata **rimossa**, non corretta — aveva accumulato tre stati
