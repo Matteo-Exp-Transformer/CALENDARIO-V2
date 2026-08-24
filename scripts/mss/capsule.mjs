@@ -25,6 +25,7 @@ import {
   REVISION_LEGACY,
   SCHEMA_CURRENT,
   SCHEMA_LEGACY,
+  VERIFIER_STATUSES,
 } from './rules.mjs'
 import { isMainModule, repoRootFromModule } from './runtime.mjs'
 import { newAmendmentIds, newMssIds } from './uuid.mjs'
@@ -276,8 +277,21 @@ export function spawnCheckCommand(command, cwd) {
   })
 }
 
+function quoteWarning(command) {
+  if (process.platform !== 'win32') return null
+  if (/'[^']*\s+[^']*'/.test(command)) {
+    return 'virgolette singole con spazi su Windows: cmd.exe non le interpreta; il controllo potrebbe non raggiungere il bersaglio'
+  }
+  const splitOptionPath = /(?:--file|--append-to|--judgments|--to|--repo)\s+[^"'\s]+\s+(?!-)[^"'\s]/.test(command)
+  const splitWindowsPath = /(?<!["'])(?:[A-Za-z]:\\|\\\\)[^"'\r\n]*\s+(?!-)[^"'\s]+/.test(command)
+  if (splitOptionPath || splitWindowsPath) {
+    return 'path probabilmente non quotato dopo un argomento file: il controllo potrebbe non raggiungere il bersaglio'
+  }
+  return null
+}
+
 export function runChecks(checkSpecs, { cwd = ROOT, executor = 'mss:capsule' } = {}) {
-  return checkSpecs.map(({ control_id, command }) => {
+  return checkSpecs.map(({ control_id, command, expectedExit = 0 }) => {
     const trimmed = (command ?? '').trim()
     if (!trimmed || !/\S/.test(trimmed)) {
       return {
@@ -306,14 +320,15 @@ export function runChecks(checkSpecs, { cwd = ROOT, executor = 'mss:capsule' } =
       }
     }
     const code = result.status
-    const pass = code === 0
+    const pass = code === expectedExit
+    const warning = quoteWarning(command)
     return {
       control_id,
-      criterio: command,
+      criterio: `${command} (atteso exit ${expectedExit})`,
       esito: pass ? 'pass' : 'fail',
       numeratore: pass ? 1 : 0,
       denominatore: 1,
-      esecutore: `${executor}: ${command} (exit ${code})`,
+      esecutore: `${executor}: ${command} (exit ${code}; atteso ${expectedExit})${warning ? ` — AVVISO: ${warning}` : ''}`,
       evidence_refs: [],
     }
   })
@@ -342,7 +357,7 @@ export class ParseVerifySpecError extends Error {
  * che scrive `self_report` sul record di un altro non sta verificando: sta ridichiarando
  * l'autodichiarazione altrui, che e' esattamente il dato inventato vietato da `R2`.
  */
-const VERIFY_STATUSES = ENUM.verificationStatus.filter((s) => s !== 'self_report')
+const VERIFY_STATUSES = VERIFIER_STATUSES
 
 /**
  * `--verify "<target_record_id>|<status>|<evidence_ref>|<motivo>"`
@@ -943,6 +958,7 @@ export function parseCapsuleArgs(argv) {
     forceLegacy: false,
     help: false,
   }
+  let lastWasCheck = false
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--help' || a === '-h') out.help = true
@@ -951,13 +967,26 @@ export function parseCapsuleArgs(argv) {
     else if (a === '--model') out.model = argv[++i]
     else if (a === '--role') out.role = argv[++i]
     else if (a === '--actor-id') out.actorId = argv[++i]
-    else if (a === '--check') out.checks.push(parseCheckSpec(argv[++i]))
+    else if (a === '--check') {
+      out.checks.push(parseCheckSpec(argv[++i]))
+      lastWasCheck = true
+      continue
+    }
+    else if (a === '--check-expect') {
+      if (!lastWasCheck) throw new Error('--check-expect richiede un --check immediatamente precedente')
+      const raw = argv[++i]
+      if (!/^\d+$/.test(raw || '')) throw new Error('--check-expect richiede un exit code intero maggiore o uguale a zero')
+      const last = out.checks[out.checks.length - 1]
+      if (Object.hasOwn(last, 'expectedExit')) throw new Error('--check-expect puo essere dichiarato una sola volta per --check')
+      last.expectedExit = Number(raw)
+    }
     else if (a === '--verify') out.verify.push(parseVerifySpec(argv[++i]))
     else if (a === '--tool') out.tools.push(argv[++i])
     else if (a === '--package') out.packages.push(parsePackageSpec(argv[++i]))
     else if (a === '--append-to') out.appendTo = argv[++i]
     else if (a === '--force-legacy') out.forceLegacy = true
     else throw new Error(`Argomento sconosciuto: ${a}`)
+    lastWasCheck = false
   }
   return out
 }
@@ -980,7 +1009,7 @@ export function runCapsule(argv = process.argv, options = {}) {
       exitCode: 0,
       stdout:
         'Usage: npm run mss:capsule -- [--template] [--judgments file.json] --model <modello> ' +
-        '[--role ...] [--actor-id ...] [--check "ID=>comando"] [--tool ...] [--package "id|ver|ref"] ' +
+        '[--role ...] [--actor-id ...] [--check "ID=>comando" --check-expect <exit>] [--tool ...] [--package "id|ver|ref"] ' +
         '[--verify "mss-rec-…|independently_verified|evidence_ref|motivo"] ' +
         '[--append-to report.md]\n',
       stderr: '',

@@ -12,6 +12,7 @@ import {
   REVISION_LEGACY,
   SCHEMA_LEGACY,
   SCHEMA_REVISION_PAIRS,
+  VERIFIER_STATUSES,
 } from './rules.mjs'
 import { canonicalJson, decodeUtf8 } from './canonical.mjs'
 import { resolveRef } from './refs.mjs'
@@ -695,8 +696,18 @@ function actorId(value) {
 function validateVerifier(record, sessionEvent, file, out) {
   if (record.record_type !== 'annotation') return
   const v = record.annotation?.verification
-  if (!v || v.status !== 'independently_verified') return
+  if (!v) return
   const verifiedBy = Array.isArray(v.verified_by) ? v.verified_by : []
+  if (verifiedBy.length && !VERIFIER_STATUSES.includes(v.status)) {
+    issue(out, {
+      rule: RULE.VERIFIER_STATUS_INCOHERENT,
+      file,
+      fieldPath: 'annotation.verification.verified_by',
+      message: 'verified_by richiede independently_verified o contradicted',
+    })
+    return
+  }
+  if (v.status !== 'independently_verified') return
   const disallowed = new Set([
     record.recorded_by?.actor_id,
     record.annotation?.asserted_by?.actor_id,
@@ -1040,8 +1051,8 @@ function validateBundleRecords(entries, file, workspaceRoot, out, options) {
   const effectiveSessionEvent = effectiveEntries.find((entry) => entry.record.record_type === 'session_event')?.record || sessionEvent
   validateReferenceLinks(effectiveEntries, effectiveSessionEvent, file, workspaceRoot, out)
 
-  for (const entry of logicalEntries) {
-    validateVerifier(entry.record, sessionEvent, `${file}#L${entry.line}`, out)
+  for (const entry of effectiveEntries) {
+    validateVerifier(entry.record, effectiveSessionEvent, `${file}#L${entry.line}`, out)
   }
 
   // Correlazione, sessione e segmento sono proprietà del singolo bundle fisico.

@@ -52,6 +52,7 @@ export const RULE = Object.freeze({
   LIGHT_NO_EVENT: 'MSS-LIGHT-NO-EVENT',
   LIGHT_EVENT_MISMATCH: 'MSS-LIGHT-EVENT-MISMATCH',
   VERIFIER_NOT_INDEPENDENT: 'MSS-VERIFIER-NOT-INDEPENDENT',
+  VERIFIER_STATUS_INCOHERENT: 'MSS-VERIFIER-STATUS-INCOHERENT',
   LOCK_UNAUTHORIZED: 'MSS-LOCK-UNAUTHORIZED',
   STAGED_WORKTREE_MISMATCH: 'MSS-STAGED-WORKTREE-MISMATCH',
   AMENDMENT_ORPHAN: 'MSS-AMENDMENT-ORPHAN',
@@ -120,6 +121,13 @@ export const ENUM = Object.freeze({
   productGate: ['pass', 'fail'],
   productResult: ['eligible', 'not_eligible'],
 })
+
+// Un verificatore nominato ha senso soltanto quando conferma o contraddice
+// un'asserzione. CLI e validator importano la stessa regola.
+export const VERIFIER_STATUSES = Object.freeze([
+  'independently_verified',
+  'contradicted',
+])
 
 export const ID_RE = Object.freeze({
   record: /^mss-rec-[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,

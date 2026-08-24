@@ -20,6 +20,7 @@ import {
   recordsToJsonl,
   runCapsule,
   runChecks,
+  parseCapsuleArgs,
   parseCheckSpec,
   parseVerifySpec,
   collectGitContext,
@@ -600,11 +601,11 @@ const tests = [
 
     assert.equal(npmCheck.esito, 'pass', npmCheck.esecutore)
     assert.equal(npmCheck.numeratore, 1)
-    assert.match(npmCheck.esecutore, /\(exit 0\)$/)
+    assert.match(npmCheck.esecutore, /exit 0; atteso 0/)
 
     assert.equal(failCheck.esito, 'fail', failCheck.esecutore)
     assert.equal(failCheck.numeratore, 0)
-    assert.match(failCheck.esecutore, /\(exit 3\)$/)
+    assert.match(failCheck.esecutore, /exit 3; atteso 0/)
 
     assert.equal(quotedCheck.esito, 'pass', quotedCheck.esecutore)
   }],
@@ -702,12 +703,49 @@ const tests = [
     ], { cwd: REPO_ROOT })
     assert.equal(check.esito, 'pass', check.esecutore)
     assert.equal(check.numeratore, 1)
-    assert.match(check.esecutore, /\(exit 0\)$/)
+    assert.match(check.esecutore, /exit 0; atteso 0/)
   }],
   ['capsule: parseCheckSpec — legacy semplice con un solo colon resta valido', () => {
     const parsed = parseCheckSpec('SK7:npm --version')
     assert.equal(parsed.control_id, 'SK7')
     assert.equal(parsed.command, 'npm --version')
+  }],
+  ['capsule: N3 — quote Windows sospette avvisano invece di accusare silenziosamente il bersaglio', () => {
+    const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup mss-n3-'))
+    try {
+      const file = join(root, 'report con spazi.mjs')
+      writeFileSync(file, 'process.exit(0)\n')
+      const [singleQuoted, unquotedPath, doubleQuoted] = runChecks([
+        { control_id: 'N3-SINGLE-QUOTE', command: `node --check '${file}'` },
+        { control_id: 'N3-UNQUOTED-PATH', command: `node --check ${file}` },
+        { control_id: 'N3-DOUBLE-QUOTE', command: `node --check "${file}"` },
+      ], { cwd: REPO_ROOT })
+      if (process.platform === 'win32') {
+        assert.equal(singleQuoted.esito, 'fail', singleQuoted.esecutore)
+        assert.equal(unquotedPath.esito, 'fail', unquotedPath.esecutore)
+        assert.equal(doubleQuoted.esito, 'pass', doubleQuoted.esecutore)
+        assert.match(singleQuoted.esecutore, /AVVISO.*virgolette singole/)
+        assert.match(unquotedPath.esecutore, /AVVISO.*path probabilmente non quotato/)
+        assert.doesNotMatch(doubleQuoted.esecutore, /AVVISO/)
+      } else {
+        for (const check of [singleQuoted, unquotedPath, doubleQuoted]) assert.doesNotMatch(check.esecutore, /AVVISO/)
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  }],
+  ['capsule: N4 — check-expect registra un controllo a segno invertito come pass', () => {
+    const args = parseCapsuleArgs([
+      process.argv[0], 'capsule.mjs', '--check', 'N4=>node -e "process.exit(3)"', '--check-expect', '3',
+    ])
+    assert.equal(args.checks[0].expectedExit, 3)
+    const [check] = runChecks(args.checks, { cwd: REPO_ROOT })
+    assert.equal(check.esito, 'pass', check.esecutore)
+    assert.match(check.criterio, /atteso exit 3/)
+    assert.match(check.esecutore, /exit 3; atteso 3/)
+    assert.throws(() => parseCapsuleArgs([process.argv[0], 'capsule.mjs', '--check-expect', '1']), /immediatamente precedente/)
+    assert.throws(() => parseCapsuleArgs([process.argv[0], 'capsule.mjs', '--check', 'A=>node --version', '--tool', 'fs', '--check-expect', '1']), /immediatamente precedente/)
+    assert.throws(() => parseCapsuleArgs([process.argv[0], 'capsule.mjs', '--check', 'A=>node --version', '--check-expect', '-1']), /maggiore o uguale/)
   }],
   ['capsule: parseCheckSpec — D3 storico ambiguo rifiutato', () => {
     assert.throws(
@@ -927,6 +965,67 @@ const tests = [
       })),
       /annotazione/,
     )
+  }],
+  ['capsule: N5 — --verify e validator rifiutano un verificatore con stato incoerente', () => {
+    assert.throws(
+      () => parseVerifySpec(`${IDS.recS}|unverified|source-contract|motivo reale`),
+      /non ammesso/,
+    )
+    const records = validBundle()
+    const annotation = records.find((record) => record.record_type === 'annotation')
+    annotation.annotation.verification = {
+      status: 'unverified',
+      verified_by: [{ actor_id: 'revisore-indipendente' }],
+      verified_at: '2026-08-24T12:00:00+00:00',
+      criterion_ref: 'source-contract',
+      evidence_refs: [],
+      notes: 'fixture incoerente',
+    }
+    const report = `# Report N5\n\n${formatCapsuleBlock(recordsToJsonl(records))}`
+    const result = validateMss({ kind: 'report', file: FIXED_PATH, content: report }, { workspaceRoot: REPO_ROOT })
+    assert.ok(result.diagnostics.some((issue) => issue.rule === 'MSS-VERIFIER-STATUS-INCOHERENT'), JSON.stringify(result.diagnostics))
+
+    const amended = validBundle()
+    const correction = amendment(IDS.recP)
+    correction.amendment.changes = [
+      {
+        field_path: 'annotation.verification.status',
+        previous_value_or_hash: 'self_report',
+        corrected_value: 'unverified',
+      },
+      {
+        field_path: 'annotation.verification.verified_by',
+        previous_value_or_hash: [],
+        corrected_value: [{ actor_id: 'revisore-indipendente' }],
+      },
+    ]
+    const amendedReport = `# Report N5 amendment\n\n${formatCapsuleBlock(recordsToJsonl([...amended, correction]))}`
+    const amendedResult = validateMss({ kind: 'report', file: FIXED_PATH, content: amendedReport }, { workspaceRoot: REPO_ROOT })
+    assert.ok(amendedResult.diagnostics.some((issue) => issue.rule === 'MSS-VERIFIER-STATUS-INCOHERENT'), JSON.stringify(amendedResult.diagnostics))
+  }],
+  ['doctor: N6 — owner leggibile resta verde in una repo git init senza commit', async () => {
+    const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-n6-'))
+    try {
+      runGit(root, 'init')
+      mkdirSync(join(root, 'docs/Sessioni di lavoro'), { recursive: true })
+      writeRepoFile(root, 'docs/MetaSkillSystem/PLAN_V0.md', [
+        '# PLAN sintetico', '', '## 4. Quadro corrente', '',
+        '| Ordine | Pacchetto | Stato |', '|---|---|---|', '| 1 | `WP-1` | `NON INIZIATO — NO-GO` |', '',
+        '### 4-bis. Pacchetti', '',
+        '| Ordine | Pacchetto | Stato | Prova |', '|---|---|---|---|', '| S11 | `SK-11` — tools | `IN CORSO` | la frase non ricostruibile e solo un esempio |',
+      ].join('\n'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md', [
+        '# Pack sintetico', '', '## 4. Stato corrente', '',
+        '| Pacchetto | Nota | Stato |', '|---|---|---|', '| `SEP-11` | fixture | `IN_CORSO` |',
+      ].join('\n'))
+      const steps = await runDoctor({ root })
+      const owner = steps.find((step) => step.name === 'owner')
+      assert.ok(owner, 'il passo owner deve esistere')
+      assert.equal(owner.state.trim(), 'ok', JSON.stringify(owner))
+      assert.match(owner.detail, /stato derivato dagli owner/)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   }],
   ['B4 — check-doc-paths: allowlist sopra il tetto dichiarato esce rosso e cita D21', () => {
     const source = readFileSync(REAL_CHECK_DOC_PATHS, 'utf8')

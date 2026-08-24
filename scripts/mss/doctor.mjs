@@ -26,6 +26,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { isMainModule, repoRootFromModule } from './runtime.mjs'
+import { runStatus } from './status.mjs'
 
 const ROOT = repoRootFromModule(import.meta.url)
 
@@ -136,8 +137,10 @@ export async function runDoctor({ root = ROOT } = {}) {
   }
 
   // ---- 7. gli owner sono leggibili -----------------------------------------------------------
-  const status = node(root, ['scripts/mss/status.mjs'])
-  const ricostruibile = status.status === 0 && !/non ricostruibile/.test(status.stdout)
+  const status = runStatus({ root, isTTY: false })
+  const ownerBlock = (status.stdout.match(/Cantiere SYS-1[\s\S]*?(?=\nCoerenza fra tabelle|$)/) || [''])[0]
+  const ownerDiagnostic = /^\s*(?:.*— non ricostruibile — apri l'owner|tabella §4 non interpretabile — apri l'owner)$/m
+  const ricostruibile = status.exitCode === 0 && ownerBlock && !ownerDiagnostic.test(ownerBlock)
   add('owner', ricostruibile ? PASS : FAIL,
     'mss:status ricostruisce lo stato dagli owner senza dire «non ricostruibile»',
     ricostruibile ? 'stato derivato dagli owner' : 'un owner dichiarato in config non esiste ancora o non si legge — crealo (basta il file: mss:status accetta anche una tabella §4 assente, resta solo «non interpretabile»)')
