@@ -228,6 +228,34 @@ function effectiveRecord(vista, recordId = IDS.recEvt) {
   return vista.dataEffettiva.records.find((entry) => entry.r.record_id === recordId)?.r
 }
 
+// --- B4 (24-08-26) — tetto dichiarato dell'allowlist di check-doc-paths.mjs ------------------
+// Copia isolata dello script reale (mai il registro vero, popolato con voci sintetiche) per
+// verificare che il tetto stringa senza toccare scripts/doc-path-check-allowlist.json.
+const REAL_CHECK_DOC_PATHS = join(REPO_ROOT, 'scripts/check-doc-paths.mjs')
+const REAL_CLI_LOG = join(REPO_ROOT, 'scripts/_cliLog.mjs')
+
+function syntheticAllowlist(count) {
+  return Array.from({ length: count }, (_, i) => ({
+    path: `docs/b4-synthetic-missing-${i}.md`,
+    reason: 'B4 synthetic fixture — mai un path reale del repo',
+  }))
+}
+
+function runCheckDocPathsWithAllowlist(allowlistEntries) {
+  const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-b4-'))
+  try {
+    mkdirSync(join(root, 'scripts'), { recursive: true })
+    mkdirSync(join(root, 'docs'), { recursive: true })
+    writeFileSync(join(root, 'scripts/check-doc-paths.mjs'), readFileSync(REAL_CHECK_DOC_PATHS))
+    writeFileSync(join(root, 'scripts/_cliLog.mjs'), readFileSync(REAL_CLI_LOG))
+    writeFileSync(join(root, 'scripts/doc-path-check-allowlist.json'), JSON.stringify(allowlistEntries, null, 2))
+    writeFileSync(join(root, 'docs/placeholder.md'), '# placeholder — nessun riferimento a file locali.\n')
+    return spawnSync(process.execPath, [join(root, 'scripts/check-doc-paths.mjs')], { cwd: root, encoding: 'utf8' })
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
 const tests = [
   ['changed reports: Report valido in sottocartella viene selezionato e validato', () => {
     withTempGitRepo(({ repo, base }) => {
@@ -711,6 +739,30 @@ const tests = [
     }))
     const jsonl = recordsToJsonl(records)
     assert.doesNotMatch(jsonl, new RegExp(FAKE_SENTINEL))
+  }],
+  ['B4 — check-doc-paths: allowlist sopra il tetto dichiarato esce rosso e cita D21', () => {
+    const source = readFileSync(REAL_CHECK_DOC_PATHS, 'utf8')
+    const max = Number(source.match(/const ALLOWLIST_MAX = (\d+)/)?.[1])
+    assert.ok(Number.isInteger(max) && max > 0, 'ALLOWLIST_MAX non trovato nello script reale')
+    const result = runCheckDocPathsWithAllowlist(syntheticAllowlist(max + 1))
+    assert.equal(result.status, 1, `atteso exit 1 sopra il tetto; stdout=${result.stdout} stderr=${result.stderr}`)
+    assert.match(result.stderr, /D21/)
+    assert.match(result.stderr, new RegExp(`ALLOWLIST_MAX=${max}`))
+  }],
+  ['B4 — check-doc-paths: allowlist al tetto dichiarato resta verde senza avviso', () => {
+    const source = readFileSync(REAL_CHECK_DOC_PATHS, 'utf8')
+    const max = Number(source.match(/const ALLOWLIST_MAX = (\d+)/)?.[1])
+    const result = runCheckDocPathsWithAllowlist(syntheticAllowlist(max))
+    assert.equal(result.status, 0, `atteso exit 0 al tetto; stdout=${result.stdout} stderr=${result.stderr}`)
+    assert.doesNotMatch(result.stderr, /abbassa il tetto/)
+  }],
+  ['B4 — check-doc-paths: allowlist sotto il tetto avvisa di abbassarlo ma resta verde', () => {
+    const source = readFileSync(REAL_CHECK_DOC_PATHS, 'utf8')
+    const max = Number(source.match(/const ALLOWLIST_MAX = (\d+)/)?.[1])
+    assert.ok(max > 1, 'serve un tetto > 1 per testare la discesa')
+    const result = runCheckDocPathsWithAllowlist(syntheticAllowlist(max - 1))
+    assert.equal(result.status, 0, `atteso exit 0 sotto il tetto (solo avviso); stdout=${result.stdout} stderr=${result.stderr}`)
+    assert.match(result.stderr, /abbassa il tetto/)
   }],
 ]
 

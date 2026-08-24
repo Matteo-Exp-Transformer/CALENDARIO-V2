@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/fine-sessione-senior.mjs" } ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "mcp__claude_ai_Supabase__.*|Bash|PowerShell",
+        "hooks": [ { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-prod.mjs" } ] }
+    ]
+  }
+}

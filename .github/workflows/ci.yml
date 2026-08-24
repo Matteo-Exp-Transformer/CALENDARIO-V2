@@ -57,8 +57,5 @@ jobs:
           MSS_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run validate:mss:changed -- --base "$MSS_BASE_SHA" --head "$MSS_HEAD_SHA"
 
-      - name: MSS validator tests
-        run: npm run test:mss
-
-      - name: MSS tools tests
-        run: npm run test:mss:tools
+      - name: MSS gates (validate:mss:all)
+        run: npm run validate:mss:all

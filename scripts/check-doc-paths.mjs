@@ -33,7 +33,7 @@ import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createCliLogger } from './_cliLog.mjs'
 
-const { log, fail } = createCliLogger('check-doc-paths')
+const { log, warn, fail } = createCliLogger('check-doc-paths')
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(__dirname, '..')
@@ -62,6 +62,30 @@ if (existsSync(ALLOWLIST_PATH)) {
   } catch (err) {
     fail(`Allowlist illeggibile (${ALLOWLIST_PATH})`, err, 1)
   }
+}
+
+// --- 0-bis. tetto dichiarato (B4, mandato M-A/M-B 24-08-26; D21) ------------
+// L'allowlist non può più crescere di nascosto: un'eccezione in più per
+// aggirare un path rotto azzera il valore della raccolta (D21: «vietato
+// azzerare il contatore ammorbidendo il controllo»). ALLOWLIST_MAX è il tetto
+// dichiarato, pari alla dimensione dell'allowlist al momento in cui il tetto
+// è stato posato. Chi vuole aggiungere una voce deve prima chiudere un
+// path rotto altrove (la cricchetta stringe) o alzare ALLOWLIST_MAX qui sopra
+// giustificando esplicitamente il perché nel commit — mai come effetto
+// collaterale silenzioso di un fix altrove.
+const ALLOWLIST_MAX = 26
+if (allowlist.size > ALLOWLIST_MAX) {
+  fail(
+    `Allowlist cresciuta a ${allowlist.size} voci, sopra il tetto dichiarato ALLOWLIST_MAX=${ALLOWLIST_MAX} ` +
+      `(${ALLOWLIST_PATH}). D21: vietato azzerare il contatore ammorbidendo il controllo — chiudi il path ` +
+      `rotto con un fix reale, oppure alza ALLOWLIST_MAX in scripts/check-doc-paths.mjs dichiarando il perché.`,
+    1,
+  )
+} else if (allowlist.size < ALLOWLIST_MAX) {
+  warn(
+    `Allowlist scesa a ${allowlist.size} voci, sotto il tetto dichiarato ALLOWLIST_MAX=${ALLOWLIST_MAX}: ` +
+      'abbassa il tetto in scripts/check-doc-paths.mjs — la cricchetta stringe, non si allarga da sola.',
+  )
 }
 
 // --- 1. raccolta dei .md vivi sotto docs/ -----------------------------------

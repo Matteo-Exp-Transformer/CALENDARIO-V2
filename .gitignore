@@ -68,3 +68,9 @@ __pycache__/
 # Contengono, fra l'altro, "Crescita professionale/": copia byte-identica di
 # Documents\Io-Claude\Crescita professionale con dati anagrafici + un .git annidato.
 docs/Archives/
+
+# Claude Code locale: permessi/path assoluti personali (settings.local.json) e
+# config MCP con chiavi (mcp.json) — personali alla macchina, mai versionati.
+# Il blocco hooks condiviso vive in .claude/settings.json (tracciato, git add -f).
+.claude/settings.local.json
+.claude/mcp.json

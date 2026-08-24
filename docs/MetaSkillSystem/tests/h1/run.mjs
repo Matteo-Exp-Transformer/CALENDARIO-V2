@@ -49,6 +49,12 @@ const fixturesDir = join(repoRoot, 'docs/MetaSkillSystem/fixtures/v0.1')
 const matrixPath = join(repoRoot, 'docs/MetaSkillSystem/COVERAGE_MATRIX_H1.json')
 const stopHookPath = join(repoRoot, '.cursor/hooks/fine-sessione-nudge.mjs')
 const precommitHookPath = join(repoRoot, '.cursor/hooks/fine-sessione-commit-check.mjs')
+// A2/A3 (24-08-26): guardie PROD (Cursor+Claude+kit) e stop hook Claude — copie gemelle degli
+// hook Cursor sopra, coperte nella stessa suite (mandato M-A/M-B §2).
+const cursorGuardProdHookPath = join(repoRoot, '.cursor/hooks/guard-prod.mjs')
+const claudeGuardProdHookPath = join(repoRoot, '.claude/hooks/guard-prod.mjs')
+const kitGuardProdHookPath = join(repoRoot, '_skill-system-v0/hooks/guard-prod.mjs')
+const claudeStopHookPath = join(repoRoot, '.claude/hooks/fine-sessione-senior.mjs')
 
 function gitStatus(root = repoRoot) {
   return spawnSync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
@@ -1771,6 +1777,251 @@ function testMatrix() {
   return failures
 }
 
+// --- A2 (24-08-26) — corpus unico per le guardie PROD Cursor/Claude/kit ----------------------
+// Le tre copie divergono legittimamente nel protocollo I/O (mandato M-A/M-B §2 · A2): il corpus
+// di CASI è condiviso, l'adattatore payload/decisione è per-piattaforma.
+const GUARD_PROD_CASES = [
+  {
+    id: 'A2-mcp-execute-sql-delete-ask',
+    kind: 'mcp', tool_name: 'mcp__claude_ai_Supabase__execute_sql',
+    tool_input: { query: 'DELETE FROM bookings WHERE id = 1' },
+    expected: 'ask',
+  },
+  {
+    id: 'A2-mcp-execute-sql-select-allow',
+    kind: 'mcp', tool_name: 'mcp__claude_ai_Supabase__execute_sql',
+    tool_input: { query: 'SELECT * FROM bookings' },
+    expected: 'allow',
+  },
+  {
+    id: 'A2-mcp-apply-migration-prod-ask',
+    kind: 'mcp', tool_name: 'mcp__claude_ai_Supabase__apply_migration',
+    tool_input: {},
+    expected: 'ask',
+  },
+  {
+    id: 'A2-mcp-apply-migration-test-allow',
+    kind: 'mcp', tool_name: 'mcp__claude_ai_Supabase_test__apply_migration',
+    tool_input: {},
+    expected: 'allow',
+  },
+  {
+    id: 'A2-mcp-list-tables-allow',
+    kind: 'mcp', tool_name: 'mcp__claude_ai_Supabase__list_tables',
+    tool_input: {},
+    expected: 'allow',
+  },
+  {
+    id: 'A2-shell-include-all-ask',
+    kind: 'shell', command: 'supabase db push --include-all',
+    expected: 'ask',
+  },
+  {
+    id: 'A2-payload-illegible-allow',
+    kind: 'raw', raw: '',
+    expected: 'allow',
+  },
+]
+
+function cursorGuardPayload(c) {
+  if (c.kind === 'raw') return c.raw
+  if (c.kind === 'shell') return JSON.stringify({ command: c.command })
+  return JSON.stringify({ tool_name: c.tool_name, tool_input: c.tool_input })
+}
+function claudeGuardPayload(c) {
+  if (c.kind === 'raw') return c.raw
+  if (c.kind === 'shell') return JSON.stringify({ tool_name: 'Bash', tool_input: { command: c.command } })
+  return JSON.stringify({ tool_name: c.tool_name, tool_input: c.tool_input })
+}
+function cursorGuardDecision(stdout) {
+  try { return JSON.parse(stdout).permission } catch { return `<invalid JSON: ${stdout}>` }
+}
+function claudeGuardDecision(stdout) {
+  try { return JSON.parse(stdout).hookSpecificOutput?.permissionDecision } catch { return `<invalid JSON: ${stdout}>` }
+}
+
+function runGuardCase(hookPath, payload) {
+  return spawnSync(process.execPath, [hookPath], { encoding: 'utf8', input: payload, cwd: repoRoot })
+}
+
+// --- A1/A4 (24-08-26, controverifica) — regressione sull'indice git, non sul filesystem --------
+// Girano contro `git ls-files`/`git show :path` (stage 0 dell'indice): verdi ora che i file sono
+// staged, restano verdi dopo il commit di Matteo. Un test sul solo filesystem non basterebbe: è
+// esattamente lo scenario del difetto originale (file presenti su disco, invisibili a git).
+function gitIndexHasPath(path) {
+  const result = spawnSync('git', ['ls-files', '--error-unmatch', path], { cwd: repoRoot, encoding: 'utf8' })
+  return result.status === 0
+}
+
+function testA1GuardProdTrackedByGit() {
+  const failures = []
+  const copies = [
+    '.claude/hooks/guard-prod.mjs',
+    '.cursor/hooks/guard-prod.mjs',
+    '_skill-system-v0/hooks/guard-prod.mjs',
+  ]
+  for (const p of copies) {
+    if (!gitIndexHasPath(p)) failures.push(`A1: ${p} non è nell'indice git (git ls-files --error-unmatch fallisce)`)
+  }
+  return failures
+}
+
+function testA4ClaudeSettingsTrackedNoPersonalFiles() {
+  const failures = []
+  if (!gitIndexHasPath('.claude/settings.json')) {
+    failures.push('A4: .claude/settings.json non è nell\'indice git')
+  } else {
+    const show = spawnSync('git', ['show', ':.claude/settings.json'], { cwd: repoRoot, encoding: 'utf8' })
+    if (show.status !== 0) {
+      failures.push(`A4: impossibile leggere .claude/settings.json dallo stage 0 dell'indice: ${show.stderr}`)
+    } else {
+      let parsed
+      try {
+        parsed = JSON.parse(show.stdout)
+      } catch (error) {
+        failures.push(`A4: .claude/settings.json nell'indice non è JSON valido: ${error.message}`)
+      }
+      if (parsed) {
+        const stopCmd = parsed.hooks?.Stop?.[0]?.hooks?.[0]?.command || ''
+        const preCmd = parsed.hooks?.PreToolUse?.[0]?.hooks?.[0]?.command || ''
+        if (!/fine-sessione-senior\.mjs/.test(stopCmd)) {
+          failures.push(`A4: blocco hooks.Stop nell'indice non referenzia fine-sessione-senior.mjs (letto: ${stopCmd})`)
+        }
+        if (!/guard-prod\.mjs/.test(preCmd)) {
+          failures.push(`A4: blocco hooks.PreToolUse nell'indice non referenzia guard-prod.mjs (letto: ${preCmd})`)
+        }
+      }
+    }
+  }
+  // La metà che conta: i file personali (permessi assoluti di Matteo, chiavi MCP) non devono MAI
+  // entrare nell'indice — altrimenti un commit distratto li pubblica.
+  for (const personal of ['.claude/settings.local.json', '.claude/mcp.json']) {
+    if (gitIndexHasPath(personal)) {
+      failures.push(`A4: ${personal} È nell'indice git — non deve mai esserci (permessi/segreti personali di Matteo)`)
+    }
+  }
+  return failures
+}
+
+function testA2GuardProdCorpus() {
+  const failures = []
+  for (const c of GUARD_PROD_CASES) {
+    const cursorResult = runGuardCase(cursorGuardProdHookPath, cursorGuardPayload(c))
+    const cursorDecision = cursorGuardDecision(cursorResult.stdout)
+    if (cursorDecision !== c.expected) {
+      failures.push(`${c.id} [cursor]: expected ${c.expected}, got ${cursorDecision} (stderr=${cursorResult.stderr || ''})`)
+    }
+    const claudeResult = runGuardCase(claudeGuardProdHookPath, claudeGuardPayload(c))
+    const claudeDecision = claudeGuardDecision(claudeResult.stdout)
+    if (claudeDecision !== c.expected) {
+      failures.push(`${c.id} [claude]: expected ${c.expected}, got ${claudeDecision} (stderr=${claudeResult.stderr || ''})`)
+    }
+  }
+  return failures
+}
+
+function testA2KitTemplateStatic() {
+  const failures = []
+  const check = spawnSync(process.execPath, ['--check', kitGuardProdHookPath], { encoding: 'utf8' })
+  if (check.status !== 0) failures.push(`A2-kit-static-check: node --check failed: ${check.stderr}`)
+  const source = readFileSync(kitGuardProdHookPath, 'utf8')
+  const markers = (source.match(/⚠️\s*ADATTA/g) || []).length
+  if (markers < 1) failures.push(`A2-kit-static-check: marcatori ⚠️ ADATTA assenti (template cablato con dati reali?)`)
+  return failures
+}
+
+// --- A3 (24-08-26) — hook Stop di Claude Code coperto nella stessa suite dei gemelli Cursor ---
+function runClaudeStopHook(root, extra = {}) {
+  return spawnSync(process.execPath, [claudeStopHookPath], {
+    cwd: root,
+    encoding: 'utf8',
+    input: JSON.stringify({ cwd: root, stop_hook_active: false, ...extra }),
+  })
+}
+
+function testA3ClaudeStopHookSilenceOnComplete() {
+  const root = createTempGitRepo()
+  try {
+    writeFixtureReferenceOwner(root)
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-a3-complete.md`
+    writeTemp(root, rel, reportWithBundle(validBundle()))
+    const result = runClaudeStopHook(root)
+    if (result.status !== 0) return [`A3-silence-complete: exit=${result.status} stderr=${result.stderr}`]
+    let payload
+    try { payload = JSON.parse(result.stdout || '{}') } catch { return [`A3-silence-complete: stdout non-JSON: ${result.stdout}`] }
+    if (payload.decision === 'block') {
+      return [`A3-silence-complete: expected silence on complete Q/R+capsula, got block: ${(payload.reason || '').slice(0, 120)}`]
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testA3ClaudeStopHookBlocksMissingAnswer() {
+  const root = createTempGitRepo()
+  try {
+    writeFixtureReferenceOwner(root)
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-a3-missing-answer.md`
+    writeTemp(
+      root, rel,
+      `# A3 missing answer\n\n**Modalità:** standard\n\n## Domande di chiusura\n\n❓ Q1 — Prompt?\n✅ R1:\n\n❓ Q2 — Dati?\n✅ R2: ok.\n`,
+    )
+    const result = runClaudeStopHook(root)
+    let payload
+    try { payload = JSON.parse(result.stdout || '{}') } catch { return [`A3-blocks-missing-answer: stdout non-JSON: ${result.stdout}`] }
+    if (payload.decision !== 'block' || !/risposte vuote/i.test(payload.reason || '')) {
+      return [`A3-blocks-missing-answer: expected block su risposta vuota, got ${JSON.stringify(payload).slice(0, 160)}`]
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testA3ClaudeStopHookBlocksRedCapsule() {
+  const root = createTempGitRepo()
+  try {
+    writeFixtureReferenceOwner(root)
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-a3-no-capsule.md`
+    writeTemp(root, rel, `# A3 no capsule\n\n**Modalità:** standard\n${reportQrs()}`)
+    const result = runClaudeStopHook(root)
+    let payload
+    try { payload = JSON.parse(result.stdout || '{}') } catch { return [`A3-blocks-red-capsule: stdout non-JSON: ${result.stdout}`] }
+    if (payload.decision !== 'block' || !payload.reason?.includes(RULE.REPORT_NO_CAPSULE)) {
+      return [`A3-blocks-red-capsule: expected block su capsula rossa (${RULE.REPORT_NO_CAPSULE}), got ${JSON.stringify(payload).slice(0, 160)}`]
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testA3ClaudeStopHookAntiLoop() {
+  const root = createTempGitRepo()
+  try {
+    writeFixtureReferenceOwner(root)
+    const now = Date.now()
+    const day = todaySessionFolder(new Date(now))
+    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-a3-antiloop.md`
+    writeTemp(root, rel, `# A3 antiloop\n\n**Modalità:** standard\n${reportQrs()}`) // no capsula -> block se non fosse per stop_hook_active
+    const result = runClaudeStopHook(root, { stop_hook_active: true })
+    if (result.status !== 0) return [`A3-anti-loop: exit=${result.status} stderr=${result.stderr}`]
+    let payload
+    try { payload = result.stdout ? JSON.parse(result.stdout) : {} } catch { return [`A3-anti-loop: stdout non-JSON: ${result.stdout}`] }
+    if (payload.decision === 'block') return [`A3-anti-loop: stop_hook_active=true dovrebbe passare (guardia anti-loop), ha bloccato`]
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
 function main() {
   const statusBefore = gitStatus()
   const manifest = loadManifest()
@@ -1823,6 +2074,14 @@ function main() {
     ['H-1.3 historical records + frozen immutability', testH13HistoricalRecordAndFixtureImmutability],
     ['H-1.2 scoped report whitespace', testH12ScopedReportWhitespace],
     ['coverage matrix', testMatrix],
+    ['A1 — la guardia PROD di Claude è tracciata da git', testA1GuardProdTrackedByGit],
+    ['A4 — il cablaggio dell\'hook Claude è tracciato e non trascina i file personali', testA4ClaudeSettingsTrackedNoPersonalFiles],
+    ['A2 — guard-prod shared corpus (cursor+claude)', testA2GuardProdCorpus],
+    ['A2 — guard-prod kit template static check', testA2KitTemplateStatic],
+    ['A3 — Claude stop hook silence on complete report', testA3ClaudeStopHookSilenceOnComplete],
+    ['A3 — Claude stop hook blocks missing Q/R answer', testA3ClaudeStopHookBlocksMissingAnswer],
+    ['A3 — Claude stop hook blocks red capsule', testA3ClaudeStopHookBlocksRedCapsule],
+    ['A3 — Claude stop hook anti-loop guard', testA3ClaudeStopHookAntiLoop],
   ]
   for (const [name, fn] of checks) {
     const errs = fn()
