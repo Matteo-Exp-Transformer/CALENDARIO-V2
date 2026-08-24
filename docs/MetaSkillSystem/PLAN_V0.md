@@ -92,27 +92,27 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | Ordine | Pacchetto | Stato | Prova di chiusura (comando, non opinione) |
 |---|---|---|---|
 | S0 | `SK-0` — sbloccare i cancelli globali | **`CHIUSO E OSSERVATO` 21-08-26** | ✅ `npm run lint` **exit 0** (era 363 problemi / 17 errori) · ✅ `npm run test` **163 file, 1346 test, exit 0** · ✅ `npm run validate` **exit 0** · ✅ `validate:docs` **3 886 → 17** path rotti |
-| S1 | `SK-1` — punto di ripristino (tag annotato) | `APERTO` — quick win non eseguito | manca `mss/baseline-h13`; oggi il ripristino è uno SHA ricordato |
+| S1 | `SK-1` — punto di ripristino (tag annotato) | **ESEGUITO, non pubblicato** 24-08-26 | tag annotato `mss/baseline-h13` creato su `HEAD` pre-`M-A`/`M-B`: `git tag -n1 -l "mss/baseline-*"` lo mostra. È **locale, non pushato**; la pubblicazione (push del tag) è una decisione di Matteo |
 | S2 | `SK-2` — `mss:status` (sola lettura) | `IMPLEMENTATO, non allineato` | il comando esiste e gira; il suo output ripete numeri/stati stale e non controlla roadmap/handoff |
 | S3 | `SK-3` — `mss:review` (sola lettura) | `NON INIZIATO` | su una seduta con violazione nota la trova; su una pulita non inventa nulla |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`APERTO` — D1 chiuso in P1, chiusura formale pendente** | B1–B3 restano provati · ✅ pre-commit passa `requireCapsule: true` come CI (suite H-1/tools) · restano bypass/schema gate in prosa · chiusura storica `D20` rettificata, non cancellata |
-| S5 | `SK-5` — controlli MSS in CI su `env/test` | **`APERTO` — CI esiste, gate complessivo non coerente** | job remoto MSS osservato verde, ma dipende dalla parità `D1`; `npm run validate` non include `test:mss` né `validate:docs`. Il rosso documentale non va più occultato. |
+| S5 | `SK-5` — controlli MSS in CI su `env/test` | **`APERTO` — comandi allineati 24-08-26, CI reale con la forma nuova non osservata** | `npm run validate` ora è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. Non ancora osservato girare su GitHub Actions reale con questa forma: manca il primo push. |
 | S6 | `SK-6` — `mss:query` (sola lettura) | **`CHIUSO` 23-08-26 — decisione di Matteo** | ✅ `npm run mss:query -- --regole/--modelli/--verifica/--fail` rispondono · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `node --check scripts/mss/query.mjs` **exit 0** · ⚠️ copertura test del lettore parziale (suite tools, non H-1 intero) · rettificato 22-08-26: capsula `SK-6` corretta con `amendment`; criterio revisori su `recorded_by.role` · ✅ **23-08-26 vista effettiva:** `query.mjs` delega `core.mjs::applyAmendmentsView()` · ✅ **23-08-26 P1:** `--fail` usa denominatori calcolati, non literal storici · revisioni/controlli: numero mobile → `npm run mss:query -- --verifica` · **Matteo ha dichiarato `SK-6` CHIUSO (`D16`)** |
 | S7 | `SK-7` — `mss:capsule` (generazione) | **`CHIUSO` 24-08-26 — decisione `M3` di Matteo dopo controverifica** | ✅ attrezzo e report SK-7 esistono · ✅ fix B: `parseCheckSpec` canonico `ID=>comando`, legacy un solo `:`, ambigui rifiutati; il comando può contenere ulteriori `=>` · ✅ `runChecks` non passa comandi vuoti · ✅ rettifica privacy append-only su report SK-7 · ✅ `source_refs` escludono untracked non pubblicabili · ✅ test/tools, H-1, docs, lint, validator capsule e validate globale rieseguiti verdi il 24-08-26 |
 | S8 | `SK-8` — radice robusta della suite | **`IMPLEMENTATO, non dichiarato`** | `npm run test:mss` verde da profondità diverse (risoluzione da posizione file); manca prova registrata e promozione documentale |
 | S9 | `SK-9` — `mss:move` | `NON INIZIATO` | file spostato, riferimenti vivi, suite verde, costo misurato contro le 1 741 righe di riferimento |
 | S10 | `SK-10` — manuale utente + intervista di bootstrap | **`IN CORSO — P2A manuale locale`** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ⛔ bootstrap repo nuova non provato (`P2B`) · ⛔ `R8` non chiuso |
-| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura e viste incomplete** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ⚠️ copertura insufficiente: privacy template, hook Claude, guard PROD · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
+| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura ancora parziale** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ✅ 24-08-26: hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4` (`npm run test:mss`) · ⚠️ copertura ancora insufficiente: privacy template · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
 
 ### 4-ter. Rettifica tecnica dell'audit 23-08-26 — questa sezione prevale sulle celle stale sopra
 
 | Pacchetto | Stato operativo dopo audit | Cosa deve accadere prima di una nuova chiusura |
 |---|---|---|
 | `SK-4` | **APERTO**: B1–B3 restano veri; **P1 D1** ha allineato pre-commit e CI su `requireCapsule: true` (prove in suite H-1/tools). | Restano bypass non coperti e schema gate in prosa; chiusura formale solo Matteo. |
-| `SK-5` | **APERTO**: job MSS remoto esiste, ma la sua efficacia dipende da D1; `npm run validate` non include `test:mss` né `validate:docs`. | Scegliere e testare un gate locale/CI coerente, senza nascondere il rosso documentale. |
+| `SK-5` | **APERTO**: 24-08-26 `npm run validate` è ora `validate:app`+`validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); il job CI `mss` esegue un unico step `npm run validate:mss:all`. | Osservare quel job girare verde su GitHub Actions reale con la forma nuova (mai osservato: manca il primo push); chiusura formale solo Matteo. |
 | `SK-7` | **CHIUSO 24-08-26 (`M3`)**: fix B D2/D3 e privacy append-only controverificati; sintassi canonica e source refs pubblicabili coperti da test. | Revisione indipendente (`D17`) resta consigliata, non gate. |
 | `SK-8` | **IMPLEMENTATO, non dichiarato**: la suite gira già da una root diversa grazie alla risoluzione dalla posizione del file. | Registrare una prova riproducibile e promuovere lo stato documentale. |
-| `SK-11` | **APERTO**: suite verde; **P1 D5** ha rimosso numeri stale da §4-bis; copertura insufficiente. | Test per privacy template, hook Claude e guard PROD (P4); conteggi sempre da comando, non da owner. |
+| `SK-11` | **APERTO**: suite verde; **P1 D5** ha rimosso numeri stale da §4-bis; 24-08-26 hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4`. | Test per privacy template (resta scoperto, P4); conteggi sempre da comando, non da owner. |
 
 Analisi, prove e motivazione dell'ordine:
 `docs/Sessioni di lavoro/21-08-26/STRATEGIA-scheletro-mss-21-08-26.md`.
@@ -500,6 +500,7 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 | 22-08-26 | **`SK-6` costruito** (`mss:query`, sola lettura, 941 righe): interroga le 42/43 capsule esistenti, risponde alle tre domande di chiusura. Risultato principale: `independently_verified` mai usato in 42 sedute, ma review indipendenti risultano davvero eseguite (6 controlli/3 sedute col criterio iniziale). Non dichiarato chiuso: decisione di Matteo | `Report-sk6-mss-query-22-08-26.md` |
 | 22-08-26 | **Revisione trova 2 difetti in `SK-6`, entrambi rettificati** senza riscrivere record `final`: (1) la capsula del report dichiarava la seduta chiusa alle 13:45:54 mentre il report è stato esteso alle 22:16 con un secondo segmento — corretto con un record `amendment` in coda alla capsula, non una riscrittura; (2) il criterio revisori leggeva solo `controls[].esecutore` e perdeva un revisore la cui stringa finiva in `-review` — spostato su `recorded_by.role` (campo con semantica sua, mai una stringa di comando): misura del 22-08-26 ~22:44, il numero passa da **6 controlli/3 sedute** a **19 controlli/5 sedute** — numero mobile (cresce a ogni seduta), non un valore fisso; zero falsi positivi verificati stampando l'elenco completo degli attori catturati | `Report-fix-sk6-22-08-26.md` |
 | 22-08-26 | **Contro-revisione indipendente (Codex) su `SK-6` atterra nel working tree**, con 3 `amendment` propri: conferma 5/6 affermazioni della prima rettifica, ne contraddice 1 (il criterio di quel momento, poi già superato), e marca due annotazioni della capsula `SK-6` `independently_verified`/`contradicted`. Trova che questa marcatura resta invisibile a `mss:query` (il lettore non applica la catena degli `amendment`, mostra 0/0 dove la vista effettiva è 1/1) e che il numero «19/5» era già stato congelato in questo file come presente — **entrambi rettificati**: la riga `SK-6` sopra non fissa più il numero, e `mss:query -- --verifica` ora conta gli `amendment` nel corpus e dichiara il limite invece di dire «mai usato» su valori che un `amendment` già usa. Corretta anche una colonna troppo stretta (id di 36 caratteri attaccato al numero, stessa classe del bug `nessuno4` di `--costo`) con una larghezza calcolata sui dati, non a memoria | `Report-fix-sk6-22-08-26.md` · `Report-revisione-indipendente-sk6-codex-22-08-26.md` |
+| 24-08-26 | **Ciclo orchestratore aperto.** Mandato `M-A`+`M-B` (protezioni e cancelli) eseguito e controverificato (due giri): guard-prod e hook Claude tracciati e testati, `validate`/`validate:app`/`validate:mss:all` separati, tag di ripristino locale, tetto sull'allowlist doc-path. Difetto nuovo `N2` registrato (`verification.verified_by` vuoto in tutte le annotazioni grezze). `N1` riprodotto due volte chiudendo la seduta di controverifica con l'attrezzo `mss:capsule`. **Committato su `env/test`** su richiesta di Matteo a fine seduta; **push non eseguito**, e il tag di ripristino resta locale | `Report-ma-mb-protezioni-cancelli-24-08-26.md` · `Report-controverifica-ma-mb-24-08-26.md` |
 
 ## 15. Prossimo task atomico
 
@@ -538,16 +539,24 @@ Definisce che cosa significa **100% della struttura** (una prova eseguibile per 
 requisiti `R1`–`R8` di §16.2), raggruppa i difetti aperti in **cinque mandati** e fissa il budget di
 documentazione per mandato.
 
+**Stato 24-08-26:** `M-A`+`M-B` è **eseguito e controverificato** (due giri) —
+[`Report-ma-mb-protezioni-cancelli-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-ma-mb-protezioni-cancelli-24-08-26.md)
+e
+[`Report-controverifica-ma-mb-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-ma-mb-24-08-26.md).
+Il lavoro è stato **committato su `env/test`** su richiesta di Matteo a fine seduta; il **push** e la pubblicazione del tag `mss/baseline-h13` restano una sua decisione, non ancora presa. Il prossimo mandato è `M-C`, il cui testo
+è già scritto in
+[`Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md).
+
 | Mandato | Copre | Perché in quest'ordine |
 |---|---|---|
 | `M-A` protezioni | guardia PROD non tracciata e non testata, hook Claude senza test, cablaggio non riproducibile | unica falla con conseguenze su **dati reali**; fix piccoli |
 | `M-B` cancelli | `npm run validate` ibrido → `validate:app` / `validate:mss:all` / `validate`; tag di ripristino (`SK-1`); freno all'allowlist (`D21`) | risparmio token per ogni agente futuro; chiude la metà aperta di `SK-5` |
-| `M-C` attrezzi che non mentono | **`N1`** (nuovo): `mss:capsule` esce 0 e **scrive** una capsula che `validate:mss` poi rifiuta — controlla la completezza dei giudizi, non la validità. Più il generatore viste (`D14`) | `D18`: l'attrezzo **importa** la regola del `core`, non la riscrive |
+| `M-C` attrezzi che non mentono | **`N1`**: `mss:capsule` esce 0 e **scrive** una capsula che `validate:mss` poi rifiuta — controlla la completezza dei giudizi, non la validità. **`N2`** (nuovo, registrato 24-08-26 durante la controverifica di `M-A`/`M-B`): `verification.verified_by` è vuoto in tutte le annotazioni grezze del corpus mentre `npm run mss:query -- --verifica` elenca più sedute condotte da revisori. Più il generatore viste (`D14`) | `D18`: l'attrezzo **importa** la regola del `core`, non la riscrive |
 | `M-D` portabilità | `P2B` | `R8` |
 | `M-E` attrezzi mancanti | `mss:move` (`SK-9`/`R6`, oggi a zero), poi `mss:review` (`SK-3`) | strutturali, ultimi |
 
-`M-A`+`M-B` vanno affidati **insieme** a un unico esecutore: otto fix piccoli, un solo report, una
-sola capsula. `M-C` non si accorpa a nulla e vuole un revisore di famiglia diversa.
+`M-A`+`M-B` sono stati affidati **insieme** a un unico esecutore, come da disegno: otto fix piccoli, un
+solo report, una sola capsula. `M-C` non si accorpa a nulla e vuole un revisore di famiglia diversa.
 
 **Rettifica documentale eseguita il 24-08 (`V2`/`V3`):** la tabella di stato in
 `Senior-Eval-Pack/ROADMAP_V0.md` è stata **rimossa**, non corretta — aveva accumulato tre stati

@@ -15,6 +15,7 @@
 | Fotografia tecnica recente | [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md) | Rettifiche «dichiarato vs reale»; non sostituisce il plan |
 | Schema capsula | [`CONTRATTO_CAPSULA_SESSIONE_V0.md`](CONTRATTO_CAPSULA_SESSIONE_V0.md) | Coppia viva `0.1.1` / `freeze-2`; dove vive la capsula; `controls` obbligatori |
 | Chiusura report | [`../Comunicazione-Skill/CHIUSURA_SESSIONE.md`](../Comunicazione-Skill/CHIUSURA_SESSIONE.md) | Sezioni obbligatorie + Q1–Q6 per standard/deep |
+| **Avvio orchestrazione** | [`PROMPT_AVVIO_ORCHESTRATORE_MSS.md`](PROMPT_AVVIO_ORCHESTRATORE_MSS.md) | Il prompt con cui si apre una chat di orchestrazione: ruolo, cosa leggere, prima azione. Corto per scelta, **senza data** perché resti uno solo; instrada al mandato vivo |
 | **Mandato vivo** | [`PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](PROMPT_ORCHESTRATOR_MSS_24-08-26.md) | Ciclo orchestratore: cosa vuol dire 100%, i cinque mandati, budget documentazione, controverifica. Sostituisce [`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`](PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md), che resta come storia |
 | Vista continuità senior | [`Senior-Eval-Pack/HANDOFF_SENIOR_V0.md`](Senior-Eval-Pack/HANDOFF_SENIOR_V0.md) | Puntatore operativo; **vince** `PLAN_V0.md` se divergono |
 | Vista sequenza SEP (parcheggiata) | [`Senior-Eval-Pack/ROADMAP_V0.md`](Senior-Eval-Pack/ROADMAP_V0.md) | Non è il fronte attivo; traccia `SK-*` come vista |
@@ -82,7 +83,9 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 | `npm run test:mss` | Fixture H-1 + integrazione | nulla | Dopo tocchi validator/core/adapter |
 | `npm run test:mss:tools` | Attrezzi query/status/capsule | nulla | Dopo tocchi `scripts/mss/*.mjs` |
 | `npm run validate:docs` | Path citati nei `.md` vivi | nulla | Dopo tocchi docs o link |
-| `npm run validate` | lint + typecheck + vitest + test:mss:tools | nulla | Sanity globale (non include `test:mss` intero né `validate:docs`) |
+| `npm run validate:app` | `lint` + `typecheck` + `test` (codice `src/`) | nulla | Chi tocca `src/` |
+| `npm run validate:mss:all` | `test:mss` + `test:mss:tools` + `validate:docs` | nulla | Chi tocca `scripts/mss/`, `docs/` o gli hook |
+| `npm run validate` | `validate:app` + `validate:mss:all` (i due composti, in sequenza) | nulla | Chi prepara una PR |
 
 ### 2.6 Comandi **non** implementati (non inventarli)
 
@@ -154,9 +157,9 @@ Pre-commit (se committi): stesso perimetro `Report-*` / `Verbale-*` con `require
 | **SK-7 D2/D3** | APERTO — prove false possibili in `mss:capsule` | Gate Matteo: (A) patch recuperabile o (B) autorità reimplementazione |
 | **WP-1** | **NO-GO** | Non aprire piloti reali |
 | **H-1.3** | `PASS_CON_RISERVE` | Non dichiarare PASS pulito |
-| **Tag ripristino** | Assente (`SK-1`) | Ripristino = SHA a memoria; nessun `mss/baseline-*` |
-| **Hook Claude** | Solo `settings.local.json` gitignored | Non coperti da CI né test (`P4`) |
-| **guard PROD** | Script presente, no test/CI | Verificare ambiente prima di scritture Supabase |
+| **Tag ripristino** | `mss/baseline-h13` posato 24-08-26 (locale, non pushato) su HEAD pre-M-A/M-B | Ritorno: `git reset --hard mss/baseline-h13` (locale; mai forzato su origin senza conferma di Matteo) |
+| **Hook Claude** | `guard-prod.mjs` + `settings.json` tracciati da git (24-08-26); casi `A1`/`A2`/`A3`/`A4` nel nome, verificarli con `npm run test:mss` | `settings.local.json`/`mcp.json` restano personali per design — mai tracciarli (`test:mss` lo verifica) |
+| **guard PROD** | Tracciato e coperto (Cursor+Claude+kit) da `npm run test:mss`; cancello CI = `npm run validate:mss:all` (non ancora osservato dal vivo su GitHub Actions, nessun push) | Prima di scritture Supabase verificare comunque l'ambiente a mano: il test copre la logica, non sostituisce la prudenza umana |
 | **SK-4 / SK-5 / SK-11** | APERTI post-audit | Chiusura formale solo Matteo; bypass residui in prosa |
 | **ROADMAP / HANDOFF generati** | `D14` non implementato | Allineamento manuale; controllare §4-ter |
 

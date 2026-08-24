@@ -1,0 +1,233 @@
+{
+  "session_event": {
+    "intent_user": "sei agente senior orchestrator. usa sub agent e massimizza efficienza token / task mentre lavori. prompt: docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+    "event_kind": "session_close",
+    "session_type": "meta",
+    "capsule_status": "completa",
+    "role_key": "orchestratore-mss-controverifica-ma-mb",
+    "area": "MetaSkillSystem / orchestrazione ciclo 24-08-26: apertura mandato M-A+M-B, controverifica §6, registrazione difetto N2, stesura mandato M-C",
+    "environment": "workspace locale, branch env/test @ 0dfb01b, Windows 11 (Bash/PowerShell)",
+    "authorization": {
+      "read": [
+        "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+        "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        "docs/MetaSkillSystem/PLAN_V0.md",
+        "docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md",
+        "package.json",
+        ".github/workflows/ci.yml",
+        ".gitignore",
+        "scripts/check-doc-paths.mjs",
+        "docs/MetaSkillSystem/tests/h1/run.mjs",
+        "docs/MetaSkillSystem/tests/tools/run.mjs",
+        ".claude/settings.local.json",
+        ".cursor/hooks/guard-prod.mjs",
+        ".claude/hooks/guard-prod.mjs",
+        "_skill-system-v0/hooks/guard-prod.mjs"
+      ],
+      "write": [
+        "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+        "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MA-MB-protezioni-cancelli-24-08-26.md",
+        "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md",
+        "docs/Sessioni di lavoro/24-08-26/Report-controverifica-ma-mb-24-08-26.md"
+      ],
+      "forbid": [
+        "commit",
+        "push",
+        "tag pushato",
+        "chiusura di pacchetti SK-* (solo Matteo)",
+        "apertura del mandato M-C prima della controverifica di M-A/M-B",
+        "operazioni database/Supabase",
+        "mss:move / rinomina file",
+        "allentamento di un validator"
+      ]
+    },
+    "authorized_outputs": [
+      "docs/Sessioni di lavoro/24-08-26/Report-controverifica-ma-mb-24-08-26.md"
+    ],
+    "route": {
+      "chosen": "leggere solo i quattro file prescritti dal mandato §1 ed eseguire mss:status + mss:query; verificare di persona ogni difetto A1-A4/B1-B4 PRIMA di affidarlo, così da consegnare all'esecutore i fatti già provati invece del corpus; affidare M-A+M-B come mandato unico a un esecutore Sonnet e il censimento di lettura per M-C a un agente Haiku, in parallelo; alla consegna applicare il protocollo §6 rieseguendo i comandi invece di leggerne gli esiti",
+      "alternatives_or_conflicts": [
+        "scartato: affidare M-A e M-B come due mandati separati — avrebbero prodotto due report e due capsule per otto fix piccoli, che è l'errore economico che il mandato §5.1 vieta",
+        "scartato: unificare le tre copie di guard-prod.mjs in un modulo condiviso per D18 — la copia del kit deve restare autonoma per il bootstrap in repo vergine (R8); condiviso il corpus dei casi di prova, non il codice",
+        "scartato: far popolare verified_by alla seduta stessa come fix di N2 — sarebbe autofirma, non verifica, e violerebbe R2; instradato su amendment in M-C",
+        "scartato: aprire M-C in parallelo a M-A/M-B — il mandato §4 impone un mandato per volta; preparato il documento senza affidarlo"
+      ]
+    },
+    "observed_outcome": "M-A+M-B consegnato e controverificato. Primo giro: perimetro corretto, report 133 righe, validate:mss verde, ma A1 e A4 senza test che li nomini (grep a zero nell'albero dei test) — difetto reale rilevato dalla controverifica e rimandato all'esecutore. Secondo giro: due test nuovi contro l'indice git (git ls-files + git show :path), con A4 che asserisce anche l'ASSENZA dei file personali dall'indice. Rieseguiti da me: npm run validate exit 0, test:mss verde con A1/A2/A3/A4 nominati, test:mss:tools verde con i tre casi B4, validate:mss sul report exit 0, tag mss/baseline-h13 presente e non pushato. Falso allarme verificato e scartato: il commit 0dfb01b non e' dell'esecutore ma di Matteo (secondo tempo del report 23-08, gia' su origin). Registrato inoltre il difetto nuovo N2 (verification.verified_by vuoto in tutte le annotazioni grezze) e instradato su M-C, con R7 abbassato da 60% a 50% perche' quel requisito risultava dichiarato e non dimostrabile. Collaudo di N1 alla mia stessa chiusura: mss:capsule e uscito 0 e ha scritto due volte una capsula che validate:mss ha poi rifiutato — prima per collisione di sezione (MSS-PARSE-JSONL-AMBIGUOUS: --append-to aggiunge una seconda sezione capsula senza accorgersi di quella dichiarata dal report), poi per N1 puro (MSS-SYSTEM-ASSERTION su G fuori dominio). Corretto il giudizio, mai la regola, e rigenerato con l attrezzo fino a validate:mss OK.",
+    "open_items": [
+      "commit e push di tutto il lavoro M-A/M-B restano a Matteo: finche' non committa, .claude/hooks/guard-prod.mjs e .claude/settings.json sono solo staged e su una repo clonata non esisterebbero",
+      "il tag mss/baseline-h13 e' locale: il push lo autorizza Matteo",
+      "il job CI mss con validate:mss:all non e' mai stato osservato girare su GitHub Actions reale",
+      "M-C (N1+N2+V1) scritto ma non affidato: si apre dopo questa controverifica",
+      "la verifica indipendente che ho condotto su M-A/M-B non e' registrabile nel campo verification senza scrivere un amendment a mano: e' esattamente N2, lasciato a M-C invece di anticiparlo con JSON artigianale",
+      "N1 ha due facce, entrambe riprodotte in questa seduta e scritte in M-C: la validita dei giudizi e la collisione fra la guardia interna di --append-to e la regola del validator sulle sezioni capsula multiple",
+      "--check deduce l esito dall exit code: un comando che non puo fallire (es. git status) registra un pass vacuo. Nessun attrezzo se ne accorge"
+    ],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: soggetto non applicabile in questa seduta",
+      "provider": "non_applicabile: soggetto non applicabile",
+      "model": "non_applicabile: soggetto non applicabile",
+      "runtime": "non_applicabile: soggetto non applicabile",
+      "surface": "non_applicabile: soggetto non applicabile"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": [
+        "path del repo",
+        "esiti comandi",
+        "SHA/tag git",
+        "metriche aggregate"
+      ],
+      "prohibited_content": [
+        "dati personali",
+        "segreti",
+        "materiale privato non registrabile"
+      ],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-mandato-orchestratore",
+        "owner_id": "PROMPT_ORCHESTRATOR_MSS_24-08-26",
+        "uri_or_path": "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md",
+        "stable_anchor_or_event_id": "§4 i cinque mandati · §5 regole di orchestrazione · §6 controverifica · §7 STOP · §8 prima azione",
+        "revision_or_hash": "229bbf0 al momento della lettura, poi modificato in working tree per registrare N2",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "owner-plan",
+        "owner_id": "PLAN_V0",
+        "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+        "stable_anchor_or_event_id": "§4-bis · §4-ter · §15",
+        "revision_or_hash": "229bbf0",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": []
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "Matteo ha aperto la seduta con il ruolo e il path del mandato, poi e' intervenuto una sola volta a meta' lavoro per segnalare due cose: il dato su verification.verified_by vuoto in tutte le annotazioni grezze, offrendo di aggiungerlo come sesto mandato, e l'avviso che N1 mi sarebbe caduto addosso alla mia stessa chiusura",
+          "actor": "matteo",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "owner-mandato-orchestratore",
+          "effect": "il dato e' stato verificato di persona con mss:query --verifica, registrato come difetto N2 nel mandato vivo e instradato dentro M-C invece che come sesto mandato: stesso file, stessa famiglia di N1, nessun mandato in piu'. L'offerta di aprire un mandato dedicato e' stata declinata con motivazione economica esplicita",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "claude-opus-5-orchestratore",
+        "role": "agente senior orchestratore MSS",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "unverified",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessuna valutazione Persona",
+        "criterion_ref": "non_applicabile:non ancora verificato",
+        "evidence_refs": [],
+        "notes": "singola seduta, non alza livelli"
+      }
+    },
+    "sistema": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "rule_id_version": "PROMPT_ORCHESTRATOR_MSS_24-08-26@§6-controverifica",
+          "trigger_event": "consegna del mandato M-A/M-B da parte dell'esecutore Sonnet, con dichiarazione «tutti e otto i fix FATTI»",
+          "decision_or_output_changed": "la controverifica ha rifiutato la dichiarazione su due degli otto fix: A1 e A4 non avevano alcun test che li nominasse (grep a zero nell'albero dei test), quindi erano riparati ma senza guardia di regressione. Rimandati all'esecutore con due casi precisi, incluso il requisito che A4 asserisca l'ASSENZA di settings.local.json e mcp.json dall'indice e non solo la presenza di settings.json. Entrambi ora esistono e girano contro l'indice git",
+          "G": 2,
+          "O": 2,
+          "E": 2
+        },
+        {
+          "rule_id_version": "PROMPT_ORCHESTRATOR_MSS_24-08-26@§3-registro-difetti",
+          "trigger_event": "segnalazione di Matteo su verification.verified_by, verificata di persona con npm run mss:query -- --verifica",
+          "decision_or_output_changed": "registrato il difetto nuovo N2 nel mandato vivo (verified_by vuoto in tutte le annotazioni grezze mentre lo stesso comando elenca piu' sedute condotte da revisori), instradato dentro M-C e non come sesto mandato; R7 abbassato da 60% a 50% e la sua riga «Prova» riscritta, perche' con quel campo vuoto il requisito era dichiarato e non dimostrabile",
+          "G": 2,
+          "O": 1,
+          "E": 1
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "claude-opus-5-orchestratore",
+        "role": "agente senior orchestratore MSS",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-mandato-orchestratore",
+        "evidence_refs": [
+          "owner-mandato-orchestratore"
+        ],
+        "notes": "E=2 sulla prima asserzione perche' i test A1/A4 esistono e girano nel cancello; E=1 sulla seconda perche' N2 e' registrato in prosa nel mandato vivo e non ancora coperto da alcun test — lo sara' solo quando M-C lo chiudera'. Nessun secondo attore ha riverificato questa seduta: la verifica che HO condotto sull'esecutore non e' registrabile nel campo verification senza un amendment a mano, che e' N2 stesso"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "mss-controverifica-ma-mb-24-08",
+          "primary_type": "governance",
+          "canonical_version": "Report-controverifica-ma-mb-24-08-26.md",
+          "recipient": "Matteo e prossimo esecutore/revisore MSS",
+          "problem_or_job": "applicare il protocollo di controverifica §6 alla consegna del mandato M-A/M-B senza fidarsi del report, e lasciare agli atti sia l'esito sia il difetto nuovo N2 emerso durante il ciclo",
+          "intended_use": "base per la decisione di Matteo su commit/push e per l'apertura del mandato M-C",
+          "conceived_by": "PROMPT_ORCHESTRATOR_MSS_24-08-26",
+          "decided_by": "Matteo",
+          "directed_by": "PROMPT_ORCHESTRATOR_MSS_24-08-26 §6 + §5",
+          "authored_by": "claude-opus-5-orchestratore",
+          "verified_by": "non_osservato",
+          "acceptance_criterion": "ogni comando citato nei controls dell'esecutore rieseguito di persona; perimetro del diff verificato; per ogni difetto dichiarato chiuso, esistenza di un test che lo nomina; capsula di questa seduta generata con l'attrezzo e validata",
+          "verification_or_use_evidence": "npm run validate exit 0 (rieseguito da me, non letto); npm run test:mss verde con A1/A2/A3/A4 nominati; npm run test:mss:tools verde con i tre casi B4; npm run validate:mss sul report esecutore exit 0; git status a perimetro; git show 0dfb01b attribuito a Matteo; git tag -n1 -l mss/baseline-* presente e non pushato",
+          "verification_status": "self_report",
+          "owner_ref": "owner-mandato-orchestratore",
+          "privacy_release": "internal",
+          "support_files": [
+            "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MA-MB-protezioni-cancelli-24-08-26.md",
+            "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MC-attrezzi-che-non-mentono-24-08-26.md",
+            "docs/MetaSkillSystem/PROMPT_ORCHESTRATOR_MSS_24-08-26.md"
+          ],
+          "relations_no_double_count": [
+            "non sostituisce il report dell'esecutore M-A/M-B: lo controverifica",
+            "non chiude alcun pacchetto SK-*: la chiusura e' solo di Matteo",
+            "non apre il mandato M-C: lo prepara"
+          ],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "pass",
+            "result": "eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "claude-opus-5-orchestratore",
+        "role": "agente senior orchestratore MSS",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-mandato-orchestratore",
+        "evidence_refs": [
+          "owner-mandato-orchestratore"
+        ],
+        "notes": "questa seduta ha verificato il lavoro di un altro agente, ma nessuno ha verificato questa: self_report e' lo stato onesto. Una revisione indipendente di famiglia diversa resta consigliata (D17, avviso non gate)"
+      }
+    }
+  }
+}

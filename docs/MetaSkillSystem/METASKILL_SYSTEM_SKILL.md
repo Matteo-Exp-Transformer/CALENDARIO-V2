@@ -57,9 +57,14 @@ Prima di ricostruire lo stato a mano, usare soltanto gli attrezzi necessari (det
 - `npm run mss:capsule -- --judgments <file.json>` — generatore; richiede giudizi espliciti, non è
   una chiusura automatica della seduta.
 
-Lo stato tecnico corrente, i limiti e l’ordine degli interventi sono in
-`AUDIT_STATO_REALE_23-08-26.md`. Se il task è P0, caricare anche
-`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md` prima di modificare codice.
+Lo stato autorevole è in [`PLAN_V0.md`](PLAN_V0.md) §4-bis · §4-ter · §15;
+[`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md) resta come fotografia storica.
+
+**Se apri una chat di orchestrazione MSS** (raggruppare i difetti in mandati, affidarli, controverificare)
+parti da [`PROMPT_AVVIO_ORCHESTRATORE_MSS.md`](PROMPT_AVVIO_ORCHESTRATORE_MSS.md), che instrada al
+mandato vivo [`PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](PROMPT_ORCHESTRATOR_MSS_24-08-26.md).
+[`PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md`](PROMPT_PROSSIMO_ESECUTORE_MSS_23-08-26.md) è **storia**
+del ciclo `P0`/`P1`/`P2A`, non un'istruzione: non caricarlo per lavorare.
 
 ## I tre assi che non si fondono
 

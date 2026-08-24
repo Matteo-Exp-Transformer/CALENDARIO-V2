@@ -1,0 +1,202 @@
+{
+  "session_event": {
+    "intent_user": "eseguire il mandato M-A/M-B (Prompt-mandato-MA-MB-protezioni-cancelli-24-08-26.md): otto fix di protezioni e cancelli — guard-prod tracciato+testato, hook Claude cablato in modo riproducibile e testato, cancelli app/mss separati e allineati su npm+CI, tag locale di ripristino, tetto dichiarato sull'allowlist doc-path. Poi, su controverifica del coordinatore: aggiungere i test nominati mancanti per A1/A4 e allineare le due righe stale del manuale §5 che il lavoro stesso aveva reso false. Nessun commit, nessun push.",
+    "event_kind": "session_close",
+    "session_type": "standard",
+    "capsule_status": "completa",
+    "role_key": "agente-esecutore-ma-mb-protezioni-cancelli",
+    "area": "MetaSkillSystem / protezioni PROD (guard-prod) e cancelli npm+CI (mandato M-A + M-B, 24-08-26)",
+    "environment": "workspace locale, branch env/test @ 0dfb01b, Windows 11 (Bash/PowerShell)",
+    "authorization": {
+      "read": [
+        "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MA-MB-protezioni-cancelli-24-08-26.md",
+        "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        ".claude/hooks/guard-prod.mjs",
+        ".claude/hooks/fine-sessione-senior.mjs",
+        ".claude/settings.local.json",
+        ".cursor/hooks/guard-prod.mjs",
+        "_skill-system-v0/hooks/guard-prod.mjs",
+        "docs/MetaSkillSystem/tests/h1/run.mjs",
+        "package.json",
+        ".github/workflows/ci.yml",
+        ".gitignore",
+        "scripts/check-doc-paths.mjs",
+        "scripts/doc-path-check-allowlist.json",
+        "docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md"
+      ],
+      "write": [
+        ".claude/settings.json",
+        ".gitignore",
+        ".git/info/exclude",
+        "docs/MetaSkillSystem/tests/h1/run.mjs",
+        "docs/MetaSkillSystem/tests/tools/run.mjs",
+        "package.json",
+        ".github/workflows/ci.yml",
+        "scripts/check-doc-paths.mjs",
+        "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+        "docs/Sessioni di lavoro/24-08-26/Report-ma-mb-protezioni-cancelli-24-08-26.md"
+      ],
+      "forbid": [
+        "commit", "push", "tag pushato",
+        "scripts/mss/core.mjs", "scripts/mss/capsule.mjs",
+        "docs/Sessioni di lavoro/23-08-26/Report-revisione-skill-chiusura-e-hook-23-08-26.md",
+        "mss:move / rinomina file", "operazioni database/Supabase",
+        "allentamento di un validator per far passare un test",
+        "voci nuove in allowlist al posto di un fix"
+      ]
+    },
+    "authorized_outputs": [
+      "docs/Sessioni di lavoro/24-08-26/Report-ma-mb-protezioni-cancelli-24-08-26.md"
+    ],
+    "route": {
+      "chosen": "leggere solo il perimetro dichiarato dal mandato; implementare gli otto fix con test che nominano l'ID nel nome; rieseguire i comandi reali del §4; generare la capsula con l'attrezzo mss:capsule (mai a mano) e validarla con validate:mss dopo la generazione (N1 noto). Dopo controverifica: aggiungere i due test mancanti (A1/A4) contro l'indice git, non solo contro il filesystem; correggere le due righe di manuale che il mio stesso lavoro aveva reso false, senza numeri fissi; rigenerare e rivalidare la capsula",
+      "alternatives_or_conflicts": [
+        "scartato: unificare i tre hook guard-prod in un modulo condiviso — il mandato vieta esplicitamente di farlo (le tre copie divergono legittimamente)",
+        "scartato: lasciare i controlli A1/A4 su git ls-files invece di spostarli su npm run test:mss — la controverifica chiedeva prova di copertura via test, non solo verifica una tantum del comando"
+      ]
+    },
+    "observed_outcome": "otto fix implementati; controverifica del coordinatore ha rilevato due buchi reali: A1/A4 senza test nominato (coperti solo dallo staging, non da una guardia di regressione) e due righe del manuale §5 diventate false per effetto del lavoro stesso (difetto famiglia V). Corretti entrambi: due test nuovi in docs/MetaSkillSystem/tests/h1/run.mjs che girano contro l'indice git (git ls-files + git show :path, verdi ora perché staged, restano verdi dopo il commit); le righe «Hook Claude»/«guard PROD» di MANUALE_OPERATIVO_MSS_V0.md riscritte senza numeri fissi, citando i comandi. npm run validate:mss:all rilanciato dopo entrambe le correzioni: exit 0. Report rigenerato con la stessa capsula (mss:capsule + validate:mss), resta sotto le 150 righe. Nessun commit, nessun push in questa seduta.",
+    "open_items": [
+      "commit dei fix resta a Matteo (nessun commit/push in questa seduta)",
+      "prima push su env/test: verificare dal vivo che il job CI mss giri verde con validate:mss:all (mai osservato su GitHub Actions reale)"
+    ],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: soggetto non applicabile in questa seduta",
+      "provider": "non_applicabile: soggetto non applicabile",
+      "model": "non_applicabile: soggetto non applicabile",
+      "runtime": "non_applicabile: soggetto non applicabile",
+      "surface": "non_applicabile: soggetto non applicabile"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": ["path del repo", "esiti comandi", "SHA/tag git", "metriche aggregate"],
+      "prohibited_content": ["dati personali", "segreti", "materiale privato non registrabile"],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [
+      {
+        "ref_id": "owner-mandato",
+        "owner_id": "M-A/M-B",
+        "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Prompt-mandato-MA-MB-protezioni-cancelli-24-08-26.md",
+        "stable_anchor_or_event_id": "§2 otto fix + §3 test nominati + §4 comandi + §6 vincoli",
+        "revision_or_hash": "working tree (untracked)",
+        "sensitivity": "internal"
+      }
+    ],
+    "source_refs": []
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [
+        {
+          "signal": "il mandato M-A/M-B è arrivato come file scritto assegnato dall'orchestratore; la controverifica è arrivata come messaggio del coordinatore durante il lavoro, con due richieste puntuali e la spiegazione del perché — nessun turno di chat interattivo di Matteo in questa sessione",
+          "actor": "orchestratore/coordinatore MSS (per conto di Matteo)",
+          "assistance": "spontaneo",
+          "origin": "naturale",
+          "source_ref": "owner-mandato",
+          "effect": "l'agente ha corretto A1/A4 e il manuale §5 seguendo esattamente le due richieste della controverifica, senza riaprire altro (vincolo esplicito del messaggio)",
+          "evidence_state": "observed"
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "claude-sonnet-5-executor",
+        "role": "agente esecutore M-A/M-B",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "unverified",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessuna valutazione Persona",
+        "criterion_ref": "non_applicabile:non ancora verificato",
+        "evidence_refs": [],
+        "notes": "singola seduta non interattiva, non alza livelli"
+      }
+    },
+    "sistema": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "rule_id_version": "M-A/M-B@Prompt-mandato-MA-MB-protezioni-cancelli-24-08-26+controverifica",
+          "trigger_event": "esecuzione degli otto fix A1-A4/B1-B4; poi correzione post-controverifica su copertura test A1/A4 e righe stale del manuale §5",
+          "decision_or_output_changed": "due test nuovi in docs/MetaSkillSystem/tests/h1/run.mjs — A1 (le tre copie guard-prod sono nell'indice git) e A4 (settings.json tracciato coi due hook, settings.local.json/mcp.json ASSENTI dall'indice) — girano contro git ls-files/git show :path, non contro il filesystem; righe «Hook Claude»/«guard PROD» di MANUALE_OPERATIVO_MSS_V0.md riscritte per citare i comandi invece di stato/conteggi fissi; validate:mss:all rilanciato dopo entrambe: exit 0",
+          "G": 2,
+          "O": 1,
+          "E": 2
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "claude-sonnet-5-executor",
+        "role": "agente esecutore M-A/M-B",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-mandato",
+        "evidence_refs": ["owner-mandato"],
+        "notes": "E=2 per A1/A4: girano contro l'indice git (non il filesystem), verdi ora da staged e restano verdi dopo il commit — enforcement reale, non solo locale one-off. Resta E=1 per il cancello CI nel suo complesso: validate:mss:all non ancora osservato passare su GitHub Actions, nessun push in questa seduta"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "mss-ma-mb-protezioni-cancelli",
+          "primary_type": "registro",
+          "canonical_version": "Report-ma-mb-protezioni-cancelli-24-08-26.md",
+          "recipient": "Matteo e prossimo esecutore/revisore MSS",
+          "problem_or_job": "chiudere gli otto fix di protezioni e cancelli del mandato M-A/M-B con prova reale (test nominati per ogni ID + comandi rieseguiti), senza commit, superando anche la controverifica sulla copertura A1/A4",
+          "intended_use": "restare il registro di riferimento per la revisione indipendente e per il commit che Matteo deciderà di fare",
+          "conceived_by": "Prompt-mandato-MA-MB-protezioni-cancelli-24-08-26",
+          "decided_by": "Matteo (via orchestratore/coordinatore MSS)",
+          "directed_by": "mandato M-A/M-B §2-§6 + messaggio di controverifica",
+          "authored_by": "claude-sonnet-5-executor",
+          "verified_by": "non_osservato",
+          "acceptance_criterion": "otto fix con stato finale atteso raggiunto, test nominati per OGNI ID (incluse A1/A4), comandi §4 rieseguiti con esiti reali, capsula generata con l'attrezzo e validata, nessun commit/push",
+          "verification_or_use_evidence": "npm run validate:app, validate:mss:all, test:mss, test:mss:tools, validate:docs tutti exit 0 dopo la correzione; test:mss include ora A1/A2/A3/A4 nominati; validate:mss OK sul report rigenerato",
+          "verification_status": "self_report",
+          "owner_ref": "owner-mandato",
+          "privacy_release": "internal",
+          "support_files": [
+            ".claude/hooks/guard-prod.mjs",
+            ".claude/settings.json",
+            "docs/MetaSkillSystem/tests/h1/run.mjs",
+            "docs/MetaSkillSystem/tests/tools/run.mjs",
+            "scripts/check-doc-paths.mjs",
+            "package.json",
+            ".github/workflows/ci.yml",
+            "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md"
+          ],
+          "relations_no_double_count": ["non sostituisce una seconda revisione indipendente successiva", "non chiude il mandato M-C (perimetro scripts/mss/core.mjs e capsule.mjs)"],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "pass",
+            "result": "eligible"
+          }
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "claude-sonnet-5-executor",
+        "role": "agente esecutore M-A/M-B",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "owner-mandato",
+        "evidence_refs": ["owner-mandato"],
+        "notes": "un primo giro di controverifica del coordinatore ha già riletto git diff/package.json/ci.yml/.gitignore/check-doc-paths.mjs (perimetro corretto), il report precedente (133 righe, validate:mss verde) e il tag (esistente, non pushato) — confermato. Ha poi chiesto la correzione qui applicata (test A1/A4 + manuale); QUESTA versione corretta è self_report, non ancora ri-confermata da un secondo giro"
+      }
+    }
+  }
+}
