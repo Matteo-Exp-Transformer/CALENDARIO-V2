@@ -102,7 +102,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S8 | `SK-8` — radice robusta della suite | **`IMPLEMENTATO, non dichiarato`** | `npm run test:mss` verde da profondità diverse (risoluzione da posizione file); manca prova registrata e promozione documentale |
 | S9 | `SK-9` — `mss:move` | **`CHIUSO` 24-08-26 (`M-E`, `M12`)** | ✅ `npm run mss:move -- <sorgente> <destinazione>` sposta un file e aggiorna i riferimenti vivi · ✅ `npm run test:mss:tools` include il caso nominato `T1/R6` (move, rifiuti, rollback, costo < baseline) · ✅ controverifica Codex/OpenAI, famiglia diversa da Cursor/Composer, con sandbox indipendente: move+ref aggiornato, rifiuto rosso, rollback su validate rosso |
 | S10 | `SK-10` — manuale utente + intervista di bootstrap | **`PROVATO` 24-08-26 (`M-D`); riserva `N6` chiusa da `M-G` CHIUSO (`M12`)** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ✅ **`P2B` fatto:** `mss:export` copia il motore e verifica la chiusura degli import; `mss:doctor` è la checklist di primo run; i path cablati sono parametrici via `scripts/mss/config.mjs` con **default identici a prima** · ✅ prova in repo vergine **rifatta dall'orchestratore in una terza cartella con nomi propri**: `npm run validate:mss:all` verde in repo ospite configurata · ✅ default invariato provato confrontando `REPORT_PATH_RE` col letterale di `git show HEAD:scripts/mss/adapter.mjs` · ✅ prima consegna **respinta** dalla controverifica (test `R8` ambientale non dichiarato come verifica di progetto → checklist rossa proprio in una repo ospite configurata), riparata nel completamento · ✅ **riserva `N6` rimossa:** passo `owner` di `mss:doctor` non accusa più Git — chiuso in `M-G` con controverifica famiglia diversa. Atti `M-D`: [`Report-md-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-md-portabilita-24-08-26.md) · [`Report-completamento-md-r8-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md) · [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) · atti `M-G`: vedi §15 |
-| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — `P4` PROVATO, non CHIUSO** | ✅ `npm run test:mss:tools` e `npm run test:mss` verdi (conteggio mobile: eseguire i comandi) · ✅ hook Claude e guard PROD coperti dai casi nominati `A1`–`A4`; `M-C` copre `N1`/`N2`; `M-D` copre `R8`/`R2`; `M-G` copre `N3`–`N6` · ✅ `P4`: caso nominato `capsule: P4/SK-11 — template R1 privacy resta di mode e non classifica la chat`, con input contraddittorio e contratto privacy letterale · ⚠️ nessuna chiusura formale: M12 / decisione Matteo restano il gate prima di promuovere `SK-11` |
+| S11 | `SK-11` — test automatici degli attrezzi MSS | **`CHIUSO` 24-08-26 — decisione Matteo (`T4`)** | ✅ `npm run test:mss:tools` e `npm run test:mss` verdi (conteggio mobile: eseguire i comandi) · ✅ hook Claude e guard PROD coperti dai casi nominati `A1`–`A4`; `M-C` copre `N1`/`N2`; `M-D` copre `R8`/`R2`; `M-G` copre `N3`–`N6` · ✅ `P4`: caso nominato `capsule: P4/SK-11 — template R1 privacy resta di mode e non classifica la chat`, con input contraddittorio e contratto privacy letterale · ✅ `T3` / M12: controverifica Cursor/Composer, famiglia diversa dall’esecutore OpenAI/gpt-5.6 · ✅ **`T4`:** Matteo ha firmato la chiusura formale dopo M12 — nessuna prova tecnica residua |
 
 ### 4-ter. Rettifica tecnica dell'audit 23-08-26 — questa sezione prevale sulle celle stale sopra
 
@@ -112,7 +112,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | `SK-5` | **CHIUSO 24-08-26 (`M13`)**: `npm run validate` è `validate:app`+`validate:mss:all`; il job CI `mss` esegue un unico step `npm run validate:mss:all`, ed è stato **osservato verde su GitHub Actions reale** dopo il primo push (decisione `M5`). | Nulla. Chiuso. |
 | `SK-7` | **CHIUSO 24-08-26 (`M3`)**: fix B D2/D3 e privacy append-only controverificati; sintassi canonica e source refs pubblicabili coperti da test. | Revisione indipendente (`D17`) resta consigliata, non gate. |
 | `SK-8` | **IMPLEMENTATO, non dichiarato**: la suite gira già da una root diversa grazie alla risoluzione dalla posizione del file. | Registrare una prova riproducibile e promuovere lo stato documentale. |
-| `SK-11` | **APERTO**: suite verde; `P1 D5` ha rimosso numeri stale da §4-bis; hook Claude/guard PROD coperti da `A1`–`A4`; `P4` ha ora una prova nominata del template privacy R1. | Controverifica M12 del caso `P4` e decisione formale prima di una nuova chiusura; conteggi sempre da comando, non da owner. |
+| `SK-11` | **CHIUSO 24-08-26 (`T4`)**: suite verde; hook `A1`–`A4`; copertura `M-C`/`M-D`/`M-G`; `P4` con M12 (`T3`); firma formale di Matteo. | Nulla. Chiuso. |
 
 Analisi, prove e motivazione dell'ordine:
 `docs/Sessioni di lavoro/21-08-26/STRATEGIA-scheletro-mss-21-08-26.md`.
@@ -810,10 +810,6 @@ valida e conferma esplicita che le tre condizioni `M12` sono soddisfatte. Atti:
   i gate `test:mss:tools`, `test:mss`, `validate:mss:views`, `validate:mss:all`, validazione del report
   T2 e `git diff --check` sono rieseguiti verdi. Non dichiarare `H-1.3` PASS pulito. `WP-1` resta NO-GO.
 
-**Prossima azione autorizzata: `T3`** (controverifica M12 dedicata al mandato `P4` / privacy template).
-`P4` è `PROVATO`: il test nominato e non vacuo del template privacy R1 esiste; `SK-11` resta aperto.
-Nessuna chiusura di `SK-11` è anticipata.
-
 ### Nono ciclo del 24-08-2026 — `P4` / privacy template **PROVATO** (non CHIUSO)
 
 Il mandato unico di copertura ha confermato che l’attrezzo era corretto: mancava il test. Il caso
@@ -822,8 +818,32 @@ contraddittorio e verifica il contratto privacy letterale, così non può promuo
 dedotta dalla chat. Atti: [`Report-p4-privacy-template-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-p4-privacy-template-24-08-26.md).
 
 Gate interni verdi: `test:mss:tools`, `test:mss`, `validate:mss:views`, `validate:mss:all`, validazione
-del report e `git diff --check`. Non è una chiusura di `SK-11`: serve una controverifica M12 dedicata
-prima di proporla a Matteo.
+del report e `git diff --check`. Non è una chiusura di `SK-11`: la controverifica M12 dedicata è
+registrata nel ciclo `T3` sotto.
+
+### Decimo ciclo del 24-08-2026 — `T3` / M12 su `P4` **PASS** (SK-11 resta APERTO)
+
+**`T3` è PASS.** Controverifica indipendente Cursor/Composer (famiglia diversa dall’esecutore P4
+OpenAI/gpt-5.6). Condizioni `M12` soddisfatte: prova eseguibile, test nominato non vacuo, famiglia
+diversa. Atti: report orchestratore `T3` di questa seduta.
+
+- **Prova nominata rieseguita verde:** `capsule: P4/SK-11 — template R1 privacy resta di mode e non classifica la chat`.
+- **Non vacuo:** contratto privacy letterale + input `chat_transcript` contraddittorio; probe indipendente conferma `classification: internal` invariata; una mutazione del letterale renderebbe rosso il confronto.
+- **Nessun allentamento del motore:** `capsule.mjs` non è stato modificato da P4; solo la suite tools.
+- **Gate rieseguiti verdi:** `test:mss:tools`, `test:mss`, `validate:mss:views`, `validate:mss:all`, validazione del report P4, `git diff --check`.
+- **`SK-11` resta APERTO:** `P4` ha M12; la chiusura formale del pacchetto è solo di Matteo.
+- **Invariati:** `H-1.3` = `PASS_CON_RISERVE`; `WP-1` = NO-GO; `SEP-G5` non PASS.
+
+### Undicesimo ciclo del 24-08-2026 — `T4` / chiusura formale **`SK-11` CHIUSO** (decisione Matteo)
+
+**`T4` è PASS.** Matteo ha dichiarato in chat: *«commit push e firmo sk 11 se non c'è altro da fare»*.
+Condizioni già soddisfatte prima della firma: `P4` PROVATO + M12 (`T3`); suite verde; nessuna prova
+tecnica residua per `SK-11`. Atti: report `T4` di questa seduta.
+
+- **`SK-11` è `CHIUSO`:** decisione formale di Matteo, non sostituisce M12 ma lo consuma.
+- **Invariati:** `H-1.3` = `PASS_CON_RISERVE`; `WP-1` = NO-GO; `SEP-G5` non PASS.
+
+**Prossima azione autorizzata: `T5`** (valutare mandato `SK-4` — bypass residui e schema gate in prosa; oppure `SK-8` promozione documentale — solo se Matteo apre esplicitamente; non aprire WP-1).
 
 **Dato messo agli atti su richiesta di Matteo, da trattare in seduta separata:** `main` è fermo al
 23-06-26. `env/test` è **127 commit avanti**, di cui 24 toccano `src/`: **12 778 righe di app**

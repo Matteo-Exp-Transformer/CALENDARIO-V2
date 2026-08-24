@@ -8,15 +8,15 @@
 `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**: prova eseguibile, test nominato e controverifica Cursor/Composer sono registrati.
 
 ## Cosa devi fare tu
-R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T3` (controverifica M12 dedicata al mandato `P4` / privacy template).
+R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T5` (valutare mandato `SK-4` — bypass residui e schema gate in prosa; oppure `SK-8` promozione documentale — solo se Matteo apre esplicitamente; non aprire WP-1).
 
 ## Lavagna
 
 | Fatte | Con riserva | Da fare |
 |---|---|---|
-| `M-F` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T3`: controverifica M12 dedicata al mandato `P4` / privacy template |
+| `M-F` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T5`: valutare mandato `SK-4` — bypass residui e schema gate in prosa; oppure `SK-8` promozione documentale — solo se Matteo apre esplicitamente; non aprire WP-1 |
 
 ## Prossimo passo
 
-Completare `T3`. Non riaprire `WP-1` e non dichiarare `H-1.3` PASS pulito.
+Completare `T5`. Non riaprire `WP-1` e non dichiarare `H-1.3` PASS pulito.
 <!-- mss:generated cruscotto-matteo fine -->

@@ -1,0 +1,48 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [{
+      "rule_id_version": "SK-11/T4@mss-v0.1-wp0.1-freeze-2",
+      "trigger_event": "Matteo ha firmato SK-11 in chat dopo T3 M12: «commit push e firmo sk 11 se non c'è altro da fare»",
+      "decision_or_output_changed": "SK-11 CHIUSO per decisione Matteo; H-1.3 e WP-1 invariati; prossima azione T5",
+      "G": 2,
+      "O": 1,
+      "E": 1
+    }]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [{
+      "output_id": "t4-sk11-chiusura-24-08-26",
+      "primary_type": "processo",
+      "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-t4-sk11-chiusura-24-08-26.md",
+      "recipient": "Matteo e prossimo orchestratore",
+      "problem_or_job": "registrare la firma formale su SK-11 senza riaprire T3 né toccare codice",
+      "intended_use": "chiudere il gate T4 e lasciare owner/cruscotto allineati",
+      "conceived_by": "Matteo",
+      "decided_by": "Matteo",
+      "directed_by": "chat 24-08-2026",
+      "authored_by": "cursor-composer",
+      "verified_by": "non_osservato",
+      "acceptance_criterion": "PLAN aggiornato SK-11 CHIUSO; cruscotto rigenerato; validate:mss verde",
+      "verification_or_use_evidence": "controls capsula e validate:mss sul report",
+      "verification_status": "self_report",
+      "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+      "privacy_release": "internal",
+      "support_files": ["docs/MetaSkillSystem/PLAN_V0.md", "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md"],
+      "relations_no_double_count": ["Non sostituisce Report-orchestratore-t3-p4-24-08-26.md"],
+      "product_candidate": {
+        "recipient": "pass",
+        "problem_or_job": "pass",
+        "canonical_version": "pass",
+        "fixed_acceptance_criterion": "pass",
+        "verification_or_use_evidence": "pass",
+        "result": "eligible"
+      }
+    }]
+  }
+}
