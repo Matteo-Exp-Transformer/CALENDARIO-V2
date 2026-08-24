@@ -77,6 +77,13 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 
 **Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. D2/D3 sono **chiusi** (sintassi canonica `ID=>comando`, ambigui rifiutati).
 
+**R1 — ingresso compatto.** `npm run mss:capsule -- --template-r1` produce il file giudizi
+minimo: soltanto `persona`, `sistema`, `output`. Con quel formato il generatore compone UUID,
+timestamp, runtime, Git, `source_refs` e risultati dei `--check`; non inventa intent, soggetto o
+follow-up, che restano `non_osservato`. Un asse con `delta: nessuno` usa onestamente
+`assertions: []`; per ogni altro delta l'asserzione resta obbligatoria. Il formato storico esteso
+resta compatibile per le capsule esistenti.
+
 ✅ **`N3`/`N4` PROVATI — il controllo dichiara ora ciò che prova.** La diagnosi
 precedente («le virgolette si perdono nel trasporto») è **falsa ed è stata falsificata con misura
 diretta** in [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) §6.

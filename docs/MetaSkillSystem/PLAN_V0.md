@@ -778,6 +778,26 @@ PASS pulito. `WP-1` resta NO-GO.
 dichiarato** è **raccomandato dall'orchestratore e ancora aperto**. È il singolo intervento con il
 ritorno più alto misurato in questa seduta.
 
+### Settimo ciclo del 24-08-2026 — `R1` aperto e provato internamente
+
+**Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; default di busta da osservare**.
+
+La modalità compatta di `mss:capsule` riceve soltanto i tre assi Persona, Sistema e Output; compone
+UUID, tempo, runtime, Git, `source_refs` e controlli dai fatti disponibili. Per non violare `R2`,
+intento, soggetto e follow-up che il processo non può osservare restano `non_osservato` anziché
+essere completati per plausibilità. Un asse con `delta: nessuno` può avere `assertions: []`; gli
+altri continuano a richiedere un'asserzione. Prove: il test nominato `capsule: R1 — …`, la capsula
+reale e il report [`Report-r1-raccolta-sottoprodotto-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-r1-raccolta-sottoprodotto-24-08-26.md).
+
+I gate interni sono verdi: `validate:mss` sul report R1, `validate:mss:all` e `git diff --check`.
+La controverifica Cursor/Composer di famiglia diversa ha prodotto **PASS CON RISERVE**, una capsula
+valida e conferma esplicita che le tre condizioni `M12` sono soddisfatte. Atti:
+[`Report-controverifica-R1-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-R1-24-08-26.md).
+La riserva resta visibile: `session_type`, area, privacy e outcome della busta compatta sono default
+dichiarati, non fatti specifici della chat; non impediscono il requisito R1, ma vanno osservati.
+
+**Prossima azione autorizzata: `T2`** (`mss:review`, nuovo mandato di sola lettura).
+
 **Dato messo agli atti su richiesta di Matteo, da trattare in seduta separata:** `main` è fermo al
 23-06-26. `env/test` è **127 commit avanti**, di cui 24 toccano `src/`: **12 778 righe di app**
 scritte, testate (118/118 e2e sul cantiere Servizio) e **mai rilasciate ai clienti** — 62 giorni.

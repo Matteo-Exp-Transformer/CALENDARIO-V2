@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "R1@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Matteo ha aperto R1 e chiesto di testare MSS usando questa stessa chat",
+        "decision_or_output_changed": "mss:capsule accetta tre soli assi e costruisce la busta dai fatti automatici, dichiarando non osservati i dati non deducibili",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "r1-raccolta-sottoprodotto-24-08-26",
+        "primary_type": "processo",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-r1-raccolta-sottoprodotto-24-08-26.md",
+        "recipient": "Matteo e revisore esterno Cursor",
+        "problem_or_job": "chiudere una seduta MSS senza ricopiare i fatti che la macchina gia possiede",
+        "intended_use": "generare e controverificare capsule R1 con tre soli giudizi",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "richiesta chat corrente",
+        "authored_by": "openai-codex-senior-orchestrator-r1",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "capsula compatta valida, test nominato R1 e gate MSS verdi",
+        "verification_or_use_evidence": "controlli registrati nella capsula di questo report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/capsule.mjs",
+          "scripts/mss/core.mjs",
+          "docs/MetaSkillSystem/tests/tools/run.mjs"
+        ],
+        "relations_no_double_count": [
+          "processo di raccolta; il report resta un registro"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

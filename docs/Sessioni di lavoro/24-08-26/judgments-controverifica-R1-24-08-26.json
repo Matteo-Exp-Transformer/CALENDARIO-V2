@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "R1@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Controverifica Cursor su consegna Codex di R1 (capsula come sottoprodotto)",
+        "decision_or_output_changed": "Verdetto PASS CON RISERVE: giudizi solo tre assi, busta macchina, assertions[] con delta nessuno, test nominato non vacuo, gate verdi; M12 soddisfatto; riserva bassa su default di busta non etichettati non_osservato",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "controverifica-r1-24-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-controverifica-R1-24-08-26.md",
+        "recipient": "Matteo e orchestratore MSS",
+        "problem_or_job": "confermare o smentire R1 senza fidarsi del report esecutore",
+        "intended_use": "attestare M12 da famiglia diversa e lasciare all'owner la chiusura formale",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "richiesta chat controverifica R1",
+        "authored_by": "cursor-composer-revisore-r1",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "validate:mss report R1 + validate:mss:all + git diff --check + test R1 non vacuo + famiglia diversa da Codex",
+        "verification_or_use_evidence": "comandi rieseguiti in questa seduta e registrati nei controls della capsula",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/24-08-26/Report-r1-raccolta-sottoprodotto-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/judgments-r1-raccolta-sottoprodotto-24-08-26.json",
+          "scripts/mss/capsule.mjs",
+          "scripts/mss/core.mjs",
+          "docs/MetaSkillSystem/tests/tools/run.mjs"
+        ],
+        "relations_no_double_count": [
+          "prova di controverifica; il report esecutore R1 resta registro separato"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

@@ -170,7 +170,7 @@ event:
     chosen:
     alternatives_or_conflicts: [] | nessuno
   observed_outcome:
-  open_items: [] | nessuno
+  open_items: [] | nessuno | non_osservato:<motivo>
   controls: [] | nessuno
   subject_runtime:
     actor_id:
@@ -240,6 +240,10 @@ tecnico del task. Se prima di una scrittura mancano ruolo, autorità, privacy, o
 
 Ogni annotazione contiene un solo `axis`, punta a uno o più record fonte e conserva chi la dichiara
 e chi la verifica. Il fatto può quindi restare immutato mentre tassonomia o giudizio cambiano.
+
+**R1 — assenza osservata senza finzioni.** Se `delta: nessuno`, `assertions` può essere `[]`:
+l'assenza di un'osservazione è un dato valido e non va trasformata in un'asserzione artificiale.
+Per ogni altro valore di `delta`, resta obbligatoria almeno un'asserzione conforme all'asse.
 
 ```text
 annotation:
