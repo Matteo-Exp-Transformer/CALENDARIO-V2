@@ -27,6 +27,7 @@
     "mss:doctor": "node scripts/mss/doctor.mjs",
     "mss:export": "node scripts/mss/export-kit.mjs",
     "mss:move": "node scripts/mss/move.mjs",
+    "mss:review": "node scripts/mss/review.mjs",
     "generate:mss:views": "node scripts/mss/views.mjs --write",
     "validate:mss:views": "node scripts/mss/views.mjs --check",
     "test:mss": "node docs/MetaSkillSystem/tests/h1/run.mjs",

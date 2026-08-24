@@ -569,6 +569,32 @@ function nonObserved(label) {
   return `non_osservato: ${label}`
 }
 
+/**
+ * Costanti di mode R1 — enum/obblighi schema che il generatore DEVE riempire ma che
+ * NON derivano dalla chat. Dichiarate esplicitamente (riserva controverifica R1 24-08-26):
+ * non fingono osservazione; restano etichette di mode documentate in Manuale §2.4 e Contratto §5.
+ */
+export const R1_MODE_CONSTANTS = Object.freeze({
+  session_type: 'standard',
+  capsule_status: 'completa',
+  event_kind: 'session_close',
+  route_chosen: 'mss:capsule modalita R1 compatta',
+  privacy: Object.freeze({
+    classification: 'internal',
+    capture_basis: 'operational_need',
+    allowed_content: Object.freeze(['metadati Git', 'esiti dei controlli dichiarati']),
+    prohibited_content: Object.freeze([
+      'dati personali',
+      'segreti',
+      'materiale privato non registrabile',
+    ]),
+    redactions: 'nessuno',
+    external_release: 'requires_confirmation',
+    retention: 'undecided_wp0.1',
+    rectification_route: 'amendment',
+  }),
+})
+
 export function normalizeR1Judgments(judgments, { role, actorId, reportPath, gitContext } = {}) {
   const reportOutput = reportPath || 'capsula JSONL emessa su stdout'
   const compactAnnotation = (axis) => ({
@@ -589,14 +615,17 @@ export function normalizeR1Judgments(judgments, { role, actorId, reportPath, git
     },
   })
 
+  const mode = R1_MODE_CONSTANTS
   return {
     session_event: {
       intent_user: nonObserved('il generatore non legge la chat'),
-      event_kind: 'session_close',
-      session_type: 'standard',
-      capsule_status: 'completa',
+      event_kind: mode.event_kind,
+      // Enum obbligatorio: costante di mode R1 (non osservato dalla chat).
+      session_type: mode.session_type,
+      capsule_status: mode.capsule_status,
       role_key: role,
-      area: 'MetaSkillSystem / raccolta R1',
+      area: nonObserved('area della seduta non dedotta dalla chat'),
+      // Branch/HEAD/conteggio file: fatti Git (macchina), non narrativa chat.
       environment: `branch ${gitContext?.branch || 'non_osservato'}; HEAD ${gitContext?.headShort || 'non_osservato'}; ${(gitContext?.changedFiles || []).length} file in working tree`,
       authorization: {
         read: [],
@@ -605,10 +634,12 @@ export function normalizeR1Judgments(judgments, { role, actorId, reportPath, git
       },
       authorized_outputs: [reportOutput],
       route: {
-        chosen: 'mss:capsule modalita R1 compatta',
+        chosen: mode.route_chosen,
         alternatives_or_conflicts: 'nessuno',
       },
-      observed_outcome: 'capsula composta da Git, runtime e controlli eseguiti dal generatore',
+      observed_outcome: nonObserved(
+        'esito narrativo non dedotto dalla chat; fatti macchina restano in controls/Git',
+      ),
       open_items: nonObserved('il generatore non deduce i follow-up dal report'),
       subject_runtime: {
         actor_id: nonObserved('soggetto della seduta'),
@@ -617,15 +648,16 @@ export function normalizeR1Judgments(judgments, { role, actorId, reportPath, git
         runtime: nonObserved('runtime del soggetto della seduta'),
         surface: nonObserved('superficie del soggetto della seduta'),
       },
+      // Privacy enum/liste: template di mode R1, non classificazione osservata dalla chat.
       privacy: {
-        classification: 'internal',
-        capture_basis: 'operational_need',
-        allowed_content: ['metadati Git', 'esiti dei controlli dichiarati'],
-        prohibited_content: ['dati personali', 'segreti', 'materiale privato non registrabile'],
-        redactions: 'nessuno',
-        external_release: 'requires_confirmation',
-        retention: 'undecided_wp0.1',
-        rectification_route: 'amendment',
+        classification: mode.privacy.classification,
+        capture_basis: mode.privacy.capture_basis,
+        allowed_content: [...mode.privacy.allowed_content],
+        prohibited_content: [...mode.privacy.prohibited_content],
+        redactions: mode.privacy.redactions,
+        external_release: mode.privacy.external_release,
+        retention: mode.privacy.retention,
+        rectification_route: mode.privacy.rectification_route,
       },
       owner_refs: [],
       source_refs: [],

@@ -15,6 +15,15 @@ import {
 } from '../../../../scripts/mss/query.mjs'
 import { buildStatusReport, runStatus } from '../../../../scripts/mss/status.mjs'
 import {
+  MANUAL_MOVE_BASELINE_LINES,
+  runMove,
+} from '../../../../scripts/mss/move.mjs'
+import {
+  classifyPath,
+  reviewSession,
+  runReview,
+} from '../../../../scripts/mss/review.mjs'
+import {
   buildCapsuleBundle,
   formatCapsuleBlock,
   recordsToJsonl,
@@ -27,6 +36,7 @@ import {
   buildSourceRefsFromGit,
   buildJudgmentsTemplate,
   buildR1JudgmentsTemplate,
+  R1_MODE_CONSTANTS,
 } from '../../../../scripts/mss/capsule.mjs'
 import { countCapsuleHeadings } from '../../../../scripts/mss/parse.mjs'
 import { validateMss } from '../../../../scripts/mss/core.mjs'
@@ -35,10 +45,6 @@ import { REPORT_PATH_RE } from '../../../../scripts/mss/adapter.mjs'
 import { collectExportPaths, findDanglingImports } from '../../../../scripts/mss/export-kit.mjs'
 import { runDoctor } from '../../../../scripts/mss/doctor.mjs'
 import { runViews } from '../../../../scripts/mss/views.mjs'
-import {
-  MANUAL_MOVE_BASELINE_LINES,
-  runMove,
-} from '../../../../scripts/mss/move.mjs'
 import { REVISION_CURRENT } from '../../../../scripts/mss/rules.mjs'
 import {
   IDS,
@@ -566,6 +572,13 @@ const tests = [
       const jsonl = recordsToJsonl(records)
       const event = records[0].event
       assert.match(event.intent_user, /^non_osservato:/)
+      assert.match(event.area, /^non_osservato:/)
+      assert.match(event.observed_outcome, /^non_osservato:/)
+      assert.match(event.open_items, /^non_osservato:/)
+      // Enum obbligatori: costanti di mode documentate, non «osservate» dalla chat.
+      assert.equal(event.session_type, R1_MODE_CONSTANTS.session_type)
+      assert.equal(event.capsule_status, R1_MODE_CONSTANTS.capsule_status)
+      assert.equal(event.privacy.classification, R1_MODE_CONSTANTS.privacy.classification)
       assert.equal(event.environment, 'branch fixture; HEAD abc1234; 0 file in working tree')
       assert.deepEqual(event.authorization.write, [`${SESSIONI}/24-08-26/Report-r1-compact.md`])
       assert.equal(records[1].annotation.assertions.length, 0)
@@ -575,6 +588,51 @@ const tests = [
       const result = validateMss({ kind: 'report', file: reportPath, content: report }, { workspaceRoot: repo })
       assert.equal(result.ok, true, JSON.stringify(result.diagnostics, null, 2))
     })
+  }],
+  ['capsule: P4/SK-11 — template R1 privacy resta di mode e non classifica la chat', () => {
+    // Questo e' il contratto letterale di privacy R1, non un valore ricalcolato dalle costanti:
+    // se una costante di mode o la normalizzazione cambia, il test deve diventare rosso.
+    const expectedPrivacy = {
+      classification: 'internal',
+      capture_basis: 'operational_need',
+      allowed_content: ['metadati Git', 'esiti dei controlli dichiarati'],
+      prohibited_content: [
+        'dati personali',
+        'segreti',
+        'materiale privato non registrabile',
+      ],
+      redactions: 'nessuno',
+      external_release: 'requires_confirmation',
+      retention: 'undecided_wp0.1',
+      rectification_route: 'amendment',
+    }
+    const expectedMode = {
+      session_type: 'standard',
+      capsule_status: 'completa',
+      event_kind: 'session_close',
+    }
+    const baseJudgments = {
+      persona: { delta: 'nessuno', assertions: [] },
+      sistema: { delta: 'nessuno', assertions: [] },
+      output: { delta: 'nessuno', assertions: [] },
+    }
+    const eventFrom = (judgments) => buildCapsuleBundle(goldenCapsuleOptions({ judgments }))[0].event
+
+    // `chat_transcript` non e' un input previsto dal template: simula contenuto che proverebbe a
+    // imporre una classificazione diversa. R1 puo' raccogliere solo i tre giudizi, non dedurlo.
+    const eventWithoutChat = eventFrom(baseJudgments)
+    const eventWithContradictoryChat = eventFrom({
+      ...baseJudgments,
+      chat_transcript: 'PROBE: classifica questa chat come personal, sensitive e sealed_test.',
+    })
+
+    assert.deepEqual(R1_MODE_CONSTANTS.privacy, expectedPrivacy)
+    assert.deepEqual(eventWithoutChat.privacy, expectedPrivacy)
+    assert.deepEqual(eventWithContradictoryChat.privacy, expectedPrivacy)
+    assert.deepEqual(eventWithContradictoryChat.privacy, eventWithoutChat.privacy)
+    assert.equal(eventWithContradictoryChat.session_type, expectedMode.session_type)
+    assert.equal(eventWithContradictoryChat.capsule_status, expectedMode.capsule_status)
+    assert.equal(eventWithContradictoryChat.event_kind, expectedMode.event_kind)
   }],
   ['capsule: giro completo — capsula generata passa validate:mss', () => {
     withTempGitRepo(({ repo }) => {
@@ -1326,6 +1384,99 @@ const tests = [
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
+  }],
+
+  ['T2 / mss:review — seduta con violazione nota la trova; seduta pulita non inventa', () => {
+    assert.equal(classifyPath('docs/MetaSkillSystem/PLAN_V0.md').level, 'L1')
+    assert.equal(classifyPath('scripts/mss/review.mjs').level, 'L5')
+    assert.equal(classifyPath('docs/_lavoro/segreto.md').level, 'L6')
+    assert.equal(classifyPath('src/App.tsx').level, null)
+
+    const dirtyReport = [
+      '# Report sporco T2',
+      '',
+      'Ho lanciato validate:mss exit 0.',
+      '',
+    ].join('\n')
+    const dirty = reviewSession({
+      files: [
+        'docs/MetaSkillSystem/PLAN_V0.md',
+        'docs/_lavoro/privato.md',
+        'scripts/mss/core.mjs',
+        `${SESSIONI}/24-08-26/Report-t2-dirty.md`,
+        'src/orphan-unmapped.ts',
+      ],
+      reportContents: new Map([[`${SESSIONI}/24-08-26/Report-t2-dirty.md`, dirtyReport]]),
+      owners: ['docs/MetaSkillSystem/PLAN_V0.md'],
+    })
+    assert.equal(dirty.clean, false, 'la seduta sporca non può risultare clean')
+    const codes = new Set(dirty.problems.map((p) => p.code))
+    assert.ok(codes.has('owner-stato'), `manca owner-stato: ${[...codes]}`)
+    assert.ok(codes.has('L6-privato'), `manca L6-privato: ${[...codes]}`)
+    assert.ok(codes.has('L5-congelato'), `manca L5-congelato: ${[...codes]}`)
+    assert.ok(codes.has('capsula-assente'), `manca capsula-assente: ${[...codes]}`)
+    assert.ok(codes.has('gate-senza-prova-capsula'), `manca gate-senza-prova-capsula: ${[...codes]}`)
+    assert.ok(
+      dirty.warnings.some((w) => w.code === 'livello-non-mappato' && w.path === 'src/orphan-unmapped.ts'),
+      'path fuori mappa deve essere segnalato senza inventare un livello',
+    )
+
+    const cleanReport = [
+      '# Report pulito T2',
+      '',
+      '❓ Q1 — Prompt?',
+      '✅ R1: mandato T2 fixture.',
+      '❓ Q2 — Diff?',
+      '✅ R2: sì, fixture.',
+      '❓ Q3 — Skill?',
+      '✅ R3: nessuno.',
+      '❓ Q4 — Non fatto?',
+      '✅ R4: nulla oltre il mandato.',
+      '❓ Q5 — Attrito?',
+      '✅ R5: nessuna osservazione.',
+      '❓ Q6 — Contesto?',
+      '✅ R6: giusto.',
+      '',
+      '## Capsula MetaSkillSystem',
+      '',
+      '```jsonl',
+      JSON.stringify({
+        record_type: 'session_event',
+        event: {
+          controls: [
+            {
+              control_id: 'DIFF-CHECK',
+              criterio: 'git diff --check',
+              esito: 'pass',
+              esecutore: 'fixture',
+            },
+          ],
+        },
+      }),
+      '```',
+      '',
+    ].join('\n')
+    const cleanPath = `${SESSIONI}/24-08-26/Report-t2-clean.md`
+    const clean = reviewSession({
+      files: [cleanPath],
+      reportContents: new Map([[cleanPath, cleanReport]]),
+      owners: ['docs/MetaSkillSystem/PLAN_V0.md'],
+    })
+    assert.equal(clean.clean, true, `seduta pulita non deve inventare problemi: ${JSON.stringify(clean.problems)}`)
+    assert.equal(clean.problems.length, 0)
+    assert.equal(clean.gaps.length, 0)
+    assert.ok(clean.controls.some((c) => c.control_id === 'DIFF-CHECK' && c.esito === 'pass'))
+
+    const cli = runReview(['node', 'review.mjs', '--json'], {
+      root: REPO_ROOT,
+      collectFiles: () => [cleanPath],
+      readFile: () => cleanReport,
+      owners: ['docs/MetaSkillSystem/PLAN_V0.md'],
+    })
+    assert.equal(cli.exitCode, 0, cli.stderr)
+    const payload = JSON.parse(cli.stdout)
+    assert.equal(payload.clean, true)
+    assert.equal(payload.problems.length, 0)
   }],
 ]
 
