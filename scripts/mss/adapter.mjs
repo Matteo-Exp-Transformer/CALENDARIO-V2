@@ -6,16 +6,25 @@ import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { isAbsolute, join, relative, resolve } from 'node:path'
 import { decodeUtf8 } from './canonical.mjs'
+import { CONFIG, FIXTURES_ROOT, buildFixtureMatchers, buildReportPathRe } from './config.mjs'
 import { validateAppendOnlyRecords, validateGlobalRecordView, validateMss } from './core.mjs'
 import { collectBundlesFromInput } from './parse.mjs'
 import { PROTOCOL_ID, PROTOCOL_VERSION, REVISION_CURRENT, RULE, SCHEMA_CURRENT } from './rules.mjs'
 
-export const REPORT_PATH_RE = /^docs\/Sessioni di lavoro\/.+\/(Report|Verbale)-.*\.md$/i
+/**
+ * Il perimetro «file di seduta» resta esportato DA QUI: i cinque consumatori
+ * (`capsule.mjs`, `query.mjs`, `report-paths.mjs`, `validate-changed-reports.mjs`,
+ * `.cursor/hooks/fine-sessione-commit-check.mjs`) non cambiano import. Cambia solo da dove
+ * arrivano i nomi delle cartelle: `config.mjs`, con default identici ai valori cablati prima.
+ */
+export const REPORT_PATH_RE = buildReportPathRe(CONFIG)
 const LIGHT_JSONL_RE = /eventi-light\/.+\.jsonl$/i
-const MSS_FIXTURE_RE = /^docs\/MetaSkillSystem\/fixtures\/v0\.1\/(.+\.(?:jsonl|md))$/i
-const MSS_MANIFEST = 'docs/MetaSkillSystem/fixtures/v0.1/manifest.json'
-const MSS_FIXTURE_ROOT = 'docs/MetaSkillSystem/fixtures/v0.1'
-const MSS_FIXTURE_TREE_RE = /^docs\/MetaSkillSystem\/fixtures\/v0\.1\//i
+const {
+  fixtureRe: MSS_FIXTURE_RE,
+  fixtureTreeRe: MSS_FIXTURE_TREE_RE,
+  manifestPath: MSS_MANIFEST,
+} = buildFixtureMatchers()
+const MSS_FIXTURE_ROOT = FIXTURES_ROOT
 const FROZEN_CASES = Object.freeze([
   ['FX-V01', 'pass', 'FX-V01-bundle.jsonl', 'jsonl', []],
   ['FX-V02', 'pass', 'FX-V02-session-log.md', 'session_log', []],

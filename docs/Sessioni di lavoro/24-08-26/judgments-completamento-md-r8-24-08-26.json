@@ -1,0 +1,188 @@
+{
+  "session_event": {
+    "intent_user": "Chiudere il difetto preciso per cui la controverifica dell'orchestratore ha respinto la dichiarazione R8 PROVATO nel report M-D: il test R8 ambientale non dichiarato come verifica di progetto, un secondo difetto minore di leggibilita nel messaggio owner di mss:doctor, e la rettifica del report originale.",
+    "event_kind": "session_close",
+    "session_type": "standard",
+    "capsule_status": "completa",
+    "role_key": "esecutore-completamento-md-r8",
+    "area": "MetaSkillSystem / portabilita R8 — completamento e rettifica",
+    "environment": "repo locale CalendarBackup-v2 su env/test, nessuna operazione Supabase, nessun commit",
+    "authorization": {
+      "read": ["docs/MetaSkillSystem/tests/tools/run.mjs", "scripts/mss/doctor.mjs", "docs/Sessioni di lavoro/24-08-26/Report-md-portabilita-24-08-26.md"],
+      "write": ["docs/MetaSkillSystem/tests/tools/run.mjs", "scripts/mss/doctor.mjs", "docs/Sessioni di lavoro/24-08-26/Report-md-portabilita-24-08-26.md", "docs/Sessioni di lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md"],
+      "forbid": ["commit", "push", "tag", "move o rinomina di file", "riscrittura di record final", "PLAN_V0.md", "PROMPT_ORCHESTRATOR_MSS_24-08-26.md", "src/", "migrazioni", "qualunque scrittura su database"]
+    },
+    "authorized_outputs": ["un report di seduta di completamento", "una capsula"],
+    "route": {
+      "chosen": "separare il test R8 in portabile + ambientale ancorato (import del meccanismo ancore di progetto gia esistente), correggere il messaggio doctor, riprovare da capo in repo ospite vergine con nomi diversi, registrare la rettifica come sezione visibile nel report originale",
+      "alternatives_or_conflicts": [
+        "scartato riscrivere il test com'era prima (avrebbe restaurato il falso rosso)",
+        "scartato ammorbidire l'asserzione ambientale o confrontarla con un ricalcolo della stessa formula (vietato dal mandato)",
+        "scartato creare un secondo meccanismo di ancore (D18, va importato quello gia scritto in questo stesso file)",
+        "tentato un amendment formale (mss:capsule --verify contradicted) sull'annotazione output del report originale: rifiutato dall'attrezzo con MSS-AMENDMENT-ORPHAN perche' la vista globale degli amendment risolve solo contro git HEAD (collectGitHeadHistory) e ne' il report originale ne' questo sono committati (lo STOP del mandato vieta il commit); non forzato, registrato come limite strutturale nel report"
+      ]
+    },
+    "observed_outcome": "test:mss:tools verde nella repo sorgente (52 test) e nella repo ospite configurata (50 test, 2 n/a per ancora); npm run validate:mss:all verde nella repo ospite dopo la chiusura di una seduta reale, il punto che la controverifica aveva respinto; npm run validate verde nella repo sorgente",
+    "open_items": [
+      "R8 resta PROVATO non CHIUSO (chiusura solo di Matteo/orchestratore)",
+      "N3 e N4 restano aperti, fuori da questo mandato",
+      "la rettifica del report originale resta una sezione visibile (prosa), non un amendment validato dall'attrezzo: il target non e' in git HEAD e questo mandato vieta il commit"
+    ],
+    "subject_runtime": {
+      "actor_id": "non_applicabile: soggetto non applicabile in questa seduta",
+      "provider": "non_applicabile: soggetto non applicabile",
+      "model": "non_applicabile: soggetto non applicabile",
+      "runtime": "non_applicabile: soggetto non applicabile",
+      "surface": "non_applicabile: soggetto non applicabile"
+    },
+    "privacy": {
+      "classification": "internal",
+      "capture_basis": "operational_need",
+      "allowed_content": ["path di repo", "esiti di comandi", "identificatori di pacchetto e difetto"],
+      "prohibited_content": ["dati personali", "segreti", "materiale privato non registrabile"],
+      "redactions": "nessuno",
+      "external_release": "requires_confirmation",
+      "retention": "undecided_wp0.1",
+      "rectification_route": "amendment"
+    },
+    "owner_refs": [{
+      "ref_id": "owner-plan-v0",
+      "owner_id": "MSS",
+      "uri_or_path": "docs/MetaSkillSystem/PLAN_V0.md",
+      "stable_anchor_or_event_id": "sezione 4-bis: stato di R8",
+      "revision_or_hash": "seduta di completamento 24-08-26",
+      "sensitivity": "internal"
+    }],
+    "source_refs": [
+      {
+        "ref_id": "source-report-originale",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/Sessioni di lavoro/24-08-26/Report-md-portabilita-24-08-26.md",
+        "stable_anchor_or_event_id": "sezione 4-bis e 4-ter",
+        "revision_or_hash": "seduta di completamento 24-08-26",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-test-tools",
+        "owner_id": "MSS",
+        "uri_or_path": "docs/MetaSkillSystem/tests/tools/run.mjs",
+        "stable_anchor_or_event_id": "test R8 separato in portabile + ambientale ancorato",
+        "revision_or_hash": "seduta di completamento 24-08-26",
+        "sensitivity": "internal"
+      },
+      {
+        "ref_id": "source-doctor",
+        "owner_id": "MSS",
+        "uri_or_path": "scripts/mss/doctor.mjs",
+        "stable_anchor_or_event_id": "messaggio del passo owner corretto",
+        "revision_or_hash": "seduta di completamento 24-08-26",
+        "sensitivity": "internal"
+      }
+    ]
+  },
+  "annotations": {
+    "persona": {
+      "delta": "nessuno",
+      "assertions": [{
+        "signal": "nessun segnale persona rilevante: seduta tecnica di completamento senza interlocutore umano",
+        "actor": "orchestratore MSS",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "source-report-originale",
+        "effect": "nessuno",
+        "evidence_state": "not_applicable"
+      }],
+      "asserted_by": {
+        "actor_id": "esecutore-completamento-md-r8",
+        "role": "esecutore",
+        "basis": "self_report"
+      },
+      "verification": {
+        "status": "not_applicable",
+        "verified_by": [],
+        "verified_at": "non_applicabile:nessuna valutazione Persona",
+        "criterion_ref": "non_applicabile:non ancora verificato",
+        "evidence_refs": [],
+        "notes": "seduta tecnica senza interlocutore umano"
+      }
+    },
+    "sistema": {
+      "delta": "creato",
+      "assertions": [
+        {
+          "rule_id_version": "R8/ancore-di-progetto-dichiarate",
+          "trigger_event": "un test R8 ambientale non era dichiarato come verifica di progetto, quindi falliva in una repo ospite configurata",
+          "decision_or_output_changed": "il test e stato separato: la meta portabile resta senza ancora, la meta ambientale e ora ancorata a owner-di-progetto ed esce n/a in repo ospite invece di fallire",
+          "G": 2,
+          "O": 1,
+          "E": 1
+        },
+        {
+          "rule_id_version": "R2/il-corpus-vuoto-non-e-un-verde",
+          "trigger_event": "controllo che mss:doctor resti correttamente rosso su un'installazione vuota anche dopo la correzione del test R8",
+          "decision_or_output_changed": "confermato nella riproduzione in repo ospite vergine: doctor resta rosso su cartelle dichiarate, owner, corpus finche nulla e stato creato",
+          "G": 1,
+          "O": 1,
+          "E": 1
+        }
+      ],
+      "asserted_by": {
+        "actor_id": "esecutore-completamento-md-r8",
+        "role": "esecutore",
+        "basis": "direct_observation"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:self_report",
+        "evidence_refs": [],
+        "notes": "esiti osservati direttamente rilanciando i comandi in questa repo e nella repo ospite vergine"
+      }
+    },
+    "output": {
+      "delta": "creato",
+      "assertions": [{
+        "output_id": "mss-completamento-md-r8-rettifica",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md",
+        "recipient": "orchestratore MSS",
+        "problem_or_job": "chiudere il difetto per cui R8 PROVATO era stato respinto, e registrare la rettifica del report originale senza riscrivere record final",
+        "intended_use": "prova end-to-end che npm run validate:mss:all e verde in una repo ospite configurata, dopo la correzione del test R8",
+        "conceived_by": "orchestratore MSS",
+        "decided_by": "esecutore-completamento-md-r8",
+        "directed_by": "mandato di completamento M-D",
+        "authored_by": "esecutore-completamento-md-r8",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "npm run validate:mss:all verde in una repo ospite vergine configurata con nomi diversi dai default; npm run test:mss:tools e npm run validate verdi nella repo sorgente",
+        "verification_or_use_evidence": "esiti reali registrati in questo report, sezioni 3 e 4",
+        "verification_status": "unverified",
+        "owner_ref": "owner-plan-v0",
+        "privacy_release": "internal",
+        "support_files": [],
+        "relations_no_double_count": [],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "fail",
+          "result": "not_eligible"
+        }
+      }],
+      "asserted_by": {
+        "actor_id": "esecutore-completamento-md-r8",
+        "role": "esecutore",
+        "basis": "self_report"
+      },
+      "verification": {
+        "status": "self_report",
+        "verified_by": [],
+        "verified_at": "non_applicabile:self_report",
+        "criterion_ref": "non_applicabile:self_report",
+        "evidence_refs": [],
+        "notes": "self_report: nessun secondo attore ha ancora verificato in modo indipendente questo completamento"
+      }
+    }
+  }
+}

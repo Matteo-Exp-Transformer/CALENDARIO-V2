@@ -34,6 +34,7 @@ import { extractCapsulesFromMarkdown } from '../../../../scripts/mss/parse.mjs'
 import { canonicalJson } from '../../../../scripts/mss/canonical.mjs'
 import { resolveRef } from '../../../../scripts/mss/refs.mjs'
 import { RULE } from '../../../../scripts/mss/rules.mjs'
+import { CONFIG } from '../../../../scripts/mss/config.mjs'
 import {
   amendment,
   axisPersona,
@@ -45,6 +46,40 @@ import {
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repoRoot = resolve(here, '../../../..')
+// I path di seduta SINTETICI seguono la config (R8). Restano letterali solo le ANCORE
+// STORICHE qui sotto: report reali di questo progetto, inchiodati per sha256 dal protocollo
+// congelato. Non sono path da parametrizzare, sono pezzi di storia con un nome preciso.
+const SESSIONI = CONFIG.sessionsDir
+/**
+ * ANCORE DI PROGETTO (R8). Alcuni gruppi non provano il MOTORE: provano che QUESTA repo ha certi
+ * file. I report storici inchiodati per sha256, le guardie PROD con i ref di questo progetto, gli
+ * hook cablati nell'IDE. In una repo ospite quei file non esistono e non devono esistere (la
+ * guardia PROD del kit resta generica per decisione A2). Farli fallire li non direbbe «motore
+ * rotto», direbbe «questa non e la repo sorgente»: un rosso che non insegna niente.
+ *
+ * Quindi un gruppo ancorato viene DICHIARATO non applicabile quando la sua ancora manca — mai
+ * saltato in silenzio, mai contato come verde. E se non restasse in piedi NESSUN gruppo, la suite
+ * esce rossa: una suite che non esegue niente non e una suite verde.
+ */
+const PROJECT_ANCHORS = Object.freeze({
+  'sedute-storiche': [
+    'docs/Sessioni di lavoro/09-08-26/Report-hardening-h1-metaskillsystem-09-08-26.md',
+    'docs/Sessioni di lavoro/10-08-26/Report-hardening-h1-1-metaskillsystem-10-08-26.md',
+    'docs/Sessioni di lavoro/09-08-26/Report-ciclo-metaskillsystem-v0-avvio-e-cattura-09-08-26.md',
+  ],
+  'guardie-e-hook-di-progetto': [
+    '.claude/hooks/guard-prod.mjs',
+    '.cursor/hooks/guard-prod.mjs',
+    '.claude/hooks/fine-sessione-senior.mjs',
+    '.claude/settings.json',
+  ],
+  'hook-stop-cursor': ['.cursor/hooks/fine-sessione-nudge.mjs'],
+  'hook-precommit-cursor': ['.cursor/hooks/fine-sessione-commit-check.mjs'],
+})
+
+function missingAnchors(id) {
+  return (PROJECT_ANCHORS[id] || []).filter((rel) => !existsSync(join(repoRoot, rel)))
+}
 const fixturesDir = join(repoRoot, 'docs/MetaSkillSystem/fixtures/v0.1')
 const matrixPath = join(repoRoot, 'docs/MetaSkillSystem/COVERAGE_MATRIX_H1.json')
 const stopHookPath = join(repoRoot, '.cursor/hooks/fine-sessione-nudge.mjs')
@@ -308,8 +343,8 @@ function testH12FinalizedReportCompatibility() {
 function testH12CrossFileIdentity() {
   const failures = []
   const repos = []
-  const baselinePath = 'docs/Sessioni di lavoro/10-08-26/Report-a.md'
-  const stagedPath = 'docs/Sessioni di lavoro/10-08-26/Report-b.md'
+  const baselinePath = `${SESSIONI}/10-08-26/Report-a.md`
+  const stagedPath = `${SESSIONI}/10-08-26/Report-b.md`
   try {
     {
       const root = createTempGitRepo(); repos.push(root)
@@ -733,7 +768,7 @@ function testH13HistoricalModeScopeAndArchitecture() {
   )
   const arbitraryResult = validateMss({
     kind: 'report',
-    file: join(repoRoot, 'docs/Sessioni di lavoro/10-08-26/Report-nuovo-legacy.md'),
+    file: join(repoRoot, `${SESSIONI}/10-08-26/Report-nuovo-legacy.md`),
     content: arbitrary,
     workspaceRoot: repoRoot,
   }, { workspaceRoot: repoRoot })
@@ -743,7 +778,7 @@ function testH13HistoricalModeScopeAndArchitecture() {
 
   const copiedHistorical = validateMss({
     kind: 'report',
-    file: join(repoRoot, 'docs/Sessioni di lavoro/10-08-26/Report-copia-storica.md'),
+    file: join(repoRoot, `${SESSIONI}/10-08-26/Report-copia-storica.md`),
     content: historical,
     workspaceRoot: repoRoot,
   }, { workspaceRoot: repoRoot })
@@ -1101,9 +1136,9 @@ function testAdapterContract() {
   const entries = [
     { path: 'docs/MetaSkillSystem/fixtures/v0.1/manifest.json', content: manifest, worktreeContent: manifest },
     { path: 'docs/MetaSkillSystem/fixtures/v0.1/FX-I01-schema.jsonl', content: negative, worktreeContent: negative },
-    { path: 'docs/Sessioni di lavoro/10-08-26/eventi-light/operational.jsonl', content: invalid, worktreeContent: invalid },
-    { path: 'docs/Sessioni di lavoro/10-08-26/Report-invalid.md', content: `# Invalid\n\n**Modalità:** standard\n${reportQrs()}`, worktreeContent: `# Invalid\n\n**Modalità:** standard\n${reportQrs()}` },
-    { path: 'docs/Sessioni di lavoro/10-08-26/eventi-light/mismatch.jsonl', content: valid, worktreeContent: invalid },
+    { path: `${SESSIONI}/10-08-26/eventi-light/operational.jsonl`, content: invalid, worktreeContent: invalid },
+    { path: `${SESSIONI}/10-08-26/Report-invalid.md`, content: `# Invalid\n\n**Modalità:** standard\n${reportQrs()}`, worktreeContent: `# Invalid\n\n**Modalità:** standard\n${reportQrs()}` },
+    { path: `${SESSIONI}/10-08-26/eventi-light/mismatch.jsonl`, content: valid, worktreeContent: invalid },
   ]
   const results = new Map(validateStagedMssFiles(repoRoot, entries, {
     historicalSnapshots: fixtureHeadSnapshots(),
@@ -1217,7 +1252,7 @@ function precommitOutputs(root) {
 function testH11AppendOnlyIntegration() {
   const failures = []
   const repos = []
-  const path = 'docs/Sessioni di lavoro/10-08-26/Report-append-only.md'
+  const path = `${SESSIONI}/10-08-26/Report-append-only.md`
   try {
     // Record finalizzato riscritto semanticamente: deve essere bloccato rispetto a HEAD.
     {
@@ -1293,7 +1328,7 @@ function testH11AppendOnlyIntegration() {
       historical[0].capture_key = `${historical[0].session_id}/1/session_event/8`
       for (const record of historical.slice(1)) record.annotation.subject_record_ids = [historical[0].record_id]
       commitBaseline(root, path, reportWithBundle(historical, 'Storia finalizzata'))
-      const nextPath = 'docs/Sessioni di lavoro/10-08-26/Report-historical-amendment.md'
+      const nextPath = `${SESSIONI}/10-08-26/Report-historical-amendment.md`
       writeTemp(root, nextPath, reportWithBundle(historicalAmendmentBundle(historical[0].record_id)))
       runGit(root, ['add', nextPath])
       const result = precommitOutputs(root)
@@ -1370,7 +1405,7 @@ function testPrecommitIntegration() {
     // 2. JSONL operativo invalido.
     {
       const root = createTempGitRepo(); repos.push(root)
-      writeTemp(root, 'docs/Sessioni di lavoro/10-08-26/eventi-light/invalid.jsonl', '{}\n')
+      writeTemp(root, `${SESSIONI}/10-08-26/eventi-light/invalid.jsonl`, '{}\n')
       runGit(root, ['add', '.'])
       const result = runPrecommit(root)
       if (result.status === 0 || !result.stderr.includes('PRE-COMMIT MSS')) failures.push('operational invalid precommit did not block')
@@ -1378,7 +1413,7 @@ function testPrecommitIntegration() {
     // 3. Report standard/deep invalido (senza capsula).
     {
       const root = createTempGitRepo(); repos.push(root)
-      writeTemp(root, 'docs/Sessioni di lavoro/10-08-26/Report-invalid.md', `# Invalid\n\n**Modalità:** deep\n${reportQrs()}`)
+      writeTemp(root, `${SESSIONI}/10-08-26/Report-invalid.md`, `# Invalid\n\n**Modalità:** deep\n${reportQrs()}`)
       runGit(root, ['add', '.'])
       const result = runPrecommit(root)
       if (result.status === 0 || !result.stderr.includes(RULE.REPORT_NO_CAPSULE)) failures.push('standard/deep invalid report precommit did not block')
@@ -1386,7 +1421,7 @@ function testPrecommitIntegration() {
     // 3-bis. D1 — stesso report senza capsula negato al 1°, 2° e 3° giro identico (parità cold-check).
     {
       const root = createTempGitRepo(); repos.push(root)
-      const path = 'docs/Sessioni di lavoro/23-08-26/deep/Report-d1-no-capsule.md'
+      const path = `${SESSIONI}/23-08-26/deep/Report-d1-no-capsule.md`
       writeTemp(root, path, `# D1 probe\n\n**Modalità:** deep\n${reportQrs()}`)
       runGit(root, ['add', '.'])
       for (let attempt = 1; attempt <= 3; attempt++) {
@@ -1400,7 +1435,7 @@ function testPrecommitIntegration() {
     {
       const root = createTempGitRepo(); repos.push(root)
       writeFixtureReferenceOwner(root)
-      const path = 'docs/Sessioni di lavoro/10-08-26/eventi-light/mismatch.jsonl'
+      const path = `${SESSIONI}/10-08-26/eventi-light/mismatch.jsonl`
       writeTemp(root, path, readFileSync(join(fixturesDir, 'FX-V01-bundle.jsonl'), 'utf8'))
       runGit(root, ['add', '.'])
       writeTemp(root, path, '{}\n')
@@ -1418,7 +1453,7 @@ function testStopHookIntegration() {
   try {
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const subPath = `docs/Sessioni di lavoro/${day}/sub/Report-stop-invalid.md`
+    const subPath = `${SESSIONI}/${day}/sub/Report-stop-invalid.md`
     writeTemp(root, subPath, `# Stop invalid\n\n**Modalità:** standard\n${reportQrs()}`)
     utimesSync(join(root, subPath), new Date(now - 1000), new Date(now - 1000))
     const discovered = findRecentReportFiles(root, { now })
@@ -1447,8 +1482,8 @@ function testFindRecentReportFilesRecursive() {
   try {
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const flatRel = `docs/Sessioni di lavoro/${day}/Report-flat-old.md`
-    const deepRel = `docs/Sessioni di lavoro/${day}/nested/deep/Report-deep-recent.md`
+    const flatRel = `${SESSIONI}/${day}/Report-flat-old.md`
+    const deepRel = `${SESSIONI}/${day}/nested/deep/Report-deep-recent.md`
     writeTemp(root, flatRel, '# flat old — non chiusura\n')
     writeTemp(root, deepRel, `# deep recent\n\n**Modalità:** standard\n${reportQrs()}`)
     utimesSync(join(root, flatRel), new Date(now - 3_600_000), new Date(now - 3_600_000))
@@ -1474,8 +1509,8 @@ function testStopHookIgnoresNonClosureFixture() {
   try {
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const probeRel = `docs/Sessioni di lavoro/${day}/sub/Report-test.md`
-    const realRel = `docs/Sessioni di lavoro/${day}/nested/Report-revisione.md`
+    const probeRel = `${SESSIONI}/${day}/sub/Report-test.md`
+    const realRel = `${SESSIONI}/${day}/nested/Report-revisione.md`
     writeTemp(root, probeRel, FIXTURE_PROBE_MD)
     writeTemp(
       root,
@@ -1510,7 +1545,7 @@ function testStopHookSilenceWhenOnlyFixtureProbe() {
   try {
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const probeRel = `docs/Sessioni di lavoro/${day}/sub/Report-test.md`
+    const probeRel = `${SESSIONI}/${day}/sub/Report-test.md`
     writeTemp(root, probeRel, FIXTURE_PROBE_MD)
     if (findRecentReportFiles(root, { now }).length) {
       return ['non-closure fixture alone must not be discovered as session report']
@@ -1533,13 +1568,13 @@ function testStopHookSilenceWhenOnlyFixtureProbe() {
 
 function testStopHookIgnoresUnderscoreProbePath() {
   const failures = []
-  const probeRel = 'docs/Sessioni di lavoro/23-08-26/_prova-sk4-r1/sub/Report-test-r1-b2.md'
+  const probeRel = `${SESSIONI}/23-08-26/_prova-sk4-r1/sub/Report-test-r1-b2.md`
   if (!isStopHookProbePath(probeRel)) failures.push('_prova path not flagged as probe')
   const root = mkdtempSync(join(tmpdir(), 'mss-stop-underscore-'))
   try {
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const underRel = `docs/Sessioni di lavoro/${day}/_prova/sub/Report-deep-no-qr.md`
+    const underRel = `${SESSIONI}/${day}/_prova/sub/Report-deep-no-qr.md`
     writeTemp(root, underRel, `# probe deep\n\n**Modalità:** deep\n\nNo Q/R section.\n`)
     if (findRecentReportFiles(root, { now }).length) {
       failures.push('underscore probe path must be excluded even if deep mode')
@@ -1556,7 +1591,7 @@ function testStopHookCompleteReportSilence() {
     writeFixtureReferenceOwner(root)
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-complete.md`
+    const rel = `${SESSIONI}/${day}/sub/Report-complete.md`
     writeTemp(root, rel, reportWithBundle(validBundle()))
     const result = spawnSync(process.execPath, [stopHookPath], {
       cwd: root,
@@ -1580,7 +1615,7 @@ function testH13SurfaceParity() {
     writeFixtureReferenceOwner(root)
     const d = new Date()
     const day = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getFullYear()).slice(-2)}`
-    const path = `docs/Sessioni di lavoro/${day}/Report-surface-parity.md`
+    const path = `${SESSIONI}/${day}/Report-surface-parity.md`
     const content = reportWithBundle(validBundle()).replace('**Modalità:** standard', '**Modalità:** Meta/deep, esecuzione documentale')
     writeTemp(root, path, content)
 
@@ -1612,7 +1647,7 @@ function testH13SurfaceParity() {
 
 function testH13StagedRequireCapsule() {
   const root = createTempGitRepo()
-  const reportRel = 'docs/Sessioni di lavoro/23-08-26/sub/Report-test.md'
+  const reportRel = `${SESSIONI}/23-08-26/sub/Report-test.md`
   const noModeNoCapsule = `# Report test\n\nNo capsule, no mode.\n${reportQrs()}`
   const deepNoCapsule = `# Report test\n\n**Modalità:** deep\n\nNo capsule.\n${reportQrs()}`
   try {
@@ -1945,7 +1980,7 @@ function testA3ClaudeStopHookSilenceOnComplete() {
     writeFixtureReferenceOwner(root)
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-a3-complete.md`
+    const rel = `${SESSIONI}/${day}/sub/Report-a3-complete.md`
     writeTemp(root, rel, reportWithBundle(validBundle()))
     const result = runClaudeStopHook(root)
     if (result.status !== 0) return [`A3-silence-complete: exit=${result.status} stderr=${result.stderr}`]
@@ -1966,7 +2001,7 @@ function testA3ClaudeStopHookBlocksMissingAnswer() {
     writeFixtureReferenceOwner(root)
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-a3-missing-answer.md`
+    const rel = `${SESSIONI}/${day}/sub/Report-a3-missing-answer.md`
     writeTemp(
       root, rel,
       `# A3 missing answer\n\n**Modalità:** standard\n\n## Domande di chiusura\n\n❓ Q1 — Prompt?\n✅ R1:\n\n❓ Q2 — Dati?\n✅ R2: ok.\n`,
@@ -1989,7 +2024,7 @@ function testA3ClaudeStopHookBlocksRedCapsule() {
     writeFixtureReferenceOwner(root)
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-a3-no-capsule.md`
+    const rel = `${SESSIONI}/${day}/sub/Report-a3-no-capsule.md`
     writeTemp(root, rel, `# A3 no capsule\n\n**Modalità:** standard\n${reportQrs()}`)
     const result = runClaudeStopHook(root)
     let payload
@@ -2009,7 +2044,7 @@ function testA3ClaudeStopHookAntiLoop() {
     writeFixtureReferenceOwner(root)
     const now = Date.now()
     const day = todaySessionFolder(new Date(now))
-    const rel = `docs/Sessioni di lavoro/${day}/sub/Report-a3-antiloop.md`
+    const rel = `${SESSIONI}/${day}/sub/Report-a3-antiloop.md`
     writeTemp(root, rel, `# A3 antiloop\n\n**Modalità:** standard\n${reportQrs()}`) // no capsula -> block se non fosse per stop_hook_active
     const result = runClaudeStopHook(root, { stop_hook_active: true })
     if (result.status !== 0) return [`A3-anti-loop: exit=${result.status} stderr=${result.stderr}`]
@@ -2048,20 +2083,20 @@ function main() {
     ['report parser + modes', testReportParserModes],
     ['reference security', testReferenceSecurity],
     ['LOCK semantics', testLockSemantics],
-    ['adapter contract', testAdapterContract],
-    ['pre-commit integration', testPrecommitIntegration],
+    ['adapter contract', testAdapterContract, 'hook-precommit-cursor'],
+    ['pre-commit integration', testPrecommitIntegration, 'hook-precommit-cursor'],
     ['H-1.1 append-only integration', testH11AppendOnlyIntegration],
     ['H-1.1 manifest integrity', testH11ManifestIntegrity],
-    ['stop hook integration', testStopHookIntegration],
+    ['stop hook integration', testStopHookIntegration, 'hook-stop-cursor'],
     ['findRecentReportFiles recursive N1', testFindRecentReportFilesRecursive],
-    ['stop hook ignores non-closure fixture probe', testStopHookIgnoresNonClosureFixture],
-    ['stop hook silence fixture-only probe', testStopHookSilenceWhenOnlyFixtureProbe],
+    ['stop hook ignores non-closure fixture probe', testStopHookIgnoresNonClosureFixture, 'hook-stop-cursor'],
+    ['stop hook silence fixture-only probe', testStopHookSilenceWhenOnlyFixtureProbe, 'hook-stop-cursor'],
     ['stop hook ignores underscore probe paths', testStopHookIgnoresUnderscoreProbePath],
-    ['stop hook silence complete subfolder report', testStopHookCompleteReportSilence],
-    ['H-1.3 core/CLI/stop/pre-commit parity', testH13SurfaceParity],
+    ['stop hook silence complete subfolder report', testStopHookCompleteReportSilence, 'hook-stop-cursor'],
+    ['H-1.3 core/CLI/stop/pre-commit parity', testH13SurfaceParity, 'hook-stop-cursor'],
     ['H-1.3 staged CLI full-snapshot parity', testH13StagedCliParity],
     ['H-1.3 staged CLI require-capsule', testH13StagedRequireCapsule],
-    ['H-1.2 finalized report compatibility', testH12FinalizedReportCompatibility],
+    ['H-1.2 finalized report compatibility', testH12FinalizedReportCompatibility, 'sedute-storiche'],
     ['H-1.2 cross-file identity', testH12CrossFileIdentity],
     ['H-1.2 final amendment target', testH12FinalAmendmentTargetsFinal],
     ['H-1.3 amendment semantics', testH13AmendmentSemantics],
@@ -2070,24 +2105,34 @@ function main() {
     ['H-1.3 manifest lifecycle + supplemental relations', testH13ManifestLifecycleAndRelations],
     ['H-1.2 semantic domains + UTF-8', testH12SemanticDomainsAndUtf8],
     ['H-1.2 report mode grammar', testH12ModeGrammar],
-    ['H-1.3 historical mode scope + architecture', testH13HistoricalModeScopeAndArchitecture],
-    ['H-1.3 historical records + frozen immutability', testH13HistoricalRecordAndFixtureImmutability],
-    ['H-1.2 scoped report whitespace', testH12ScopedReportWhitespace],
+    ['H-1.3 historical mode scope + architecture', testH13HistoricalModeScopeAndArchitecture, 'sedute-storiche'],
+    ['H-1.3 historical records + frozen immutability', testH13HistoricalRecordAndFixtureImmutability, 'sedute-storiche'],
+    ['H-1.2 scoped report whitespace', testH12ScopedReportWhitespace, 'sedute-storiche'],
     ['coverage matrix', testMatrix],
-    ['A1 — la guardia PROD di Claude è tracciata da git', testA1GuardProdTrackedByGit],
-    ['A4 — il cablaggio dell\'hook Claude è tracciato e non trascina i file personali', testA4ClaudeSettingsTrackedNoPersonalFiles],
-    ['A2 — guard-prod shared corpus (cursor+claude)', testA2GuardProdCorpus],
+    ['A1 — la guardia PROD di Claude è tracciata da git', testA1GuardProdTrackedByGit, 'guardie-e-hook-di-progetto'],
+    ['A4 — il cablaggio dell\'hook Claude è tracciato e non trascina i file personali', testA4ClaudeSettingsTrackedNoPersonalFiles, 'guardie-e-hook-di-progetto'],
+    ['A2 — guard-prod shared corpus (cursor+claude)', testA2GuardProdCorpus, 'guardie-e-hook-di-progetto'],
     ['A2 — guard-prod kit template static check', testA2KitTemplateStatic],
-    ['A3 — Claude stop hook silence on complete report', testA3ClaudeStopHookSilenceOnComplete],
-    ['A3 — Claude stop hook blocks missing Q/R answer', testA3ClaudeStopHookBlocksMissingAnswer],
-    ['A3 — Claude stop hook blocks red capsule', testA3ClaudeStopHookBlocksRedCapsule],
-    ['A3 — Claude stop hook anti-loop guard', testA3ClaudeStopHookAntiLoop],
+    ['A3 — Claude stop hook silence on complete report', testA3ClaudeStopHookSilenceOnComplete, 'guardie-e-hook-di-progetto'],
+    ['A3 — Claude stop hook blocks missing Q/R answer', testA3ClaudeStopHookBlocksMissingAnswer, 'guardie-e-hook-di-progetto'],
+    ['A3 — Claude stop hook blocks red capsule', testA3ClaudeStopHookBlocksRedCapsule, 'guardie-e-hook-di-progetto'],
+    ['A3 — Claude stop hook anti-loop guard', testA3ClaudeStopHookAntiLoop, 'guardie-e-hook-di-progetto'],
   ]
-  for (const [name, fn] of checks) {
+  const nonApplicabili = []
+  let eseguiti = 0
+  for (const [name, fn, anchor] of checks) {
+    const mancanti = anchor ? missingAnchors(anchor) : []
+    if (mancanti.length) {
+      nonApplicabili.push({ name, anchor, mancanti })
+      console.log(`n/a ${name}  — ancora «${anchor}» assente: ${mancanti.join(', ')}`)
+      continue
+    }
+    eseguiti++
     const errs = fn()
     if (errs.length) failures.push(...errs.map((err) => `${name}: ${err}`))
     else console.log(`OK ${name}`)
   }
+  if (eseguiti === 0) failures.push('nessun gruppo eseguito: una suite che non esegue niente non e verde')
 
   const r1 = runCase(manifest.frozen[0])
   const r2 = runCase(manifest.frozen[0])
@@ -2103,7 +2148,10 @@ function main() {
     for (const failure of failures) console.error(' -', failure)
     process.exit(1)
   }
-  console.log(`\nH-1 suite green: ${all.length} fixture cases + ${checks.length} contract/integration groups`)
+  const coda = nonApplicabili.length
+    ? ` (+ ${nonApplicabili.length} non applicabili in questa repo: ${[...new Set(nonApplicabili.map((n) => n.anchor))].join(', ')})`
+    : ''
+  console.log(`\nH-1 suite green: ${all.length} fixture cases + ${eseguiti} contract/integration groups${coda}`)
 }
 
 main()

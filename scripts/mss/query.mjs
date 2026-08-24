@@ -21,13 +21,14 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 import { REPORT_PATH_RE } from './adapter.mjs'
+import { CONFIG } from './config.mjs'
 import { extractCapsulesFromMarkdown, detectReportMode } from './parse.mjs'
 import { SCHEMA_CURRENT, SCHEMA_LEGACY, REVISION_CURRENT, REVISION_LEGACY, RULE } from './rules.mjs'
 import { applyAmendmentsView } from './core.mjs'
 import { isMainModule, repoRootFromModule } from './runtime.mjs'
 
 const ROOT = repoRootFromModule(import.meta.url)
-const SESSIONI = 'docs/Sessioni di lavoro'
+const SESSIONI = CONFIG.sessionsDir
 
 const colors = (isTTY) => isTTY
   ? { r: '\x1b[31m', y: '\x1b[33m', g: '\x1b[32m', d: '\x1b[2m', b: '\x1b[1m', x: '\x1b[0m' }
@@ -1057,7 +1058,7 @@ function perimetro(data) {
   L.push(`${C.y}Limiti noti di questa lettura${C.x}`)
   L.push(`  ${C.d}· Legge l'albero HEAD e il working tree, non la storia dei commit: un report cancellato${C.x}`)
   L.push(`  ${C.d}  o rinominato in passato non compare, e la sua capsula non e recuperabile da qui.${C.x}`)
-  L.push(`  ${C.d}· Legge solo file che si chiamano Report-*.md o Verbale-*.md sotto docs/Sessioni di lavoro/. Una capsula${C.x}`)
+  L.push(`  ${C.d}· Legge solo file che si chiamano ${CONFIG.reportKinds.map((k) => `${k}-*.md`).join(' o ')} sotto ${SESSIONI}/. Una capsula${C.x}`)
   L.push(`  ${C.d}  scritta altrove, o con un altro nome, e invisibile a questo comando.${C.x}`)
   L.push(`  ${C.d}· Ogni valore e dichiarato dall'agente che ha scritto la capsula. Questo comando conta${C.x}`)
   L.push(`  ${C.d}  le dichiarazioni; non ne verifica nessuna.${C.x}`)

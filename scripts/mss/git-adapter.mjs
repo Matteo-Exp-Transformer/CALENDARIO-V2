@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { isMssRelevantPath } from './adapter.mjs'
+import { CONFIG, FIXTURES_ROOT } from './config.mjs'
 
 function git(root, args, { allowFailure = false } = {}) {
   try {
@@ -104,8 +105,8 @@ export function collectStagedMssEntries(root) {
 export function collectGitHeadHistory(root) {
   const raw = git(root, [
     'ls-tree', '-r', '--name-only', '-z', 'HEAD', '--',
-    'docs/Sessioni di lavoro',
-    'docs/MetaSkillSystem/fixtures/v0.1',
+    CONFIG.sessionsDir,
+    FIXTURES_ROOT,
   ], { allowFailure: true }) || ''
   const paths = raw
     .split('\0')

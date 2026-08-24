@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -28,6 +28,10 @@ import {
 } from '../../../../scripts/mss/capsule.mjs'
 import { countCapsuleHeadings } from '../../../../scripts/mss/parse.mjs'
 import { validateMss } from '../../../../scripts/mss/core.mjs'
+import { CONFIG, buildReportPathRe, normalizeConfig } from '../../../../scripts/mss/config.mjs'
+import { REPORT_PATH_RE } from '../../../../scripts/mss/adapter.mjs'
+import { collectExportPaths, findDanglingImports } from '../../../../scripts/mss/export-kit.mjs'
+import { runDoctor } from '../../../../scripts/mss/doctor.mjs'
 import { REVISION_CURRENT } from '../../../../scripts/mss/rules.mjs'
 import {
   IDS,
@@ -35,7 +39,27 @@ import {
   validBundle,
 } from '../h1/fixture-factory.mjs'
 
-const FIXED_PATH = 'docs/Sessioni di lavoro/10-08-26/Report-tools-synthetic.md'
+// I path di seduta sintetici seguono la config: una suite che passa solo con UNA cartella
+// smentirebbe la parametrizzazione che deve proteggere (R8).
+const SESSIONI = CONFIG.sessionsDir
+/**
+ * ANCORE DI PROGETTO (R8) — vedi la nota gemella in ../h1/run.mjs. Un gruppo che legge un file
+ * esistente solo nella repo sorgente viene dichiarato non applicabile altrove, non fatto fallire.
+ */
+const PROJECT_ANCHORS = Object.freeze({
+  // Il path e LETTERALE, non `CONFIG.owners.plan`: questo gruppo controlla che l'owner di
+  // QUESTO progetto non riesponga conteggi vecchi. In una repo ospite non ha bersaglio.
+  // Riusato anche dal gruppo R8 «ambientale» sotto: PLAN_V0.md non e nell'EXPORT_MANIFEST
+  // (export-kit.mjs), quindi la sua presenza e' un marcatore affidabile «questa e' la repo
+  // sorgente», non solo dell'owner.
+  'owner-di-progetto': ['docs/MetaSkillSystem/PLAN_V0.md'],
+})
+const missingAnchors = (id) => (PROJECT_ANCHORS[id] || []).filter((rel) => !existsSync(join(REPO_ROOT, rel)))
+// Valore storico cablato prima di R8 (docs/MetaSkillSystem/PLAN_V0.md §4-bis, S11). LETTERALE,
+// non costruito da buildReportPathRe/CONFIG: i due test R8 sotto lo confrontano con l'ambiente,
+// non lo ricalcolano — un refuso nella formula deve restare visibile qui.
+const ATTESO_PERIMETRO_STORICO = String(/^docs\/Sessioni di lavoro\/.+\/(Report|Verbale)-.*\.md$/i)
+const FIXED_PATH = `${SESSIONI}/10-08-26/Report-tools-synthetic.md`
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..')
 const CHANGED_REPORTS_CLI = join(REPO_ROOT, 'scripts/mss/validate-changed-reports.mjs')
 const FIXTURES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'fixtures')
@@ -261,7 +285,7 @@ function runCheckDocPathsWithAllowlist(allowlistEntries) {
 const tests = [
   ['changed reports: Report valido in sottocartella viene selezionato e validato', () => {
     withTempGitRepo(({ repo, base }) => {
-      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Report-valid.md'
+      const path = `${SESSIONI}/23-08-26/audit/deep/Report-valid.md`
       const head = commitFile(repo, path, validReport('Report valido'), 'add valid report')
       const result = validateChanged(repo, base, head)
       assert.equal(result.status, 0, result.output)
@@ -271,7 +295,7 @@ const tests = [
   }],
   ['changed reports: Report invalido rende rosso, poi la correzione rende verde', () => {
     withTempGitRepo(({ repo, base }) => {
-      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Report-invalid.md'
+      const path = `${SESSIONI}/23-08-26/audit/deep/Report-invalid.md`
       const head = commitFile(repo, path, invalidReport('Report invalido'), 'add invalid report')
       const red = validateChanged(repo, base, head)
       assert.equal(red.status, 1, red.output)
@@ -285,7 +309,7 @@ const tests = [
   }],
   ['changed reports: Verbale valido in sottocartella viene selezionato e validato', () => {
     withTempGitRepo(({ repo, base }) => {
-      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Verbale-valid.md'
+      const path = `${SESSIONI}/23-08-26/audit/deep/Verbale-valid.md`
       const head = commitFile(repo, path, validReport('Verbale valido'), 'add valid verbale')
       const result = validateChanged(repo, base, head)
       assert.equal(result.status, 0, result.output)
@@ -295,7 +319,7 @@ const tests = [
   }],
   ['changed reports: Verbale invalido rende rosso, poi la correzione rende verde', () => {
     withTempGitRepo(({ repo, base }) => {
-      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Verbale-invalid.md'
+      const path = `${SESSIONI}/23-08-26/audit/deep/Verbale-invalid.md`
       const head = commitFile(repo, path, invalidReport('Verbale invalido'), 'add invalid verbale')
       const red = validateChanged(repo, base, head)
       assert.equal(red.status, 1, red.output)
@@ -316,7 +340,7 @@ const tests = [
   }],
   ['changed reports: file non pertinente viene ignorato', () => {
     withTempGitRepo(({ repo, base }) => {
-      const path = 'docs/Sessioni di lavoro/23-08-26/audit/deep/Nota-non-pertinente.md'
+      const path = `${SESSIONI}/23-08-26/audit/deep/Nota-non-pertinente.md`
       const head = commitFile(repo, path, invalidReport('Nota non pertinente'), 'add unrelated note')
       const result = validateChanged(repo, base, head)
       assert.equal(result.status, 0, result.output)
@@ -331,7 +355,10 @@ const tests = [
     assert.ok((result.stdout.match(/Verbale-\*\.md/g) || []).length >= 3)
     assert.match(result.stdout, /Report-\*\.md e Verbale-\*\.md esaminati/)
     assert.match(result.stdout, /Report-\*\.md e Verbale-\*\.md con intestazione capsula/)
-    assert.match(result.stdout, /Report-\*\.md o Verbale-\*\.md sotto docs\/Sessioni di lavoro\//)
+    // Il perimetro dichiarato dall'help deve nominare la cartella CONFIGURATA, non una cablata:
+    // confronto per sottostringa, cosi il criterio non dipende da come si scappano i metacaratteri.
+    const attesoPerimetro = `${CONFIG.reportKinds.map((k) => `${k}-*.md`).join(' o ')} sotto ${SESSIONI}/`
+    assert.ok(result.stdout.includes(attesoPerimetro), `help non dichiara il perimetro «${attesoPerimetro}»`)
     assert.doesNotMatch(result.stdout, /file Report-\*\.md esaminati/)
     assert.doesNotMatch(result.stdout, /file Report-\*\.md con intestazione capsula/)
     assert.doesNotMatch(result.stdout, /si chiamano Report-\*\.md sotto/)
@@ -454,7 +481,7 @@ const tests = [
     assert.doesNotMatch(output, /10 sedute su 42/)
     assert.doesNotMatch(output, /su 42 non ne dichiarano/)
   }],
-  ['status: owner PLAN non espone 32 gruppi o 9\/9 tools come dati correnti', () => {
+  ['status: owner PLAN non espone 32 gruppi o 9\/9 tools come dati correnti', 'owner-di-progetto', () => {
     const planPath = join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md')
     const planText = readFileSync(planPath, 'utf8')
     const skBlock = planText.slice(planText.indexOf('### 4-bis.'))
@@ -477,6 +504,8 @@ const tests = [
         ahead: { ahead: 0, behind: 0 }, dirty: [], tags: [], stash: 0, worktrees: 1,
       },
       isTTY: false,
+      planOwner: 'sintetico/PLAN.md',
+      packOwner: 'sintetico/MASTERPLAN.md',
     })
     assert.match(output, /branch\s+env\/synthetic/)
     assert.match(output, /SK-11\s+IN CORSO/)
@@ -492,6 +521,8 @@ const tests = [
         dirty: [], tags: [], stash: 0, worktrees: 0,
       },
       isTTY: false,
+      planOwner: 'sintetico/PLAN.md',
+      packOwner: 'sintetico/MASTERPLAN.md',
     })
     assert.match(output, /branch\s+non ricostruibile/)
     assert.match(output, /HEAD\s+non ricostruibile/)
@@ -510,7 +541,7 @@ const tests = [
     withTempGitRepo(({ repo }) => {
       const records = buildCapsuleBundle(goldenCapsuleOptions())
       const jsonl = recordsToJsonl(records)
-      const reportPath = 'docs/Sessioni di lavoro/10-08-26/Report-capsule-tools-roundtrip.md'
+      const reportPath = `${SESSIONI}/10-08-26/Report-capsule-tools-roundtrip.md`
       const report = `# Report roundtrip capsule\n${formatCapsuleBlock(jsonl)}`
       writeRepoFile(repo, reportPath, report)
       const result = validateMss({
@@ -532,7 +563,7 @@ const tests = [
       )
       const judgmentsRel = 'docs/MetaSkillSystem/tests/tools/fixtures/judgments-sk7-missing-persona.json'
       writeRepoFile(repo, judgmentsRel, readFileSync(JUDGMENTS_MISSING_PERSONA, 'utf8'))
-      const reportRel = 'docs/Sessioni di lavoro/23-08-26/Report-capsule-negative.md'
+      const reportRel = `${SESSIONI}/23-08-26/Report-capsule-negative.md`
       const baseline = '# Report negativo\n\nContenuto iniziale.\n'
       writeRepoFile(repo, reportRel, baseline)
       const before = readFileSync(join(repo, ...reportRel.split('/')), 'utf8')
@@ -750,7 +781,7 @@ const tests = [
     withTempGitRepo(({ repo }) => {
       const judgmentsRel = 'judgments-n1.json'
       writeRepoFile(repo, judgmentsRel, readFileSync(JUDGMENTS_MINIMAL, 'utf8'))
-      const reportRel = 'docs/Sessioni di lavoro/24-08-26/Report-n1-capsula-doppia.md'
+      const reportRel = `${SESSIONI}/24-08-26/Report-n1-capsula-doppia.md`
       const jsonl = recordsToJsonl(buildCapsuleBundle(goldenCapsuleOptions()))
       const baseline = `# Report N1\n\n## 6-bis. Capsula MetaSkillSystem\n\n\`\`\`jsonl\n${jsonl}\`\`\`\n`
       writeRepoFile(repo, reportRel, baseline)
@@ -778,7 +809,7 @@ const tests = [
       judgments.annotations.sistema.assertions[0].G = 3
       const judgmentsRel = 'judgments-n1-goe.json'
       writeRepoFile(repo, judgmentsRel, JSON.stringify(judgments, null, 2))
-      const reportRel = 'docs/Sessioni di lavoro/24-08-26/Report-n1-goe-fuori-dominio.md'
+      const reportRel = `${SESSIONI}/24-08-26/Report-n1-goe-fuori-dominio.md`
       const baseline = '# Report N1 G/O/E\n\nCorpo del report.\n'
       writeRepoFile(repo, reportRel, baseline)
 
@@ -921,12 +952,137 @@ const tests = [
     assert.equal(result.status, 0, `atteso exit 0 sotto il tetto (solo avviso); stdout=${result.stdout} stderr=${result.stderr}`)
     assert.match(result.stderr, /abbassa il tetto/)
   }],
+
+  // ---------------------------------------------------------------- R8 — portabilita (24-08-26)
+
+  ['R8 — senza override esplicito la formula del perimetro e IDENTICA al valore cablato prima di R8', () => {
+    // PORTABILE: normalizeConfig({}) ignora qualunque mss.config.json installato (l'oggetto grezzo
+    // e' vuoto), quindi vale in QUALSIASI repo, sorgente o ospite. E' la meta pura del vincolo R8:
+    // un refuso nel costruttore della regex o nei default si vedrebbe qui, ovunque il test giri.
+    assert.equal(String(buildReportPathRe(normalizeConfig({}))), ATTESO_PERIMETRO_STORICO)
+    assert.equal(normalizeConfig({}).sessionsDir, 'docs/Sessioni di lavoro')
+    assert.deepEqual([...normalizeConfig({}).reportKinds], ['Report', 'Verbale'])
+    assert.equal(normalizeConfig({}).owners.plan, 'docs/MetaSkillSystem/PLAN_V0.md')
+  }],
+
+  ['R8 — owner-di-progetto: in QUESTA repo, senza mss.config.json, il perimetro ambientale resta quello storico', 'owner-di-progetto', () => {
+    // AMBIENTALE PER DISEGNO: REPORT_PATH_RE (via adapter.mjs) e' costruita sulla CONFIG che questa
+    // installazione ha effettivamente caricato da mss.config.json — e' esattamente il meccanismo
+    // che R8 esiste per dare. In una repo ospite che configura una sessionsDir diversa questa
+    // uguaglianza e' FALSA per costruzione: non e' il motore rotto, e' il motore che fa il suo
+    // lavoro (vedi il test gemello sopra, «una sessionsDir diversa sposta il perimetro», che prova
+    // il caso configurato). Qui si prova un fatto di QUESTO progetto — che al momento non ha ancora
+    // un mss.config.json che sposta il perimetro — quindi e' ancorato come le altre verifiche di
+    // progetto: assente l'ancora, il gruppo e' n/a col suo nome, mai saltato in silenzio.
+    assert.equal(String(REPORT_PATH_RE), ATTESO_PERIMETRO_STORICO)
+  }],
+
+  ['R8 — una sessionsDir diversa sposta il perimetro in ENTRAMBE le direzioni', () => {
+    // Non basta che accetti il path nuovo: se continuasse ad accettare anche il vecchio, la
+    // parametrizzazione sarebbe finta e il motore leggerebbe la cartella sbagliata dicendo verde.
+    const ospite = buildReportPathRe(normalizeConfig({ sessionsDir: 'registro/sedute' }))
+    assert.ok(ospite.test('registro/sedute/24-08-26/Report-x.md'), 'non accetta la cartella configurata')
+    assert.ok(!ospite.test('docs/Sessioni di lavoro/24-08-26/Report-x.md'), 'accetta ancora la vecchia cartella')
+    assert.ok(!ospite.test('registro/sedute/24-08-26/Nota-x.md'), 'accetta un prefisso non dichiarato')
+    const soloVerbali = buildReportPathRe(normalizeConfig({ reportKinds: ['Verbale'] }))
+    assert.ok(!soloVerbali.test('docs/Sessioni di lavoro/24-08-26/Report-x.md'), 'ignora reportKinds')
+    assert.ok(soloVerbali.test('docs/Sessioni di lavoro/24-08-26/Verbale-x.md'))
+  }],
+
+  ['R8 — un mss.config.json rotto e ROSSO, non un default silenzioso', () => {
+    // Ricadere sui default farebbe validare la cartella sbagliata dichiarando verde: R2.
+    assert.throws(() => normalizeConfig({ sessionsDirectory: 'x' }), /chiave sconosciuta/)
+    assert.throws(() => normalizeConfig({ sessionsDir: '/assoluto/sedute' }), /relativo alla root/)
+    assert.throws(() => normalizeConfig({ sessionsDir: 'C:/assoluto' }), /relativo alla root/)
+    assert.throws(() => normalizeConfig({ sessionsDir: '../fuori' }), /non puo/)
+    assert.throws(() => normalizeConfig({ sessionsDir: '' }), /non vuoto/)
+    assert.throws(() => normalizeConfig({ reportKinds: [] }), /array non vuoto/)
+    assert.throws(() => normalizeConfig({ reportKinds: ['Report|.*'] }), /prefissi alfanumerici/)
+    assert.throws(() => normalizeConfig({ owners: { piano: 'x.md' } }), /owner sconosciuto/)
+    // `pack: null` invece e legittimo: una repo ospite puo avere un solo owner.
+    assert.equal(normalizeConfig({ owners: { pack: null } }).owners.pack, null)
+  }],
+
+  ['R8 — mss:export dichiara INCOMPLETO un motore a cui manca un modulo', () => {
+    // Senza questo controllo un modulo dimenticato si scopre in un altra repo, mesi dopo,
+    // con un ERR_MODULE_NOT_FOUND che non dice a chi chiedere.
+    const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-r8-export-'))
+    try {
+      mkdirSync(join(root, 'scripts/mss'), { recursive: true })
+      writeFileSync(join(root, 'scripts/mss/adapter.mjs'), readFileSync(join(REPO_ROOT, 'scripts/mss/adapter.mjs')))
+      const monco = findDanglingImports(root, ['scripts/mss/adapter.mjs'])
+      assert.ok(monco.length > 0, 'un adapter senza i suoi moduli e stato dichiarato completo')
+      assert.ok(monco.some((d) => d.specifier.includes('config.mjs')), `attesa config.mjs fra i mancanti: ${JSON.stringify(monco)}`)
+      // E il caso completo NON deve dare falsi allarmi: l'export reale di questa repo e chiuso.
+      const { files } = collectExportPaths(REPO_ROOT)
+      assert.deepEqual(findDanglingImports(REPO_ROOT, files), [])
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  }],
+
+  ['R2 — mss:doctor e ROSSO su un corpus vuoto: «zero record» non e un verde', async () => {
+    // Il difetto che il comando esiste per non avere. Un `mss:query` che dice «zero record, tutto
+    // ok» in una repo appena installata farebbe credere a un sistema funzionante che non guarda
+    // niente. Qui la repo e vuota per costruzione: il passo «corpus» DEVE essere rosso.
+    const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-r8-doctor-'))
+    try {
+      const steps = await runDoctor({ root })
+      const passo = (name) => steps.find((s) => s.name === name)
+      assert.ok(passo('corpus'), 'il passo «corpus» non esiste piu nella checklist')
+      assert.equal(passo('corpus').state.trim(), 'FAIL', `corpus non rosso su repo vuota: ${JSON.stringify(passo('corpus'))}`)
+      assert.match(passo('corpus').prova, /corpus vuoto NON e un verde/)
+      assert.equal(passo('cartelle dichiarate').state.trim(), 'FAIL', 'cartelle inesistenti dichiarate presenti')
+      assert.equal(passo('motore').state.trim(), 'FAIL', 'motore assente dichiarato completo')
+      // ...e la prova ATTIVA resta verde: il validator sa rifiutare anche qui. Se anche questa
+      // fosse rossa il test non distinguerebbe «repo vuota» da «doctor rotto».
+      assert.equal(passo('sa dire di no').state.trim(), 'ok', `prova attiva non superata: ${JSON.stringify(passo('sa dire di no'))}`)
+      assert.equal(passo('perimetro').state.trim(), 'ok')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  }],
+
+  ['R8 — validate:docs salta il materiale vendorizzato SOLO col marcatore, mai per caso', () => {
+    // Prova nelle due direzioni sull'albero reale: senza marcatore il link rotto e rosso (quindi
+    // il controllo funziona ancora), col marcatore la cartella copiata da un'altra repo non
+    // inquina il gate della repo ospite. Un solo verso non escluderebbe che salti tutto.
+    const probeDir = join(REPO_ROOT, 'docs/_mss-vendor-probe')
+    try {
+      mkdirSync(probeDir, { recursive: true })
+      writeFileSync(join(probeDir, 'VENDORIZZATO.md'), '# Sonda\n\nLink rotto: `docs/QUESTO_FILE_NON_ESISTE_MAI.md`\n', 'utf8')
+      const senza = runProcess(process.execPath, [REAL_CHECK_DOC_PATHS], REPO_ROOT)
+      assert.equal(senza.status, 1, `senza marcatore il path rotto doveva essere rosso: ${senza.output}`)
+      assert.match(senza.output, /QUESTO_FILE_NON_ESISTE_MAI/)
+      writeFileSync(join(probeDir, '.mss-vendored'), 'sonda\n', 'utf8')
+      const con = runProcess(process.execPath, [REAL_CHECK_DOC_PATHS], REPO_ROOT)
+      assert.equal(con.status, 0, `col marcatore il controllo doveva tornare verde: ${con.output}`)
+      assert.doesNotMatch(con.output, /QUESTO_FILE_NON_ESISTE_MAI/)
+    } finally {
+      rmSync(probeDir, { recursive: true, force: true })
+    }
+  }],
 ]
 
 const failures = []
-for (const [name, test] of tests) {
+const nonApplicabili = []
+let eseguiti = 0
+for (const entry of tests) {
+  const [name, second, third] = entry
+  const anchor = typeof second === 'string' ? second : null
+  const test = anchor ? third : second
+  const mancanti = anchor ? missingAnchors(anchor) : []
+  if (mancanti.length) {
+    nonApplicabili.push(name)
+    process.stdout.write(`n/a ${name}  — ancora «${anchor}» assente: ${mancanti.join(', ')}\n`)
+    continue
+  }
+  eseguiti++
   try {
-    test()
+    // Alcuni test sono async (mss:doctor lo e): senza await un rifiuto sfuggirebbe al catch e la
+    // suite direbbe verde su un test mai concluso.
+    const outcome = test()
+    if (outcome && typeof outcome.then === 'function') await outcome
     process.stdout.write(`OK ${name}\n`)
   } catch (error) {
     failures.push({ name, error })
@@ -934,9 +1090,13 @@ for (const [name, test] of tests) {
   }
 }
 
-if (failures.length) {
-  process.stderr.write(`\nMSS tools suite red: ${failures.length}/${tests.length} tests failed\n`)
+if (eseguiti === 0) {
+  process.stderr.write('\nMSS tools suite red: nessun test eseguito — una suite che non esegue niente non e verde\n')
+  process.exitCode = 1
+} else if (failures.length) {
+  process.stderr.write(`\nMSS tools suite red: ${failures.length}/${eseguiti} tests failed\n`)
   process.exitCode = 1
 } else {
-  process.stdout.write(`\nMSS tools suite green: ${tests.length} tests\n`)
+  const coda = nonApplicabili.length ? ` (+ ${nonApplicabili.length} non applicabili in questa repo)` : ''
+  process.stdout.write(`\nMSS tools suite green: ${eseguiti} tests${coda}\n`)
 }

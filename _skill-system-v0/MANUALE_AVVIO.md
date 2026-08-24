@@ -21,6 +21,51 @@ Hai due opzioni. Scegline una e sii coerente.
 
 ## I passi
 
+### Passo 0 — (Se vuoi anche il MOTORE) installa MetaSkillSystem
+
+> Il kit che stai leggendo è **markdown**: regole, template, vocabolario. Il **motore** è un'altra
+> cosa: gli attrezzi che *verificano* se le regole sono state rispettate (`validate:mss`,
+> `mss:query`, `mss:capsule`, `mss:status`). Il kit senza motore resta governance soft; il motore
+> senza kit non sa che cosa stai chiudendo. Se vuoi entrambi, comincia da qui.
+
+Il motore **non ha dipendenze esterne** — solo i moduli interni di Node. Quindi installarlo non è
+un problema di pacchetti: è una copia di cartella, e c'è un comando che la fa.
+
+Dalla repo che ha già il motore:
+
+```bash
+npm run mss:export -- --to /percorso/della/repo/nuova
+```
+
+Copia i moduli, i test, le fixture congelate, questo kit, e — se non ci sono già — scrive
+`mss.config.json` con i valori di default e un `package.json` con gli script. Al termine **verifica
+da solo** che ogni import dei file copiati risolva nella destinazione: se manca un pezzo esce rosso
+invece di consegnarti un motore monco.
+
+Poi, nella repo nuova, **rispondi a tre domande** (è l'intervista di avvio; le risposte vivono in
+`mss.config.json`):
+
+| Domanda | Chiave | Default |
+|---|---|---|
+| Dove vivono le sedute di lavoro? | `sessionsDir` | `docs/Sessioni di lavoro` |
+| Come si chiamano i file di chiusura? | `reportKinds` | `["Report", "Verbale"]` |
+| Qual è il file **owner** dello stato? (e ce n'è un secondo?) | `owners.plan` / `owners.pack` | `PLAN_V0.md` / il secondo pacchetto |
+
+```json
+{
+  "sessionsDir": "registro/sedute",
+  "reportKinds": ["Report", "Verbale"],
+  "owners": { "plan": "registro/PIANO.md", "pack": null }
+}
+```
+
+> `owners.pack: null` = «questa repo ha un solo owner di stato». È una risposta valida, non un buco.
+> Un `mss.config.json` con un refuso **non** ricade sui default in silenzio: esce rosso. Ricadere sui
+> default farebbe validare la cartella sbagliata dicendo verde.
+
+Poi **crea davvero** la cartella delle sedute e il file owner che hai appena dichiarato: il passo 10
+controlla che esistano, e un path promesso e assente lì è un errore, non un dettaglio.
+
 ### Passo 1 — Copia e rinomina
 
 1. Copia `_skill-system-v0/` nella casa scelta (es. dentro `docs/`).
@@ -136,6 +181,43 @@ sono obbligatorie, il path della guida di chiusura). Senza hook resta tutto vali
 
 Cancella tutti i file `_TEMPLATE_*` e `ESEMPIO_*` che non ti servono più come riferimento.
 Verifica che la root del progetto non contenga file di skill sparsi (`REGOLE_ORGANIZZATIVE.md`).
+
+### Passo 10 — (Se hai fatto il passo 0) la checklist di primo run
+
+Un'installazione non è «riuscita» perché i file sono al loro posto: è riuscita quando gli attrezzi
+**leggono, validano e sanno rifiutare**. Un comando solo:
+
+```bash
+npm run mss:doctor
+```
+
+Ti dice, passo per passo, che cosa **prova** e com'è andata:
+
+| Passo | Che cosa prova |
+|---|---|
+| config | il motore sa quali cartelle guardare (e da dove l'ha saputo) |
+| motore | tutti i pezzi dichiarati esistono |
+| perimetro | la regex dei file di seduta **accetta** il path giusto **e rifiuta** quello sbagliato |
+| sa dire di no | un report senza capsula viene **rifiutato** — se passasse, il motore sarebbe inerte |
+| cartelle dichiarate | ciò che `mss.config.json` promette esiste sul disco |
+| suite | `test:mss`, `test:mss:tools`, `validate:docs` |
+| owner | `mss:status` ricostruisce lo stato senza dire «non ricostruibile» |
+| corpus | `mss:query` legge **almeno un record reale** |
+
+> ⚠️ **Il primo `mss:doctor` è rosso, ed è giusto così.** Finché non hai chiuso una seduta, il
+> corpus è vuoto: «zero record, tutto ok» sarebbe un **falso verde** — sembrerebbe un sistema che
+> funziona e sarebbe una cartella di script che non guarda niente.
+>
+> **Quindi la prova che l'installazione è riuscita è una sola:** chiudi una seduta vera (report +
+> capsula, vedi `comunicazione/CHIUSURA_SESSIONE.md`), valida con
+> `npm run validate:mss -- --mode file --file "<il tuo report>" --kind report --require-capsule`,
+> e **rilancia `npm run mss:doctor`**. Quando esce verde, il motore ha dimostrato di leggere
+> qualcosa di reale — non di essere stato copiato.
+
+**Se un passo è rosso** ti dice il path atteso o il comando che ha fallito: non serve leggere il
+codice. I gruppi delle suite che dipendono da file esistenti solo nella repo di origine (report
+storici, guardie PROD del progetto madre) vengono dichiarati `n/a` con il nome dell'ancora mancante,
+mai fatti fallire e mai contati come verdi.
 
 ---
 

@@ -2,7 +2,8 @@
 
 > **Scopo:** far lavorare un agente sul MetaSkillSystem **senza rileggere l’intero corpus**.
 > **Non è owner di stato:** i conteggi mobili e i gate vivono nei comandi e in `PLAN_V0.md`.
-> **Pacchetto:** `SK-10` — fase **P2A** (discovery + manuale locale). **Non** chiude `R8` né `SK-10`.
+> **Pacchetto:** `SK-10` — **P2A** (discovery + manuale locale) e **P2B** (export + intervista +
+> checklist di primo run, §7). `R8` è **PROVATO** il 24-08-26, non `CHIUSO`: la chiusura è di Matteo.
 
 ---
 
@@ -76,15 +77,31 @@ Senza `--file` mostra usage ed esce `2` (intenzionale).
 
 **Non** è chiusura automatica della seduta: serve giudizio umano/agente in JSON. D2/D3 sono **chiusi** (sintassi canonica `ID=>comando`, ambigui rifiutati).
 
-⚠️ **`N3` APERTO — non registrare in `--check` un comando con un path che contiene spazi.** La cartella
-si chiama `docs/Sessioni di lavoro/`: le virgolette si perdono nel trasporto, il path si spezza e il
-controllo registra un **`fail` che parla della propria sintassi**, non del comando. Esegui quei
-comandi **a mano** e riportane l'esito nella prosa del report. Riproduzione in
-[`Report-controverifica-mc-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-mc-24-08-26.md) §9-bis.
+⚠️ **`N3` APERTO — ma NON è ciò che questo manuale ha detto fino al 24-08-26.** La diagnosi
+precedente («le virgolette si perdono nel trasporto») è **falsa ed è stata falsificata con misura
+diretta** in [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) §6.
+Le virgolette **arrivano intatte** a `process.argv`. La rottura è **a valle**, in `spawnCheckCommand`
+(`spawnSync(cmd, { shell: true })`):
+
+| Path dentro il comando registrato | Esito reale |
+|---|---|
+| **virgolette doppie** | **exit 0 — funziona, registralo pure** |
+| nessuna virgoletta | exit 1 — il `fail` falso |
+| **virgolette singole** | **exit 1 su Windows** — `shell: true` usa `cmd.exe`, che non le riconosce |
+
+**In pratica:** un path con spazi nei `controls[]` **si registra**, con virgolette **doppie**. La
+trappola sono le **virgolette singole**, perché sono l'abitudine POSIX. Il difetto residuo è che
+l'attrezzo non distingue «comando malformato» da «comando fallito» — **stessa radice di `N4`** — e non
+avvisa. Assegnato a `M-G`.
 
 ⚠️ **`N4` APERTO — `--check` deduce l'esito dall'exit code.** Un comando che non può fallire
 (`git status --short`) registra un `pass` che non prova nulla. Un `controls[]` pieno di comandi
 infallibili sembra una prova e non lo è: scegli comandi **capaci di fallire**.
+
+⚠️ **`mss:doctor`, passo `owner` — falso rosso APERTO (24-08-26).** Il passo cerca la stringa «non
+ricostruibile» in **tutto** l'output di `mss:status`, ma quella stringa la stampa la sezione **Git**
+di una repo senza commit. In una repo appena `git init`ata il passo è rosso e accusa l'owner, che è
+presente e leggibile. Prova: un commit, senza toccare l'owner, lo rende verde. Assegnato a `M-G`.
 
 ⚠️ **Due separatori diversi nello stesso attrezzo:** `--check` usa `=>`, `--verify` usa `|`.
 
@@ -93,6 +110,39 @@ infallibili sembra una prova e non lo è: scegli comandi **capaci di fallire**.
 **`N2` PROVATO 24-08-26 (`M-C`).** Un revisore registra una verifica con `--verify "<mss-rec-…>|<esito>|<evidence_ref>|<motivo>"` (ripetibile): l'attrezzo emette un `amendment` conforme al contratto §6, leggendo i valori precedenti **dal record bersaglio**. Bersaglio ed esito non si deducono; `self_report` è rifiutato (un secondo attore non può ridichiarare l'autodichiarazione altrui). Se `--role` nomina un revisore e la seduta non emette nessun amendment, l'attrezzo **avvisa** e non blocca. Il template resta con `verified_by: []`: è la verità per una seduta che non ha verificato nessuno. Non è `mss:review` (`SK-3`), che resta NON INIZIATO.
 
 ⚠️ **Limite aperto (`M-C`, lasciato a Matteo):** `--check` deduce l'esito dall'exit code, quindi un comando che non può fallire registra un `pass` che non prova nulla. Un `controls[]` di comandi infallibili sembra una prova e non lo è.
+
+### 2.4-bis `npm run mss:doctor` — checklist di primo run
+
+| | |
+|---|---|
+| **Legge** | `mss.config.json` (o i default), il manifesto di export, gli owner, il corpus; lancia le suite |
+| **Scrive** | nulla |
+| **Argomenti** | nessuno |
+| **Uso sicuro** | `npm run mss:doctor` — dopo un'installazione, o quando «non si capisce se funziona» |
+
+Esce `0` **solo** se tutti i passi sono verdi. Due passi sono prove **attive**, non osservazioni:
+«perimetro» verifica che la regex segua la config in entrambe le direzioni (accetta il path giusto
+**e** rifiuta quello sbagliato) e «sa dire di no» dà in pasto al validator un report che *deve*
+essere rifiutato — un motore inerte passerebbe qualunque conteggio e cadrebbe lì.
+
+⚠️ **Un corpus vuoto è un FAIL, non un pass.** «Zero record, tutto ok» è il falso verde che `R2`
+vieta ed è la stessa forma di `N4`. In una repo appena installata il primo `mss:doctor` è rosso per
+costruzione: diventa verde quando una seduta vera è stata chiusa. Test che lo asserisce:
+`npm run test:mss:tools` (cerca «corpus vuoto»).
+
+### 2.4-ter `npm run mss:export -- --to <dir>` — installa il motore altrove
+
+| | |
+|---|---|
+| **Legge** | il manifesto di export (`scripts/mss/*.mjs` scoperti dalla cartella + un elenco esplicito) |
+| **Scrive** | **solo nella destinazione**, e non sovrascrive file esistenti senza `--force` |
+| **Uso sicuro** | `npm run mss:export -- --help` · `npm run mss:export -- --to /percorso/repo/nuova` |
+
+Il motore non ha dipendenze npm esterne: l'export **non è packaging**, è una copia di cartella. Non
+c'è nessun bundle da costruire e nessun pacchetto da pubblicare. Dopo la copia il comando risolve
+ogni import relativo dei file copiati: se manca un modulo esce rosso invece di consegnare un motore
+monco. Scrive un `mss.config.json` di default se assente e un marcatore `.mss-vendored` nella
+cartella dei documenti copiati, perché i loro link parlano dell'albero di origine.
 
 ### 2.5 Suite e cancelli globali
 
@@ -195,17 +245,38 @@ Se un report e `mss:query` divergono, vince il corpus letto dal comando + spiega
 
 ---
 
-## 7. Bootstrap in altra repo (P2B — non provato)
+## 7. Bootstrap in altra repo (P2B — procedura provata 24-08-26)
 
-**P2A (questo manuale)** rende MSS **scopribile nella repo attuale**. **P2B** deve ancora:
+**P2A** rende MSS scopribile nella repo attuale. **P2B** è la procedura per portarlo altrove, ed è
+di tre comandi:
 
-1. **Esportare il motore** — `scripts/mss/**`, fixture/tests, hook condivisi, `package.json` scripts — in pacchetto riusabile (decisioni `D6`–`D10` congelate: niente move prematuro).
-2. **Intervista iniziale** — non automatizzata; raccoglie owner locali, branch, path sessioni, segreti/PROD.
-3. **Checklist primo run** — `npm run test:mss`, `test:mss:tools`, `validate:docs`, `mss:status`, `mss:query -- --verifica`.
-4. **Documentazione minima da copiare** — contratto capsula, plan template o owner equivalente, ingresso tipo `METASKILL_SYSTEM_SKILL.md`.
-5. **Non dichiarare** bootstrap riuscito finché un agente freddo **non** completa il checklist in repo pulita **senza** questo albero `docs/MetaSkillSystem` pre-esistente.
+```bash
+npm run mss:export -- --to /percorso/repo/nuova   # 1. copia (non è packaging: zero dipendenze npm)
+# 2. rispondi all'intervista in mss.config.json: sessionsDir · reportKinds · owners
+npm run mss:doctor                                 # 3. checklist di primo run, nella repo nuova
+```
 
-`R8` (bootstrap = procedura) resta **non soddisfatto** fino a P2B + prova registrata.
+I dettagli dell'intervista e della checklist stanno in
+[`../../_skill-system-v0/MANUALE_AVVIO.md`](../../_skill-system-v0/MANUALE_AVVIO.md) passo 0 e
+passo 10 — qui non si duplicano.
+
+**Che cosa è parametrico e che cosa no.** `mss.config.json` decide i path che l'**installazione**
+possiede: cartella delle sedute, prefissi dei file di chiusura, file owner (`pack` può essere
+`null`). **Default identici ai valori cablati prima**, quindi questa repo non configura nulla. Sono
+invece **interni al motore per scelta**: il layout delle fixture (`test:mss` le inchioda per sha256:
+una manopola che la suite non può seguire è peggio di nessuna manopola) e l'eccezione storica per
+sha256 in `parse.mjs`.
+
+**Che cosa non è portabile, e lo dichiara.** Alcuni gruppi delle suite non provano il motore:
+provano che *questa* repo ha certi file — i report storici inchiodati, le guardie PROD con i ref di
+questo progetto, gli hook cablati nell'IDE. In una repo ospite escono `n/a` con il nome dell'ancora
+mancante: mai saltati in silenzio, mai contati come verdi, e se non restasse in piedi nessun gruppo
+la suite esce rossa.
+
+**Stato di `R8`: `PROVATO`, non `CHIUSO`** (la chiusura è solo di Matteo). La prova è registrata nel
+report `M-D` del 24-08-26: repo vergine con `git init`, cartella delle sedute **rinominata** e owner
+**rinominato**, primo `mss:doctor` rosso sul corpus vuoto, seduta chiusa con report + capsula,
+`validate:mss` verde, secondo `mss:doctor` verde.
 
 ---
 
@@ -226,4 +297,4 @@ Se un report e `mss:query` divergono, vince il corpus letto dal comando + spiega
 - P1 D1/D4/D5: `docs/Sessioni di lavoro/23-08-26/Report-p1-d1-d4-d5-23-08-26.md`
 - P2A manuale: `docs/Sessioni di lavoro/23-08-26/Report-p2a-manuale-mss-23-08-26.md`
 
-**Prossimo dopo P2A:** P2B export/bootstrap riproducibile — vedi `PLAN_V0.md` §15.
+**Prossimo dopo P2B:** vedi `PLAN_V0.md` §15 — questo manuale non è owner di sequenza.

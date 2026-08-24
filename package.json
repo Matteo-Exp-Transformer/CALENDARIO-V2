@@ -24,6 +24,8 @@
     "mss:status": "node scripts/mss/status.mjs",
     "mss:query": "node scripts/mss/query.mjs",
     "mss:capsule": "node scripts/mss/capsule.mjs",
+    "mss:doctor": "node scripts/mss/doctor.mjs",
+    "mss:export": "node scripts/mss/export-kit.mjs",
     "test:mss": "node docs/MetaSkillSystem/tests/h1/run.mjs",
     "test:mss:tools": "node docs/MetaSkillSystem/tests/tools/run.mjs",
     "generate:mss-fixtures": "node docs/MetaSkillSystem/tests/h1/build-fixtures.mjs",

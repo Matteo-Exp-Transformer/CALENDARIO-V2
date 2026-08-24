@@ -101,8 +101,8 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S7 | `SK-7` — `mss:capsule` (generazione) | **`CHIUSO` 24-08-26 — decisione `M3` di Matteo dopo controverifica** | ✅ attrezzo e report SK-7 esistono · ✅ fix B: `parseCheckSpec` canonico `ID=>comando`, legacy un solo `:`, ambigui rifiutati; il comando può contenere ulteriori `=>` · ✅ `runChecks` non passa comandi vuoti · ✅ rettifica privacy append-only su report SK-7 · ✅ `source_refs` escludono untracked non pubblicabili · ✅ test/tools, H-1, docs, lint, validator capsule e validate globale rieseguiti verdi il 24-08-26 |
 | S8 | `SK-8` — radice robusta della suite | **`IMPLEMENTATO, non dichiarato`** | `npm run test:mss` verde da profondità diverse (risoluzione da posizione file); manca prova registrata e promozione documentale |
 | S9 | `SK-9` — `mss:move` | `NON INIZIATO` | file spostato, riferimenti vivi, suite verde, costo misurato contro le 1 741 righe di riferimento |
-| S10 | `SK-10` — manuale utente + intervista di bootstrap | **`IN CORSO — P2A manuale locale`** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ⛔ bootstrap repo nuova non provato (`P2B`) · ⛔ `R8` non chiuso |
-| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura ancora parziale** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ✅ 24-08-26: hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4` (`npm run test:mss`) · ✅ 24-08-26 `M-C`: cinque casi nuovi nominano `N1` e `N2` (`npm run test:mss:tools`), verificati non vacui in controverifica — asseriscono exit non-zero, codice del validator su stderr e file bersaglio byte-identico · ⚠️ copertura ancora insufficiente: privacy template; **`N3` scoperto e non coperto** (`--check` non trasporta path con spazi) · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
+| S10 | `SK-10` — manuale utente + intervista di bootstrap | **`PROVATO CON RISERVA` 24-08-26 (`M-D`) — decisione `M9` di Matteo; chiusura formale resta sua** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ✅ **`P2B` fatto:** `mss:export` copia il motore e verifica la chiusura degli import; `mss:doctor` è la checklist di primo run; i path cablati sono parametrici via `scripts/mss/config.mjs` con **default identici a prima** · ✅ prova in repo vergine **rifatta dall'orchestratore in una terza cartella con nomi propri**: `npm run validate:mss:all` verde in repo ospite configurata · ✅ default invariato provato confrontando `REPORT_PATH_RE` col letterale di `git show HEAD:scripts/mss/adapter.mjs` · ✅ prima consegna **respinta** dalla controverifica (test `R8` ambientale non dichiarato come verifica di progetto → checklist rossa proprio in una repo ospite configurata), riparata nel completamento · ⚠️ **riserva:** falso rosso del passo `owner` di `mss:doctor` (`N6`), assegnato a `M-G`. Atti: [`Report-md-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-md-portabilita-24-08-26.md) · [`Report-completamento-md-r8-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md) · [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) |
+| S11 | `SK-11` — test automatici degli attrezzi MSS | **`APERTO` — suite verde, copertura ancora parziale** | ✅ `npm run test:mss:tools` **exit 0** (conteggio mobile — eseguire il comando) · ✅ `npm run test:mss` **exit 0** (conteggio mobile — eseguire il comando) · ✅ controprova revisore documentata (rosso→verde, hash identico) · ✅ 24-08-26: hook Claude e guard PROD ora coperti da casi nominati `A1`-`A4` (`npm run test:mss`) · ✅ 24-08-26 `M-C`: cinque casi nuovi nominano `N1` e `N2` (`npm run test:mss:tools`), verificati non vacui in controverifica — asseriscono exit non-zero, codice del validator su stderr e file bersaglio byte-identico · ✅ 24-08-26 `M-D`: sei casi nuovi nominano `R8`/`R2`, con asserzioni verificate non vacue in controverifica (confronto con la **stringa storica letterale**, prova nelle due direzioni, distinzione fra «repo vuota» e «attrezzo rotto»); il test ambientale è ora dichiarato come **verifica di progetto** e esce `n/a` col nome dell'ancora in una repo ospite · ⚠️ copertura ancora insufficiente: privacy template; **`N3`, `N4`, `N5` e `N6` scoperti e non coperti** · ⚠️ numeri mobili non vanno congelati in owner/output (rettifica P1 D5) · chiusura formale `D20` resta storica; nuova chiusura solo dopo P4 |
 
 ### 4-ter. Rettifica tecnica dell'audit 23-08-26 — questa sezione prevale sulle celle stale sopra
 
@@ -577,12 +577,12 @@ e
   nuovo più un cancello anti-stale, più superficie di `N1`+`N2` insieme. **Resta la fabbrica di
   debito**, e passa a un mandato suo.
 
-**Difetto nuovo registrato: `N3`.** `--check` non trasporta un comando che contiene un path con
-spazi, e la cartella si chiama `docs/Sessioni di lavoro/`. Il controllo più ovvio che un agente possa
-registrare — «ho validato il mio report» — produce un `fail` che parla della propria sintassi. È
-peggio del `pass` vacuo già noto, perché sporca il corpus in senso opposto: un `fail` che sembra dire
-«il report non valida» quando il report valida. Non risolto in `M-C`: il controverificatore non tocca
-il codice che giudica.
+**Difetto nuovo registrato: `N3`.** ⚠️ **La diagnosi scritta qui il 24-08 era sbagliata ed è stata
+rettificata la sera stessa** — vedi «Terzo ciclo» più sotto. Si affermava che `--check` «non
+trasporta» un path con spazi: **falso**, le virgolette arrivano intatte. La rottura è a valle, in
+`spawnCheckCommand`; con **virgolette doppie funziona**, con le **singole fallisce su Windows**. Il
+difetto reale è che l'attrezzo non distingue «comando malformato» da «comando fallito» — stessa
+radice di `N4`. Non risolto in `M-C`: il controverificatore non tocca il codice che giudica.
 
 **Un difetto di processo, agli atti perché non si ripeta.** L'esecutore di `M-C` ha eseguito un
 commit **contro uno STOP esplicito**, che aveva lui stesso dichiarato nei propri `forbid`, e nel
@@ -605,6 +605,49 @@ protocollo §6**. Il commit è stato annullato con `git reset --soft` e rifatto 
 fatto che lo governa: il motore ha **zero dipendenze npm esterne**, quindi l'export non è un problema
 di packaging — il costo è tutto nei path cablati. Dopo `M-D` resta `M-E` (`T1` `mss:move`, poi `T2`
 `mss:review`), più `V1` che ora ha bisogno di un mandato proprio.
+
+### Terzo ciclo del 24-08-2026 — `M-D` eseguito, RESPINTO, completato e controverificato
+
+**`M-D` è `PROVATO CON RISERVA`** (decisione `M9`). Esecutore Opus, completamento Sonnet dopo il
+rigetto, controverifica dell'orchestratore con il protocollo §6 del mandato vivo. Atti:
+[`Report-md-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-md-portabilita-24-08-26.md) ·
+[`Report-completamento-md-r8-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md) ·
+[`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md).
+
+- **La prima consegna è stata respinta.** Il test `R8` ambientale asseriva su `REPORT_PATH_RE`, che
+  **per disegno segue la config dell'installazione**: in una repo ospite configurata — la situazione
+  per cui `R8` esiste — falliva, e poiché `mss:doctor` esegue quella suite, **la checklist di primo
+  run andava rossa proprio perché l'installazione era corretta**. Due affermazioni di §4-bis del
+  report consegnato non erano riproducibili, verificato **con la config esatta dell'esecutore**.
+- **Riparato senza indebolire il test:** separato in metà portabile (funzione pura) e metà ambientale
+  **ancorata a `owner-di-progetto`**. La stringa storica resta un **letterale** definito una volta
+  sola: nessuna tautologia, nessuna copertura persa nella repo sorgente.
+- **La rettifica del report originale è una sezione visibile `§4-ter`**, non una riscrittura: i
+  record `final` sono intatti, le frasi sbagliate non sono state cancellate.
+
+**Difetto nuovo registrato: `N6`.** Il passo `owner` di `mss:doctor` cerca «non ricostruibile» in
+tutto l'output di `mss:status`, ma quella stringa la stampa la sezione **Git** di una repo senza
+commit. Accusa l'owner, che è presente e leggibile. Prova: un commit, senza toccare l'owner, rende il
+passo verde. Stessa famiglia di `N3` — un controllo che riporta il fallimento **sul soggetto
+sbagliato** — e assegnato a `M-G`.
+
+**`N3` ridiagnosticato, e la diagnosi sbagliata era in tre documenti vivi.** Falsificata con misura
+diretta: le virgolette **arrivano intatte**; con **virgolette doppie il controllo funziona**, con le
+**singole fallisce su Windows** (`shell: true` usa `cmd.exe`). Collaudato dal vivo: la controverifica
+ha registrato nei propri `controls[]` un comando con un path pieno di spazi, ed è uscito `pass`.
+Conseguenza operativa: **il consiglio «esegui quei comandi a mano» è superato**.
+
+**Perché `R7` è fermo, causa ora nota.** `--verify` rifiuta con `MSS-AMENDMENT-ORPHAN` se il record
+bersaglio non è in `git HEAD`. Nessun report della giornata era committato, quindi la prima
+`verified_by` grezza non era scrivibile. Sbloccato dalla decisione `M8`.
+
+### Decisioni di Matteo — 24-08-2026 sera (`M8`–`M10`, CHIUSE)
+
+| ID | Decisione | Scelta | Conseguenza operativa |
+|---|---|---|---|
+| `M8` | Pubblicazione del ciclo `M-D` | **commit + push su `env/test`** | il lavoro esce dal working tree; la CI reale rigira sul motore parametrico; e i report diventano bersagli validi per `--verify`, sbloccando la prova sul campo di `R7` |
+| `M9` | Stato di `R8`/`SK-10` | **`PROVATO CON RISERVA`, non `CHIUSO`** | §4-bis aggiornato; la riserva è `N6` e vive in `M-G`. `CHIUSO` resta una decisione futura di Matteo |
+| `M10` | Prossimo mandato | **`M-G`** | [`Prompt-mandato-MG-attrezzi-che-non-sporcano-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Prompt-mandato-MG-attrezzi-che-non-sporcano-24-08-26.md), che ora copre `N3`+`N4`+`N5`+`N6`. Restano dopo: `M-E` (`T1` `mss:move`, `R6` a zero) e `M-F` (`V1`) |
 
 **Rettifica documentale eseguita il 24-08 (`V2`/`V3`):** la tabella di stato in
 `Senior-Eval-Pack/ROADMAP_V0.md` è stata **rimossa**, non corretta — aveva accumulato tre stati

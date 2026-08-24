@@ -47,6 +47,15 @@ const ALLOWLIST_PATH = join(__dirname, 'doc-path-check-allowlist.json')
 // i cui link legacy non vanno corretti.
 const EXCLUDED_DIRS = ['Sessioni di lavoro', '_lavoro', 'Archivio', 'Archives']
 
+// --- 0-ter. materiale VENDORIZZATO (R8, 24-08-26) --------------------------
+// Una cartella che contiene questo marcatore e' stata COPIATA da un'altra repo
+// (`npm run mss:export`). I suoi link parlano dell'albero di origine, non di
+// questo: controllarli qui produrrebbe un rosso permanente che non si puo'
+// chiudere senza importare mezzo progetto altrui — e la cura sarebbe gonfiare
+// l'allowlist, cioe' esattamente cio' che D21 vieta.
+// In QUESTA repo il marcatore non esiste: il comportamento non cambia di una riga.
+const VENDOR_MARKER = '.mss-vendored'
+
 // --- util path: tutto a forward-slash, relativo alla root del repo ----------
 const toPosix = (p) => p.split('\\').join('/')
 const relFromRepo = (absPath) => toPosix(absPath).slice(toPosix(REPO_ROOT).length + 1)
@@ -98,6 +107,7 @@ function collectDocs(dir) {
       const relToDocs = toPosix(abs).slice(toPosix(DOCS_ROOT).length + 1)
       const topSegment = relToDocs.split('/')[0]
       if (EXCLUDED_DIRS.includes(topSegment)) continue
+      if (existsSync(join(abs, VENDOR_MARKER))) continue
       out.push(...collectDocs(abs))
     } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
       out.push(abs)

@@ -14,9 +14,13 @@
 import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { CONFIG } from './config.mjs'
 import { isMainModule, repoRootFromModule } from './runtime.mjs'
 
 const ROOT = repoRootFromModule(import.meta.url)
+/** Gli owner sono un dato di INSTALLAZIONE (R8): il nome del piano cambia da repo a repo. */
+const OWNER_PLAN = CONFIG.owners.plan
+const OWNER_PACK = CONFIG.owners.pack
 
 const UNKNOWN = (owner) => `non ricostruibile — apri ${owner}`
 
@@ -160,7 +164,14 @@ const colors = (isTTY) => isTTY
   ? { r: '\x1b[31m', y: '\x1b[33m', g: '\x1b[32m', d: '\x1b[2m', b: '\x1b[1m', x: '\x1b[0m' }
   : { r: '', y: '', g: '', d: '', b: '', x: '' }
 
-export function buildStatusReport({ planText, packText, gitState, isTTY = false } = {}) {
+/**
+ * Il render e funzione dei suoi ARGOMENTI, non della config del processo: gli owner si passano.
+ * Prima li leggeva da `CONFIG` mentre riceveva i testi dal chiamante, e le due cose potevano
+ * contraddirsi (testo presente, owner dichiarato assente → sezione muta).
+ */
+export function buildStatusReport({
+  planText, packText, gitState, isTTY = false, planOwner = OWNER_PLAN, packOwner = OWNER_PACK,
+} = {}) {
 const C = colors(isTTY)
 const g = gitState || {
   branch: null, head: null, upstream: null, ahead: null, dirty: [], tags: [], stash: 0, worktrees: 0,
@@ -193,9 +204,9 @@ L.push(`  worktree        ${g.worktrees}`)
 L.push('')
 
 // SYS-1
-L.push(`${C.b}Cantiere SYS-1${C.x} ${C.d}owner: docs/MetaSkillSystem/PLAN_V0.md${C.x}`)
+L.push(`${C.b}Cantiere SYS-1${C.x} ${C.d}owner: ${planOwner}${C.x}`)
 if (!planText) {
-  L.push(`  ${C.r}${UNKNOWN('docs/MetaSkillSystem/PLAN_V0.md')}${C.x}`)
+  L.push(`  ${C.r}${UNKNOWN(planOwner)}${C.x}`)
 } else {
   const { wp, sk } = planState(planText)
   if (!wp.length) L.push(`  ${C.y}tabella §4 non interpretabile — apri l'owner${C.x}`)
@@ -212,10 +223,13 @@ if (!planText) {
 L.push('')
 
 // PACCHETTO
-L.push(`${C.b}Pacchetto Senior-Eval${C.x} ${C.d}owner: …/Senior-Eval-Pack/MASTERPLAN_V0.md${C.x}`)
-if (!packText) {
-  L.push(`  ${C.r}${UNKNOWN('docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md')}${C.x}`)
+if (!packText && !packOwner) {
+  // Nessun secondo owner dichiarato e nessun testo: non e un dato mancante, e un'assenza voluta.
+} else if (!packText) {
+  L.push(`${C.b}Secondo owner${C.x} ${C.d}owner: ${packOwner}${C.x}`)
+  L.push(`  ${C.r}${UNKNOWN(packOwner)}${C.x}`)
 } else {
+  L.push(`${C.b}Pacchetto Senior-Eval${C.x} ${C.d}owner: ${packOwner || 'non dichiarato in config'}${C.x}`)
   const sep = packState(packText)
   const attivi = sep.filter((s) => /IN_CORSO/i.test(s.stato))
   const bloccati = sep.filter((s) => /BLOCCATO/i.test(s.stato))
@@ -258,8 +272,10 @@ export function runStatus({ root = ROOT, isTTY = false } = {}) {
   return {
     exitCode: 0,
     stdout: buildStatusReport({
-      planText: read(join(root, 'docs/MetaSkillSystem/PLAN_V0.md')),
-      packText: read(join(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md')),
+      planText: read(join(root, OWNER_PLAN)),
+      packText: OWNER_PACK ? read(join(root, OWNER_PACK)) : null,
+      planOwner: OWNER_PLAN,
+      packOwner: OWNER_PACK,
       gitState: gitBlock(root),
       isTTY,
     }),
