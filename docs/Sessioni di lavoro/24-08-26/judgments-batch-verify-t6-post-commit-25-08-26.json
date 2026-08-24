@@ -1,0 +1,49 @@
+{
+  "persona": { "delta": "nessuno", "assertions": [] },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "T6-VERIFY@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Batch --verify post-commit sui record Sistema esecutori T6",
+        "decision_or_output_changed": "Registrazione append-only independently_verified con evidence_ref path completi dopo commit 6cbfc51",
+        "G": 1,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "batch-verify-t6-post-commit-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/24-08-26/Report-batch-verify-t6-post-commit-25-08-26.md",
+        "recipient": "owner MSS e Matteo",
+        "problem_or_job": "chiudere riserva T6-ORPHAN con verify append-only dopo visibilita canonica dei report",
+        "intended_use": "registrare independently_verified sui record Sistema esecutori T6",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/24-08-26/Report-revisione-indipendente-ciclo-t6-codex-24-08-26.md",
+        "authored_by": "cursor-composer-revisione-indipendente-t6",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "tre verify su record Sistema esecutori exit 0; SK4-ASSERT documentato se non risolvibile",
+        "verification_or_use_evidence": "amendment generati in capsula di questo report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [],
+        "relations_no_double_count": ["batch post-commit; non sostituisce controverifiche Codex/Cursor"],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
