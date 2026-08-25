@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "M12-T7-OPZB@PLAN_V0",
+        "trigger_event": "Remediation Opzione B su HEAD 50e6912: tre gap strutturali pre-commit del ciclo T7",
+        "decision_or_output_changed": "Parser PLAN riconosce cicli T\\d+ chiusi (ultimo T6, prossimo T8); hook kit Cursor allineato a v6 con parità N3; protocollo pilota 1.0.1 sulla coppia viva 0.1.1/freeze-2 con test di coerenza; D27/WP-1 restano NO-GO",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "fix-m12-t7-codex-opzione-b-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-fix-m12-t7-codex-opzione-b-25-08-26.md",
+        "recipient": "Matteo e controverifica M12 successiva",
+        "problem_or_job": "chiudere i tre gap F1–F3 prima del commit T7 senza riaprire H-1.3, D27, WP-1 o prodotto",
+        "intended_use": "evidenza remediation Opzione B + handoff a riesecuzione M12",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "messaggio chat Opzione B su baseline aggiornata 50e6912",
+        "authored_by": "cursor-composer-fix-m12-t7",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "F1 T6/T8 dimostrati; F2 parità kit/produzione su complete/missing-qr/no-capsule; F3 1.0.1+coppia viva+rifiuto legacy; gate verdi; D27/WP-1 NO-GO; no commit/push/pilota",
+        "verification_or_use_evidence": "npm run test:mss; npm run test:mss:tools; mss:status; validate:docs; validate:mss:views; git diff --check",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/plan-parse.mjs",
+          "_skill-system-v0/hooks/fine-sessione-nudge.mjs",
+          "docs/MetaSkillSystem/PROTOCOLLO_PRIMO_PILOTA_V0_1.md",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "docs/MetaSkillSystem/tests/h1/run.mjs"
+        ],
+        "relations_no_double_count": [
+          "Fix mirati Opzione B; non chiude T8 né autorizza WP-1"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
