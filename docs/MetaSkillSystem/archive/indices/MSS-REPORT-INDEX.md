@@ -735,6 +735,7 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 | Report-cruscotto-mdp-fase0-fase1-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-cruscotto-mdp-fase0-fase1-25-08-26.md` |
 | Report-d14-indice-report-t12-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-d14-indice-report-t12-25-08-26.md` |
 | Report-d14-viste-roadmap-handoff-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-d14-viste-roadmap-handoff-25-08-26.md` |
+| Report-d27-riapertura-wp1-ombra-t14-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-d27-riapertura-wp1-ombra-t14-25-08-26.md` |
 | Report-e2-a-no-verify-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-e2-a-no-verify-25-08-26.md` |
 | Report-e2-b-unstaged-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-e2-b-unstaged-25-08-26.md` |
 | Report-e2-c-cloud-fallback-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-e2-c-cloud-fallback-25-08-26.md` |

@@ -5,13 +5,12 @@
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
-> **Ultimo movimento:** **T13** — chiusi i tre residui post-T12: lavagna WP-1 non più in «Fatte»;
-> denylist N4 estesa (Q-B); `--verify-assertion-index` multi-Output (Q-C). **Pubblicato** su
-> `origin/env/test` (`c361f2c`; dopo anche `5f024d8` comunicazione). **T11**/**T12** già su origin
-> (`6f3edf5` / `db17841`). Prossimo gate: **`T14`** — riapertura verbatim `D27`/WP-1 **solo** con
-> sì Matteo in chat dedicata — **non** aprire `WP-1` senza frase. Audit P1 in
+> **Ultimo movimento:** **T14** — `D27` **riaperta** 25-08-26 (verbatim Matteo: «Riapro D27 e
+> autorizzo WP-1 in modalità ombra»). `WP-1` = **`IN PILOTA` — ombra**; cutover (`WP-6`) **vietato**;
+> vecchio skill system resta confronto operativo. Prima istanza = Admin **Servizio** (test/fix +
+> blindatura funzioni del cantiere). Atti T13 già su origin (`c361f2c`). Gate attivo: esecuzione
+> prima istanza + revisione fredda — **non** chiudere `WP-1` dopo una sola istanza. Audit P1 in
 > [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
-> `WP-1` **NO-GO** · `D27` chiusa finché Matteo non riapre in chat dedicata.
 >
 > **Rettifica 21-08-26 (append, non riscrittura):** l'intestazione precedente si era fermata al
 > movimento `H-1.1` del 10-08-26 e dichiarava «Checkpoint WP-0.1 locale `7632443`. Nessun commit/push»,
@@ -78,7 +77,7 @@ lavoro del masterplan.
 | 3 | `H-1` — validator + hook rapidi | **chiusura invalidata dalla revisione H-1.1** | resta storia del primo hardening |
 | 3.1 | `H-1.1` — integrità append-only e semantica | **`CHIUSO NEL DISEGNO` 10-08-26** | revisione completa esterna prima di WP-1 |
 | 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS` 25-08-26** — ✅ riserva `H13-POST-L01` CHIUSA 24-08-26 (`M13`); ✅ T7 `B-E2-CI` chiuso (`SK-5`); ✅ Opzione B **M-E2-A..D CHIUSE** (CI post-hoc no-verify; Report/Verbale unstaged; Cloud checklist+CI; light deny `MSS-LIGHT-NO-EVENT`); residui umani misurati in `COVERAGE_MATRIX_H1.json` (`--no-verify` Git, hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) — **non** stale «bypass intenzionali accettati» | P2 (`T11`) **CHIUSO**; **non** apre WP-1; G5 non PASS |
-| 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NO-GO** (`D27` chiusa; `H-1.3` PASS ≠ via libera pilota) | ricostruzione fredda senza perdita/invenzione |
+| 4 | `WP-1` — piloti reali in ombra | **`IN PILOTA` — ombra** (`D27` riaperta 25-08-26 verbatim; cutover vietato; prima istanza = Admin Servizio blindatura/test) | ricostruzione fredda senza perdita/invenzione; WP-1 non chiuso dopo una sola istanza |
 | 5 | `WP-2` — mining storico normalizzato | `BLOCCATO DA PRIMO PILOTA` | eventi citano fonti e schema/versione |
 | 6 | `WP-3` — kernel, manifest, pacchetti e chiavi | `NON INIZIATO` | autorità e precedenze formalizzate |
 | 7 | `WP-4` — preflight, registro Output e viste | `NON INIZIATO` | conflitti/owner/scope rilevati prima delle azioni coperte |
@@ -130,7 +129,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | `H-1` | Validator e hook rapidi (prima tranche) |
 | `H-1.1` | Integrità append-only e semantica eventi |
 | `H-1.3` | Amendment, staged e parità tra superfici |
-| `WP-1` | Piloti reali in modalità ombra |
+| `WP-1` | Piloti reali in modalità ombra (autorizzato; cutover vietato) |
 | `WP-2` | Mining storico normalizzato |
 | `WP-3` | Kernel, manifest e pacchetti |
 | `WP-4` | Preflight, registro Output e viste |
@@ -547,8 +546,9 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 
 ## 15. Prossimo task atomico
 
-`WP-1` resta **NON INIZIATO** e **NO-GO** finché Matteo non lo apre in chat dedicata.
-H-1.3 è **`PASS`** (25-08-26 Opzione B / T10). `SEP-G5` **non** è PASS.
+`WP-1` è **`IN PILOTA` — ombra** (`D27` riaperta 25-08-26). H-1.3 è **`PASS`** (25-08-26 Opzione B /
+T10). `SEP-G5` **non** è PASS. Cutover (`WP-6`) **vietato**. Prima istanza autorizzata: Admin
+**Servizio** — ripresa lavoro sospeso, fix e blindatura test (non calibrazione storica 09-08).
 
 **P0 (23-08-26) — CONCLUSO COME ASSENZA:** ricerca del fix `SK-7` dichiarato → **nessun** commit,
 branch, stash, PR o patch recuperabile; D2/D3 riprodotti su `46b8bca` (`parseCheckSpec` spezza al
@@ -1146,7 +1146,7 @@ Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decision
 | M-VERIFY-MULTI (ex Q-C) | **PROVATO** | `--verify-assertion-index`; test `T13 / Q-C`; MANUALE §2.4 |
 | Report + capsula T13 | — | [`Report-chiusura-residui-t13-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md) |
 
-**Verdetto:** **T13 completo**. Debiti Q-B/Q-C **chiusi dopo prove verdi**. Atti T13 **pubblicati** su origin (`c361f2c`). `WP-1` resta **NO-GO**. `D27` resta **chiusa**.
+**Verdetto:** **T13 completo**. Debiti Q-B/Q-C **chiusi dopo prove verdi**. Atti T13 **pubblicati** su origin (`c361f2c`). `WP-1` era ancora **NO-GO** a chiusura T13; `D27` ancora **chiusa** (riaperta in T14).
 
 **Prossima azione autorizzata: `T14`** (riapertura verbatim `D27` → prima istanza `WP-1` in ombra; nessuna costruzione scheletro residua; cutover vietato; lavoro `src/` solo se rientra nel task pilota scelto da Matteo).
 
@@ -1156,6 +1156,31 @@ Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decision
 
 - **Ciclo `T13`:** **CHIUSO** (lavagna + denylist Q-B + verify multi Q-C + prosa PLAN/cruscotto).
 - **Commit/push:** **eseguiti** — `c361f2c` su `origin/env/test` (25-08-26). Rettifica owner 25-08-26 sera: gate «eventuale commit T13» rimosso; repo pronta per decisione `D27`.
+
+### Ventunesimo ciclo del 25-08-2026 — `T14` — `D27` RIAPERTA (autorizzazione; istanza in corso)
+
+Chat dedicata Meta/deep. Passo 0: `env/test`, tree pulito, HEAD=`origin`=`be480a0`, T13 CHIUSO,
+prossimo T14, WP-1 era NO-GO.
+
+| Decisione | Scelta Matteo | Effetto |
+|---|---|---|
+| `D27` (D1) | verbatim «Riapro D27 e autorizzo WP-1 in modalità ombra» | WP-1 esce da NO-GO → **`IN PILOTA` — ombra** |
+| Lavoro reale (D2) | Admin **Servizio**: ripresa sospeso, test/fix, blindatura funzioni del cantiere | perimetro `src/` solo Servizio + test collegati |
+| Utile vs fallimento (D3) | default Prompt-d27 confermati | utile = ricostruzione fredda senza inventare; fallimento = inventare / chiudere WP-1 dopo una istanza / cutover |
+| Vecchio skill system (D4) | **sì** (default) | confronto operativo per tutto WP-1 |
+
+**Report decisione:**
+[`Report-d27-riapertura-wp1-ombra-t14-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-d27-riapertura-wp1-ombra-t14-25-08-26.md).
+
+**Verdetto parziale T14:** autorizzazione **fatta**; prima istanza **non** eseguita in questa chat Meta.
+Cutover **vietato**. `SEP-G5` non PASS. WP-1 **non** chiuso dopo una sola istanza (servono anche
+light · standard/deep · interrotta/compact · annotazione ritardata — §7).
+
+**Prossima azione autorizzata: `T14`** (prima istanza WP-1 ombra: blindatura Admin Servizio — test,
+fix e protezione funzioni del cantiere; revisione fredda dopo l'istanza; cutover vietato; `src/`
+solo nel perimetro Servizio scelto).
+
+**Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**.
 
 ### Decisioni di Matteo — 23-08-2026 (`D16`–`D24`, CHIUSE)
 
@@ -1178,7 +1203,7 @@ Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decision
 |---|---|---|---|
 | `D25` | Sequenza prossimo lavoro MSS | **`R1` → `SK-4` → `SK-8`** | un mandato per famiglia; `SK-10` differito; nessun altro pacchetto SK-* si apre in parallelo senza sì esplicito |
 | `D26` | Prodotto CalendarBackup | **in pausa** | nessun mandato su `src/`, rilascio `main`, merge env/test in questa fase MSS |
-| `D27` | Pilota (`WP-1`) | **solo dopo fondamenta** | obiettivo = MSS usabile a basso costo e basso tasso errore; `WP-1` resta NO-GO finché `D27` non viene riaperto in chat dedicata |
+| `D27` | Pilota (`WP-1`) | **riaperta in ombra 25-08-26** (era: solo dopo fondamenta) | verbatim Matteo; `WP-1` = `IN PILOTA` ombra; cutover vietato; prima istanza = Admin Servizio blindatura/test; vecchio skill system = confronto operativo |
 
 **Principio `D18`, da applicare a tutti i pacchetti `SK-*`:** un attrezzo che ha bisogno di una regola
 già scritta **la importa**. Se non è esportata, si esporta. Due implementazioni della stessa regola

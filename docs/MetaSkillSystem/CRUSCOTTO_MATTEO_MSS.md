@@ -18,20 +18,20 @@ Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decision
 - [`Report-chiusura-residui-t13-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md)
 
 ## Cosa devi fare tu
-R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T14` (riapertura verbatim `D27` → prima istanza `WP-1` in ombra; nessuna costruzione scheletro residua; cutover vietato; lavoro `src/` solo se rientra nel task pilota scelto da Matteo).
+R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T14` (prima istanza WP-1 ombra: blindatura Admin Servizio — test, fix e protezione funzioni del cantiere; revisione fredda dopo l'istanza; cutover vietato; `src/` solo nel perimetro Servizio scelto).
 
 ## Lavagna
 
-*Fatte 17 · Con riserva 0 · Da fare 6 · Non classificate 2*
+*Fatte 17 · Con riserva 0 · Da fare 5 · Non classificate 3*
 
 | Fatte | Con riserva | Da fare |
 |---|---|---|
-| `WP-0` Parametri macro e prima capsula del sistema | — | `WP-1` Piloti reali in modalità ombra |
-| `MP-0` Report osservazioni e masterplan unico | — | `WP-2` Mining storico normalizzato |
-| `WP-0.1` Hardening prima del primo pilota | — | `WP-3` Kernel, manifest e pacchetti |
-| `H-1.1` Integrità append-only e semantica eventi | — | `WP-4` Preflight, registro Output e viste |
-| `H-1.3` Amendment, staged e parità tra superfici | — | `WP-5` Nuova suite di validazione |
-| `SK-0` Sbloccare i cancelli globali (lint, test, validate) | — | `WP-6` Decisione di cutover |
+| `WP-0` Parametri macro e prima capsula del sistema | — | `WP-2` Mining storico normalizzato |
+| `MP-0` Report osservazioni e masterplan unico | — | `WP-3` Kernel, manifest e pacchetti |
+| `WP-0.1` Hardening prima del primo pilota | — | `WP-4` Preflight, registro Output e viste |
+| `H-1.1` Integrità append-only e semantica eventi | — | `WP-5` Nuova suite di validazione |
+| `H-1.3` Amendment, staged e parità tra superfici | — | `WP-6` Decisione di cutover |
+| `SK-0` Sbloccare i cancelli globali (lint, test, validate) | — | — |
 | `SK-1` Punto di ripristino con tag annotato | — | — |
 | `SK-2` Comando «dove siamo» in sola lettura | — | — |
 | `SK-3` Revisione seduta in sola lettura | — | — |
@@ -46,6 +46,7 @@ R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. I
 
 **Non classificate (M):**
 - `H-1` Validator e hook rapidi (prima tranche) — _chiusura invalidata dalla revisione H-1.1_
+- `WP-1` Piloti reali in modalità ombra (autorizzato; cutover vietato) — _IN PILOTA — ombra (D27 riaperta 25-08-26 verbatim; cutover vietato; prima istanza = Admin Servizio blindatura/test)_
 - `E-2` Enforcement superiore (ancora da decidere) — _buco intenzionale_
 
 ## Riserve aperte
@@ -54,5 +55,5 @@ R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. I
 
 ## Prossimo passo
 
-Completare `T14`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
+Completare `T14`. `WP-1` resta _IN PILOTA — ombra (D27 riaperta 25-08-26 verbatim; cutover vietato; prima istanza = Admin Servizio blindatura/test)_ (`H-1.3` PASS ≠ via libera pilota).
 <!-- mss:generated cruscotto-matteo fine -->

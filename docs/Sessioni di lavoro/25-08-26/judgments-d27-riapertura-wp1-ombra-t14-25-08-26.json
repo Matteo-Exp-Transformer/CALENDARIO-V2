@@ -1,0 +1,57 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "WP-1-SHADOW@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Aggiornamento owner PLAN §4/§15 + generate:mss:views dopo D27 verbatim",
+        "decision_or_output_changed": "WP-1 da NO-GO a IN PILOTA ombra; T14 attivo su prima istanza Servizio; cutover vietato; SEP-G5 non PASS",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-d27-riapertura-wp1-ombra-t14-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-d27-riapertura-wp1-ombra-t14-25-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "registrare riapertura D27 e autorizzazione WP-1 ombra con perimetro prima istanza",
+        "intended_use": "base per prompt esecutore Servizio e revisione fredda successiva",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt-d27-riapertura-wp1-ombra-25-08-26.md",
+        "authored_by": "agente-meta-t14-d27",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "D27 verbatim; PLAN WP-1 IN PILOTA; viste allineate; prompt esecutore consegnato; no commit senza sì; no cutover; no src/ fuori Servizio",
+        "verification_or_use_evidence": "npm run mss:status; generate:mss:views; git status",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/PLAN_V0.md",
+          "docs/Sessioni di lavoro/25-08-26/Prompt-d27-riapertura-wp1-ombra-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Autorizzazione e prompt; non esegue il pilota Servizio; non chiude WP-1"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
