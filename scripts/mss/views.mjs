@@ -6,8 +6,8 @@
  * non puo' cancellare contesto, istruzioni o collegamenti scritti per le persone.
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 import {
   classifyPlanState,
   parsePlanBoard,
@@ -24,19 +24,30 @@ export const VIEWS = Object.freeze([
   Object.freeze({
     id: 'cruscotto-matteo',
     owner: 'docs/MetaSkillSystem/PLAN_V0.md',
+    ownerKind: 'plan-file',
     target: 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md',
   }),
   Object.freeze({
     id: 'roadmap-senior',
     owner: 'docs/MetaSkillSystem/PLAN_V0.md',
+    ownerKind: 'plan-file',
     target: 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md',
   }),
   Object.freeze({
     id: 'handoff-senior',
     owner: 'docs/MetaSkillSystem/PLAN_V0.md',
+    ownerKind: 'plan-file',
     target: 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md',
   }),
+  Object.freeze({
+    id: 'report-index',
+    owner: 'docs/Sessioni di lavoro',
+    ownerKind: 'sessions-dir',
+    target: 'docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md',
+  }),
 ])
+
+const REPORT_FILE_RE = /^Report-.+\.md$/i
 
 const markers = (id) => ({
   start: `<!-- mss:generated ${id} inizio -->`,
@@ -92,6 +103,113 @@ function bannerLines(ownerHref) {
     '> Questa vista non possiede stato: se il controllo anti-stale e rosso, rigenerala; non correggerla a mano.',
     '',
   ]
+}
+
+function bannerLinesSessionsFs(ownerRel) {
+  return [
+    `> Generato da \`npm run generate:mss:views\` scansionando il filesystem owner [\`${ownerRel}\`](../../../Sessioni%20di%20lavoro/).`,
+    '> **Owner = filesystem** (non `PLAN_V0.md`): elenco di `Report-*.md` sotto le sessioni, senza metadati inventati.',
+    '> Se il controllo anti-stale e rosso, rigenerala; non correggerla a mano.',
+    '',
+  ]
+}
+
+/** Chiave ordinabile YY-MM-DD da cartella `DD-MM-YY`; cartelle non data restano in coda. */
+export function sessionFolderSortKey(name) {
+  const m = /^(\d{2})-(\d{2})-(\d{2})$/.exec(name)
+  if (!m) return `~${name}`
+  const [, dd, mm, yy] = m
+  return `20${yy}-${mm}-${dd}`
+}
+
+function isProbePathSegment(name) {
+  return name.startsWith('_')
+}
+
+/**
+ * Elenco ricorsivo di `Report-*.md` sotto sessionsDir. Salta segmenti `_…` (path-prova hook).
+ * Nessun filtro di dominio: l'owner e' il disco, non un catalogo curato.
+ */
+export function listSessionReportPaths(root, sessionsRel = 'docs/Sessioni di lavoro') {
+  const base = join(root, ...sessionsRel.split('/'))
+  const out = []
+  const walk = (dir) => {
+    let entries
+    try {
+      entries = readdirSync(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      if (isProbePathSegment(entry.name)) continue
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        walk(full)
+        continue
+      }
+      if (!entry.isFile() || !REPORT_FILE_RE.test(entry.name)) continue
+      out.push(relative(root, full).replace(/\\/g, '/'))
+    }
+  }
+  if (existsSync(base) && statSync(base).isDirectory()) walk(base)
+  out.sort((a, b) => {
+    const partsA = a.split('/')
+    const partsB = b.split('/')
+    const folderA = partsA[partsA.length - 2] || ''
+    const folderB = partsB[partsB.length - 2] || ''
+    const byFolder = sessionFolderSortKey(folderA).localeCompare(sessionFolderSortKey(folderB))
+    if (byFolder !== 0) return byFolder
+    return a.localeCompare(b)
+  })
+  return out
+}
+
+/**
+ * Indice report — vista derivata dal filesystem delle sessioni (Q-A = genera vista).
+ * @param {{ root: string, sessionsRel?: string }} opts
+ */
+export function deriveReportIndex({ root, sessionsRel = 'docs/Sessioni di lavoro' }) {
+  const paths = listSessionReportPaths(root, sessionsRel)
+  const lines = []
+  lines.push(...bannerLinesSessionsFs(sessionsRel))
+  lines.push('## Inventario `Report-*.md` (da disco)')
+  lines.push('')
+  lines.push(
+    'Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto). Path relativi alla root del repo.',
+  )
+  lines.push('')
+
+  const prefix = `${sessionsRel.replace(/\\/g, '/')}/`
+  /** @type {Map<string, string[]>} */
+  const byDay = new Map()
+  for (const rel of paths) {
+    const rest = rel.startsWith(prefix) ? rel.slice(prefix.length) : rel
+    const day = rest.split('/')[0] || '(senza-cartella)'
+    if (!byDay.has(day)) byDay.set(day, [])
+    byDay.get(day).push(rel)
+  }
+
+  const days = [...byDay.keys()].sort((a, b) => sessionFolderSortKey(a).localeCompare(sessionFolderSortKey(b)))
+  if (days.length === 0) {
+    lines.push('_Nessun `Report-*.md` trovato sotto l\'owner._')
+    lines.push('')
+    return lines.join('\n') + '\n'
+  }
+
+  for (const day of days) {
+    const dayPaths = byDay.get(day).slice().sort((a, b) => a.localeCompare(b))
+    lines.push(`## ${day}`)
+    lines.push('')
+    lines.push('| File | Path |')
+    lines.push('|---|---|')
+    for (const rel of dayPaths) {
+      const file = rel.split('/').pop()
+      lines.push(`| ${file} | \`${rel}\` |`)
+    }
+    lines.push('')
+  }
+
+  return lines.join('\n') + '\n'
 }
 
 function stopLines(board, next) {
@@ -351,10 +469,11 @@ export function replaceGeneratedBlock(text, id, body) {
   return `${text.slice(0, first)}${start}\n${body}${end}${text.slice(last + end.length)}`
 }
 
-export function renderView(view, ownerText) {
-  if (view.id === 'cruscotto-matteo') return deriveMatteoDashboard(ownerText)
-  if (view.id === 'roadmap-senior') return deriveSeniorRoadmap(ownerText)
-  if (view.id === 'handoff-senior') return deriveSeniorHandoff(ownerText)
+export function renderView(view, ownerInput) {
+  if (view.id === 'cruscotto-matteo') return deriveMatteoDashboard(ownerInput)
+  if (view.id === 'roadmap-senior') return deriveSeniorRoadmap(ownerInput)
+  if (view.id === 'handoff-senior') return deriveSeniorHandoff(ownerInput)
+  if (view.id === 'report-index') return deriveReportIndex(ownerInput)
   throw new Error(`MSS-VIEWS-UNKNOWN: vista non supportata «${view.id}».`)
 }
 
@@ -366,7 +485,18 @@ export function runViews({ root = ROOT, write = false } = {}) {
     if (!existsSync(ownerPath) || !existsSync(targetPath)) {
       throw new Error(`MSS-VIEWS-PATH: owner o vista assente per «${view.id}» (${view.owner} → ${view.target}).`)
     }
-    const expected = replaceGeneratedBlock(readFileSync(targetPath, 'utf8'), view.id, renderView(view, readFileSync(ownerPath, 'utf8')))
+    const ownerKind = view.ownerKind || 'plan-file'
+    if (ownerKind === 'sessions-dir' && !statSync(ownerPath).isDirectory()) {
+      throw new Error(`MSS-VIEWS-OWNER: «${view.id}» richiede una directory owner (${view.owner}).`)
+    }
+    if (ownerKind === 'plan-file' && !statSync(ownerPath).isFile()) {
+      throw new Error(`MSS-VIEWS-OWNER: «${view.id}» richiede un file owner (${view.owner}).`)
+    }
+    const body =
+      ownerKind === 'sessions-dir'
+        ? renderView(view, { root, sessionsRel: view.owner })
+        : renderView(view, readFileSync(ownerPath, 'utf8'))
+    const expected = replaceGeneratedBlock(readFileSync(targetPath, 'utf8'), view.id, body)
     const actual = readFileSync(targetPath, 'utf8')
     const stale = actual !== expected
     if (write && stale) writeFileSync(targetPath, expected, 'utf8')

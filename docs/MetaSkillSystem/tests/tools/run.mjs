@@ -52,6 +52,8 @@ import {
   deriveMatteoDashboard,
   deriveSeniorRoadmap,
   deriveSeniorHandoff,
+  deriveReportIndex,
+  listSessionReportPaths,
 } from '../../../../scripts/mss/views.mjs'
 import { PROTOCOL_ID, PROTOCOL_VERSION, REVISION_CURRENT, REVISION_LEGACY, SCHEMA_CURRENT, SCHEMA_LEGACY } from '../../../../scripts/mss/rules.mjs'
 import {
@@ -589,9 +591,9 @@ const tests = [
     const live = runStatus({ root: REPO_ROOT, isTTY: false })
     assert.equal(live.exitCode, 0, live.stderr)
     const liveGate = parsePlanGate(readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md'), 'utf8'))
-    assert.equal(liveGate.closedId, 'T11')
-    assert.equal(liveGate.next, 'T12')
-    assert.match(live.stdout, /ultimo chiuso\s+`T11`/)
+    assert.equal(liveGate.closedId, 'T12')
+    assert.equal(liveGate.next, 'T13')
+    assert.match(live.stdout, /ultimo chiuso\s+`T12`/)
     assert.match(live.stdout, new RegExp(`prossimo\\s+\`${liveGate.next}\``))
     assert.doesNotMatch(live.stdout, /prossimo\s+`M-E`/)
     assert.doesNotMatch(live.stdout, /32 gruppi/)
@@ -1441,7 +1443,7 @@ const tests = [
     // Il test usa una repo minima: non basta vedere che il file reale e allineato oggi. Serve
     // provare entrambe le direzioni che rendono il generatore un antidoto alle viste stale.
     // Prende l'ULTIMO ciclo chiuso: un ciclo precedente non deve mascherare lo stato corrente.
-    // Tutte le viste registrate (cruscotto + ROADMAP + HANDOFF) devono essere presenti nel fixture.
+    // Tutte le viste registrate (cruscotto + ROADMAP + HANDOFF + indice report) devono essere nel fixture.
     assert.ok(runViews({ root: REPO_ROOT }).every((view) => !view.stale), 'una vista reale non e allineata al suo owner')
     const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-v1-'))
     const planFixture = [
@@ -1465,6 +1467,8 @@ const tests = [
       writeRepoFile(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md', stubView('Cruscotto', 'cruscotto-matteo'))
       writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md', stubView('Roadmap', 'roadmap-senior'))
       writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md', stubView('Handoff', 'handoff-senior'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md', stubView('Indice', 'report-index'))
+      writeRepoFile(root, 'docs/Sessioni di lavoro/01-01-26/Report-fixture-v1-01-01-26.md', '# fixture\n')
       assert.ok(runViews({ root, write: true }).every((view) => view.stale), 'la prima generazione doveva rilevare il blocco diverso')
       const afterGen = readFileSync(join(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md'), 'utf8')
       assert.ok(runViews({ root }).every((view) => !view.stale), 'subito dopo la generazione il gate deve essere verde')
@@ -1525,6 +1529,8 @@ const tests = [
       writeRepoFile(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md', stub('cruscotto-matteo'))
       writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md', stub('roadmap-senior'))
       writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md', stub('handoff-senior'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md', stub('report-index'))
+      writeRepoFile(root, 'docs/Sessioni di lavoro/01-01-26/Report-fixture-d14-01-01-26.md', '# fixture\n')
 
       const first = runViews({ root, write: true })
       assert.ok(first.every((v) => v.stale))
@@ -1558,6 +1564,73 @@ const tests = [
       assert.match(fixed, /`T12`/)
       assert.match(fixedH, /`T12`/)
       assert.doesNotMatch(fixed, /T11-FAKE/)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  }],
+
+  ['D14 — indice report generato: owner/FS modificato = gate rosso, rigenerazione = verde', () => {
+    // Residuo D14 / Q-A: indice anti-stale con owner = filesystem sessioni, non PLAN.
+    const live = runViews({ root: REPO_ROOT })
+    assert.ok(live.some((v) => v.id === 'report-index' && !v.stale), 'indice report reale non allineato al disco')
+
+    const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-d14-idx-'))
+    const planFixture = [
+      '# Piano',
+      '### Ciclo — `T11` eseguito e **CHIUSO**',
+      '',
+      '**Prossima azione autorizzata: `T12`** (residui).',
+      '**Stato R1 attuale:** `R1` è **CHIUSO — fixture**',
+    ].join('\n')
+    const stub = (id) => [
+      `# Vista ${id}`,
+      'PREAMBOLO UMANO INDICE',
+      `<!-- mss:generated ${id} inizio -->`,
+      'stale',
+      `<!-- mss:generated ${id} fine -->`,
+      'CODA UMANA INDICE',
+    ].join('\n')
+    try {
+      writeRepoFile(root, 'docs/MetaSkillSystem/PLAN_V0.md', planFixture)
+      writeRepoFile(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md', stub('cruscotto-matteo'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md', stub('roadmap-senior'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md', stub('handoff-senior'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md', stub('report-index'))
+      writeRepoFile(root, 'docs/Sessioni di lavoro/10-08-26/Report-alpha-10-08-26.md', '# alpha\n')
+
+      const first = runViews({ root, write: true })
+      assert.ok(first.some((v) => v.id === 'report-index' && v.stale))
+      const index = readFileSync(join(root, 'docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md'), 'utf8')
+      assert.ok(runViews({ root }).every((v) => !v.stale))
+      assert.match(index, /PREAMBOLO UMANO INDICE/)
+      assert.match(index, /CODA UMANA INDICE/)
+      assert.match(index, /Owner = filesystem/)
+      assert.match(index, /Report-alpha-10-08-26\.md/)
+      assert.match(index, /docs\/Sessioni di lavoro\/10-08-26\/Report-alpha-10-08-26\.md/)
+      assert.doesNotMatch(index, /\b\d{2,4}\s+test\b/i)
+      assert.match(deriveReportIndex({ root, sessionsRel: 'docs/Sessioni di lavoro' }), /Inventario/)
+      assert.deepEqual(listSessionReportPaths(root), [
+        'docs/Sessioni di lavoro/10-08-26/Report-alpha-10-08-26.md',
+      ])
+
+      writeRepoFile(root, 'docs/Sessioni di lavoro/11-08-26/Report-beta-11-08-26.md', '# beta\n')
+      assert.ok(runViews({ root }).some((v) => v.id === 'report-index' && v.stale), 'nuovo Report su disco deve rendere l\'indice stale')
+
+      writeRepoFile(root, 'docs/Sessioni di lavoro/10-08-26/_prova-skip/Report-hidden-10-08-26.md', '# hidden\n')
+      runViews({ root, write: true })
+      const afterFs = readFileSync(join(root, 'docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md'), 'utf8')
+      assert.ok(runViews({ root }).every((v) => !v.stale))
+      assert.match(afterFs, /Report-beta-11-08-26\.md/)
+      assert.doesNotMatch(afterFs, /Report-hidden/)
+
+      writeFileSync(join(root, 'docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md'), afterFs.replaceAll('Report-beta', 'Report-BETA-FAKE'), 'utf8')
+      assert.ok(runViews({ root }).some((v) => v.id === 'report-index' && v.stale), 'correzione manuale indice non basta')
+
+      runViews({ root, write: true })
+      const fixed = readFileSync(join(root, 'docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md'), 'utf8')
+      assert.ok(runViews({ root }).every((v) => !v.stale))
+      assert.match(fixed, /Report-beta-11-08-26\.md/)
+      assert.doesNotMatch(fixed, /Report-BETA-FAKE/)
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
