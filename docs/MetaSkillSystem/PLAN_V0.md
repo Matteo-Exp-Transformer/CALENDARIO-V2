@@ -5,10 +5,10 @@
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
-> **Ultimo movimento:** **T12** — sync `PROMPT_ORCHESTRATOR`/`PROMPT_AVVIO` post-T11; D14 indice
-> report **PROVATO** (vista `report-index`); decisioni Q-A/Q-B/Q-C annotate. **T11** / P2 e
-> **T10** / `H-1.3` **PASS** restano chiusi. Prossimo: commit/pubblicazione solo con sì Matteo;
-> debiti espliciti Q-B/Q-C (denylist/multi-assertion) in handoff; **non** `WP-1`. Audit P1 in
+> **Ultimo movimento:** **T13** — chiusi i tre residui post-T12: lavagna WP-1 non più in «Fatte»;
+> denylist N4 estesa (Q-B); `--verify-assertion-index` multi-Output (Q-C). **T11**/**T12** già
+> pubblicati su `origin/env/test` (`6f3edf5` / `db17841`). Prossimo: P3/D27/WP-1 **solo** con
+> riapertura verbatim di Matteo — **non** `WP-1`. Audit P1 in
 > [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
 > `WP-1` **NO-GO** · `D27` chiusa finché Matteo non riapre in chat dedicata.
 >
@@ -1123,14 +1123,38 @@ Mandato: residui documentali post-P2 @ HEAD `6f3edf5`. Decisioni annotate:
 
 **Verdetto:** **T12 completo** (obbligatori + orchestratore). Opzionali saltati per decisione Matteo, non «chiusi a parole». `WP-1` resta **NO-GO**. `D27` resta **chiusa**.
 
-**Prossima azione autorizzata: `T13`** (commit/pubblicazione T11+P2+T12 solo con sì Matteo; debiti Q-B denylist / Q-C multi-assertion solo con sì; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO).
+**Prossima azione autorizzata: `T13`** (chiusura residui Q-B denylist / Q-C multi-assertion / bug lavagna WP-1; prosa commit T11+T12 già su origin — non ripetere; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO).
 
 **Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**.
 
 #### Chiusura formale ciclo `T12` — 25-08-2026
 
-- **Ciclo `T12`:** **CHIUSO** (M-SYNC-ORCH + M-D14-INDEX + orchestratore; Q-B/Q-C No → debiti handoff).
-- **Commit/push:** **non** eseguiti — solo con sì Matteo.
+- **Ciclo `T12`:** **CHIUSO** (M-SYNC-ORCH + M-D14-INDEX + orchestratore; Q-B/Q-C No → debiti handoff, **riaperti e chiusi in T13**).
+- **Commit/push T12:** **eseguiti** su `origin/env/test` @ `db17841` (già pubblicati prima di T13).
+
+### Ventesimo ciclo del 25-08-2026 — `T13` eseguito e **CHIUSO**.
+
+Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decisioni:
+[`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md)
+(Q-A resta genera vista · **Q-B/Q-C riaperti e chiusi in esecuzione** — chat T13 25-08-26).
+
+| Famiglia | Controverifica | Atti |
+|---|---|---|
+| Lavagna `classifyPlanState` | **PROVATO** (test nominato) | test `T13 / lavagna — WP-1…`; cruscotto senza WP-1 in Fatte |
+| M-N4-EXTEND (ex Q-B) | **PROVATO** | denylist estesa in `capsule.mjs`; test `T13 / Q-B`; MANUALE §2.4 |
+| M-VERIFY-MULTI (ex Q-C) | **PROVATO** | `--verify-assertion-index`; test `T13 / Q-C`; MANUALE §2.4 |
+| Report + capsula T13 | — | [`Report-chiusura-residui-t13-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md) |
+
+**Verdetto:** **T13 completo**. Debiti Q-B/Q-C **chiusi dopo prove verdi**. Commit T11+T12 **già** su origin — prosa aggiornata. `WP-1` resta **NO-GO**. `D27` resta **chiusa**.
+
+**Prossima azione autorizzata: `T14`** (P3/D27/WP-1 solo con riapertura verbatim di Matteo — WP-1 NO-GO; eventuale commit/pubblicazione atti T13 solo con sì Matteo).
+
+**Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**.
+
+#### Chiusura formale ciclo `T13` — 25-08-2026
+
+- **Ciclo `T13`:** **CHIUSO** (lavagna + denylist Q-B + verify multi Q-C + prosa PLAN/cruscotto).
+- **Commit/push:** **non** eseguiti in questa seduta — solo con sì Matteo.
 
 ### Decisioni di Matteo — 23-08-2026 (`D16`–`D24`, CHIUSE)
 

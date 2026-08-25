@@ -113,9 +113,12 @@ con l'exit code dichiarato.
 ✅ **`N4` PROVATO — `--check` confronta l'exit code atteso.** Senza `--check-expect` resta
 compatibile e attende `0`; con l'opzione registra sia exit reale sia atteso nel criterio. Un comando
 nella denylist chiusa di controlli non falsificabili (`git status --short`, `true`, `echo`,
-`mss:query -- --verifica`, …) con atteso `0` è **rifiutato** (exit `2`, nessuna scrittura): non
+`mss:query -- --verifica`, `pwd`/`whoami`, `git rev-parse HEAD`, `node`/`npm --version`,
+`exit 0`, `ls`/`dir`, …) con atteso `0` è **rifiutato** (exit `2`, nessuna scrittura): non
 diventa un `pass` vacuo. Con `--check-expect` ≠ `0` lo stesso comando resta ammissibile (prova a
-segno invertito). Test: `capsule: N4 / SK-7 — controllo infallibile deny` in `test:mss:tools`.
+segno invertito). Test: `capsule: N4 / SK-7 — controllo infallibile deny` e
+`capsule: T13 / Q-B — denylist N4 estesa` in `test:mss:tools`. La lista resta **chiusa** (non
+è un oracolo di infallibilità): solo pattern giustificati + test nominati.
 
 ✅ **`N6` PROVATO — `mss:doctor`, passo `owner`, legge solo gli owner.** Una repo appena
 `git init`ata può dichiarare Git non ricostruibile senza far diventare rosso il passo owner: il
@@ -128,7 +131,15 @@ davvero assente o non interpretabile.
 
 **`N2` PROVATO 24-08-26 (`M-C`).** Un revisore registra una verifica con `--verify "<mss-rec-…>|<esito>|<evidence_ref>|<motivo>"` (ripetibile): l'attrezzo emette un `amendment` conforme al contratto §6, leggendo i valori precedenti **dal record bersaglio**. Bersaglio ed esito non si deducono; `self_report` è rifiutato (un secondo attore non può ridichiarare l'autodichiarazione altrui). Se `--role` nomina un revisore e la seduta non emette nessun amendment, l'attrezzo **avvisa** e non blocca. Il template resta con `verified_by: []`: è la verità per una seduta che non ha verificato nessuno.
 
-✅ **`R-T7-06` / Opzione B PROVATO 25-08-26.** Se il bersaglio è asse **Output** con esattamente una `assertions[]`, lo stesso `--verify` rettifica anche `annotation.assertions[0].verification_status` e `verification_or_use_evidence` (oltre a `annotation.verification.*`). Non riscrive il record `final`; non allenta il validator; multi-assertion o assertions vuote → exit `2` con messaggio esplicito (indice > 0 resta amendment manuale). Test: `capsule: R-T7-06 / Opzione B — --verify patcha assertions[] Output` in `test:mss:tools`.
+✅ **`R-T7-06` / Opzione B PROVATO 25-08-26; multi-asserzione T13/Q-C PROVATO.** Se il bersaglio
+è asse **Output**, lo stesso `--verify` rettifica anche
+`annotation.assertions[i].verification_status` e `verification_or_use_evidence` (oltre a
+`annotation.verification.*`). Con **una** asserzione l'indice è `0` di default; con **2+** serve
+`--verify-assertion-index <n>` (0-based) **subito dopo** `--verify` — stesso pattern di
+`--check-expect`. Indice fuori range o multi senza indice → exit `2` con messaggio esplicito.
+Non riscrive il record `final`; non allenta il validator. Test:
+`capsule: R-T7-06 / Opzione B — --verify patcha assertions[] Output` e
+`capsule: T13 / Q-C — --verify-assertion-index patcha l'asserzione scelta` in `test:mss:tools`.
 
 ### 2.4-sexies `npm run mss:review` — che cosa ho toccato (sola lettura)
 

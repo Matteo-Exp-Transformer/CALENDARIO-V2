@@ -59,14 +59,12 @@ Non sostituisce:
 
 ### Istantanea attiva
 
-- **Ultimo ciclo chiuso:** `T12` **CHIUSO**
-- **Ciclo:** Diciannovesimo ciclo del 25-08-2026
+- **Ultimo ciclo chiuso:** `T13` **CHIUSO**
+- **Ciclo:** Ventesimo ciclo del 25-08-2026
 - **Atti del ciclo (puntatori owner):**
   - [`Decisioni-T12-QABC-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md)
-  - [`Report-sync-prompt-orchestrator-n4-t12-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-sync-prompt-orchestrator-n4-t12-25-08-26.md)
-  - [`Report-d14-indice-report-t12-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-d14-indice-report-t12-25-08-26.md)
-  - [`Report-orchestratore-t12-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t12-25-08-26.md)
-- **Prossima azione autorizzata:** `T13` (commit/pubblicazione T11+P2+T12 solo con sì Matteo; debiti Q-B denylist / Q-C multi-assertion solo con sì; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO)
+  - [`Report-chiusura-residui-t13-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md)
+- **Prossima azione autorizzata:** `T14` (P3/D27/WP-1 solo con riapertura verbatim di Matteo — WP-1 NO-GO; eventuale commit/pubblicazione atti T13 solo con sì Matteo)
 - **R1:** CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2
 - **`H-1.3` (M):** _PASS 25-08-26 — ✅ riserva H13-POST-L01 CHIUSA 24-08-26 (M13); ✅ T7 B-E2-CI chiuso (SK-5); ✅ Opzione B M-E2-A..D CHIUSE (CI post-hoc no-verify; Report/Verbale unstaged; Cloud checklist+CI; light deny MSS-LIGHT-NO-EVENT); residui umani misurati in COVERAGE_MATRIX_H1.json (--no-verify Git, hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) — non stale «bypass intenzionali accettati»_
 - **`WP-1` (M):** _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_
@@ -75,7 +73,7 @@ Non sostituisce:
 
 ### Prossimo task atomico
 
-Completare `T13`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
+Completare `T14`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
 
 ### STOP invariati (da M, non da memoria)
 

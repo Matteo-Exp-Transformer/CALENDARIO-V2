@@ -591,11 +591,13 @@ const tests = [
     const live = runStatus({ root: REPO_ROOT, isTTY: false })
     assert.equal(live.exitCode, 0, live.stderr)
     const liveGate = parsePlanGate(readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md'), 'utf8'))
-    assert.equal(liveGate.closedId, 'T12')
-    assert.equal(liveGate.next, 'T13')
-    assert.match(live.stdout, /ultimo chiuso\s+`T12`/)
+    assert.equal(liveGate.closedId, 'T13')
+    assert.equal(liveGate.next, 'T14')
+    assert.match(live.stdout, /ultimo chiuso\s+`T13`/)
     assert.match(live.stdout, new RegExp(`prossimo\\s+\`${liveGate.next}\``))
     assert.doesNotMatch(live.stdout, /prossimo\s+`M-E`/)
+    assert.doesNotMatch(live.stdout, /commit\/pubblicazione T11/)
+    assert.doesNotMatch(live.stdout, /debiti Q-B/)
     assert.doesNotMatch(live.stdout, /32 gruppi/)
     assert.doesNotMatch(live.stdout, /9\/9/)
   }],
@@ -738,7 +740,8 @@ const tests = [
     const [npmCheck, failCheck, quotedCheck] = runChecks([
       // `npm` era il caso rotto su Windows: `npm.cmd` senza shell esce EINVAL,
       // `status` torna null e il controllo finiva in capsula come `fail` pur passando.
-      { control_id: 'CTRL-NPM', command: 'npm --version' },
+      // Non usare `npm --version`: è in denylist N4/T13 (falso verde).
+      { control_id: 'CTRL-NPM', command: 'npm config get prefix' },
       // Il verso opposto, ugualmente falso prima del fix: un comando che fallisce
       // davvero veniva registrato `pass` perché le virgolette sparivano nello split.
       { control_id: 'CTRL-FAIL', command: 'node -e "process.exit(3)"' },
@@ -761,7 +764,7 @@ const tests = [
   }],
   ['capsule: controls — comando non partito e non_noto, mai fail', () => {
     const [check] = runChecks(
-      [{ control_id: 'CTRL-NORUN', command: 'node --version' }],
+      [{ control_id: 'CTRL-NORUN', command: 'node -e "process.exit(0)"' }],
       { cwd: join(REPO_ROOT, 'cartella-che-non-esiste-mss-tools') },
     )
 
@@ -924,6 +927,41 @@ const tests = [
     )
     assert.equal(inverted.esito, 'fail', inverted.esecutore)
     assert.match(inverted.criterio, /atteso exit 1/)
+  }],
+  ['capsule: T13 / Q-B — denylist N4 estesa (pwd, whoami, rev-parse, --version, exit 0)', () => {
+    const cases = [
+      ['pwd', /pwd/],
+      ['whoami', /whoami/],
+      ['hostname', /hostname/],
+      ['git rev-parse HEAD', /rev-parse/],
+      ['git rev-parse --abbrev-ref HEAD', /rev-parse/],
+      ['git branch --show-current', /branch/],
+      ['node --version', /node\/npm/],
+      ['npm -v', /node\/npm/],
+      ['exit 0', /exit 0/],
+      ['ls', /ls\/dir/],
+      ['dir /b', /ls\/dir/],
+      ['date', /date/],
+    ]
+    for (const [cmd, why] of cases) {
+      assert.match(nonFalsifiableCheckReason(cmd), why, cmd)
+      assert.equal(nonFalsifiableCheckReason(cmd, 1), null, `${cmd} con check-expect ≠ 0 resta ok`)
+    }
+    assert.equal(nonFalsifiableCheckReason('npm run test:mss:tools'), null)
+    assert.throws(
+      () => runChecks([{ control_id: 'T13-PWD', command: 'pwd' }], { cwd: REPO_ROOT }),
+      (error) => error?.code === 'CHECK_NON_FALSIFIABLE',
+    )
+    const denied = runCapsule([
+      process.argv[0],
+      'capsule.mjs',
+      '--judgments', JUDGMENTS_MINIMAL,
+      '--model', 'fixture-model',
+      '--check', 'T13-VACUO=>whoami',
+    ], { root: REPO_ROOT, env: { TERM_PROGRAM: 'cursor' } })
+    assert.equal(denied.exitCode, 2, denied.stderr)
+    assert.match(denied.stderr, /non falsificabile \(N4\)/)
+    assert.equal(denied.stdout, '')
   }],
   ['capsule: parseCheckSpec — D3 storico ambiguo rifiutato', () => {
     assert.throws(
@@ -1214,7 +1252,7 @@ const tests = [
       'persona/sistema non devono ricevere patch assertions[]',
     )
 
-    // Guardrail: multi-assertion Output → stop esplicito (no half-broken index).
+    // Guardrail: multi-assertion Output senza indice → stop esplicito (T13: usare --verify-assertion-index).
     const multi = structuredClone(targetO)
     multi.annotation.assertions = [
       multi.annotation.assertions[0],
@@ -1223,11 +1261,11 @@ const tests = [
     assert.throws(
       () => buildCapsuleBundle(goldenCapsuleOptions({
         verifications: [parseVerifySpec(
-          `${IDS.recO}|independently_verified|source-contract|multi non supportato`,
+          `${IDS.recO}|independently_verified|source-contract|multi senza indice`,
         )],
         lookupRecord: () => ({ record: multi, path: FIXED_PATH }),
       })),
-      /esattamente una asserzione/,
+      /verify-assertion-index/,
     )
 
     // Guardrail: Output senza assertions → stop.
@@ -1241,6 +1279,69 @@ const tests = [
         lookupRecord: () => ({ record: empty, path: FIXED_PATH }),
       })),
       /senza assertions/,
+    )
+  }],
+  ['capsule: T13 / Q-C — --verify-assertion-index patcha l\'asserzione scelta (multi Output)', () => {
+    const bersaglio = validBundle()
+    const targetO = structuredClone(bersaglio.find((r) => r.record_id === IDS.recO))
+    targetO.annotation.assertions = [
+      { ...targetO.annotation.assertions[0], output_id: 'first', verification_status: 'unverified' },
+      {
+        ...targetO.annotation.assertions[0],
+        output_id: 'second',
+        verification_status: 'unverified',
+        verification_or_use_evidence: 'evidence-second',
+      },
+    ]
+    const args = parseCapsuleArgs([
+      process.argv[0], 'capsule.mjs',
+      '--verify', `${IDS.recO}|independently_verified|source-contract|verifica seconda asserzione`,
+      '--verify-assertion-index', '1',
+    ])
+    assert.equal(args.verify[0].assertionIndex, 1)
+    assert.throws(
+      () => parseCapsuleArgs([
+        process.argv[0], 'capsule.mjs', '--verify-assertion-index', '0',
+      ]),
+      /immediatamente precedente/,
+    )
+
+    const records = buildCapsuleBundle(goldenCapsuleOptions({
+      role: 'independent_reviewer_T13QC',
+      verifications: args.verify,
+      lookupRecord: (id) => (id === IDS.recO ? { record: targetO, path: FIXED_PATH } : null),
+      amendmentIds: [{
+        record: '0198b000-0001-7000-8000-0000000000d1',
+        amendment: '0198b000-0001-7000-8000-0000000000d2',
+      }],
+    }))
+    const amd = records.find((r) => r.record_type === 'amendment')
+    assert.ok(amd)
+    const statusAssert = amd.amendment.changes.find(
+      (c) => c.field_path === 'annotation.assertions[1].verification_status',
+    )
+    const evidenceAssert = amd.amendment.changes.find(
+      (c) => c.field_path === 'annotation.assertions[1].verification_or_use_evidence',
+    )
+    assert.ok(statusAssert, 'deve patchare assertions[1], non solo [0]')
+    assert.equal(statusAssert.corrected_value, 'independently_verified')
+    assert.equal(evidenceAssert.corrected_value, 'source-contract')
+    assert.equal(
+      amd.amendment.changes.some((c) => c.field_path === 'annotation.assertions[0].verification_status'),
+      false,
+      'non deve toccare assertions[0] quando l\'indice è 1',
+    )
+    assert.equal(targetO.annotation.assertions[1].verification_status, 'unverified', 'final non riscritto')
+
+    assert.throws(
+      () => buildCapsuleBundle(goldenCapsuleOptions({
+        verifications: [Object.assign(
+          parseVerifySpec(`${IDS.recO}|independently_verified|source-contract|indice fuori`),
+          { assertionIndex: 9 },
+        )],
+        lookupRecord: () => ({ record: targetO, path: FIXED_PATH }),
+      })),
+      /fuori range/,
     )
   }],
   ['capsule: N5 — --verify e validator rifiutano un verificatore con stato incoerente', () => {
@@ -1634,6 +1735,29 @@ const tests = [
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
+  }],
+
+  ['T13 / lavagna — WP-1 NON INIZIATO con PASS in prosa non è Fatte', () => {
+    // Bug: classifyPlanState vedeva «PASS» nella parentetica di WP-1 e lo metteva in Fatte.
+    const wp1Live =
+      'NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)'
+    assert.equal(classifyPlanState(wp1Live), 'da-fare')
+    assert.equal(classifyPlanState('NON INIZIATO'), 'da-fare')
+    assert.equal(classifyPlanState('BLOCCATO DA PRIMO PILOTA'), 'da-fare')
+    assert.equal(
+      classifyPlanState('PASS 25-08-26 — ✅ riserva chiusa'),
+      'fatta',
+      'PASS vero (H-1.3) resta fatta',
+    )
+    const planText = readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md'), 'utf8')
+    const board = parsePlanBoard(planText)
+    const wp1 = board.find((r) => r.id === 'WP-1')
+    assert.ok(wp1, 'WP-1 deve esistere sulla lavagna owner')
+    assert.equal(classifyPlanState(wp1.stato), 'da-fare')
+    const md = deriveMatteoDashboard(planText)
+    // Colonna Fatte: `| `WP-1` … | — | … |` non deve comparire
+    assert.doesNotMatch(md, /^\| `WP-1` [^|]*\| — \|/m)
+    assert.match(md, /^\| [^|]*\| [^|]*\| `WP-1` /m)
   }],
 
   ['V2 — lavagna: §4-ter prevale, glossa dichiarata, glossa orfana = rosso', () => {

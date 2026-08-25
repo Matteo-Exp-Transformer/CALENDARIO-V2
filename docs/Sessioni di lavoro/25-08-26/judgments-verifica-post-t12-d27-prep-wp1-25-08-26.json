@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "D27-PREP@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Verifica post-T12: mss:status + owner PLAN; riproduzione bug lavagna WP-1",
+        "decision_or_output_changed": "Fondamenta confermate; D27 resta chiusa (no verbatim); WP-1 NO-GO; bug classifyPlanState WP-1→fatta osservato; contratto WP-1 solo progettato",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-verifica-post-t12-d27-prep-wp1-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-verifica-post-t12-d27-prep-wp1-25-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "verificare fondazioni post-T12 e preparare decisione D27/WP-1 senza aprirle",
+        "intended_use": "base per Sì/No verbatim D27 e scelta lavoro app del primo pilota ombra",
+        "conceived_by": "Matteo",
+        "decided_by": "non_osservato:D27 non ancora riaperta",
+        "directed_by": "Mandato Meta deep post-T12 (chat)",
+        "authored_by": "agente-meta-verifica-t12-d27",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "T12 CHIUSO da owner; D27 non aperta senza verbatim; contratto WP-1 progettato; no prompt esecutore senza lavoro app; no commit/push; no src/",
+        "verification_or_use_evidence": "npm run mss:status; git HEAD=origin=db17841; classifyPlanState→fatta; report §2–§6",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/PLAN_V0.md",
+          "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-orchestratore-t12-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Verifica e contratto WP-1; non apre D27; non esegue pilota; non tocca src/"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

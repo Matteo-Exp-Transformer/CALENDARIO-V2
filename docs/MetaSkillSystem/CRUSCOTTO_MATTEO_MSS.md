@@ -9,32 +9,29 @@
 
 ## L'ultimo ciclo chiuso
 
-**Diciannovesimo ciclo del 25-08-2026** — `T12` eseguito e **CHIUSO**.
+**Ventesimo ciclo del 25-08-2026** — `T13` eseguito e **CHIUSO**.
 
-Mandato: residui documentali post-P2 @ HEAD `6f3edf5`. Decisioni annotate: [`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md) (Q-A genera vista · Q-B No · Q-C No).
+Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decisioni: [`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md) (Q-A resta genera vista · **Q-B/Q-C riaperti e chiusi in esecuzione** — chat T13 25-08-26).
 
 **Atti:**
 - [`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md)
-- [`Report-sync-prompt-orchestrator-n4-t12-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-sync-prompt-orchestrator-n4-t12-25-08-26.md)
-- [`Report-d14-indice-report-t12-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-d14-indice-report-t12-25-08-26.md)
-- [`Report-orchestratore-t12-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t12-25-08-26.md)
+- [`Report-chiusura-residui-t13-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md)
 
 ## Cosa devi fare tu
-R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T13` (commit/pubblicazione T11+P2+T12 solo con sì Matteo; debiti Q-B denylist / Q-C multi-assertion solo con sì; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO).
+R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T14` (P3/D27/WP-1 solo con riapertura verbatim di Matteo — WP-1 NO-GO; eventuale commit/pubblicazione atti T13 solo con sì Matteo).
 
 ## Lavagna
 
-*Fatte 18 · Con riserva 0 · Da fare 5 · Non classificate 2*
+*Fatte 17 · Con riserva 0 · Da fare 6 · Non classificate 2*
 
 | Fatte | Con riserva | Da fare |
 |---|---|---|
-| `WP-0` Parametri macro e prima capsula del sistema | — | `WP-2` Mining storico normalizzato |
-| `MP-0` Report osservazioni e masterplan unico | — | `WP-3` Kernel, manifest e pacchetti |
-| `WP-0.1` Hardening prima del primo pilota | — | `WP-4` Preflight, registro Output e viste |
-| `H-1.1` Integrità append-only e semantica eventi | — | `WP-5` Nuova suite di validazione |
-| `H-1.3` Amendment, staged e parità tra superfici | — | `WP-6` Decisione di cutover |
-| `WP-1` Piloti reali in modalità ombra | — | — |
-| `SK-0` Sbloccare i cancelli globali (lint, test, validate) | — | — |
+| `WP-0` Parametri macro e prima capsula del sistema | — | `WP-1` Piloti reali in modalità ombra |
+| `MP-0` Report osservazioni e masterplan unico | — | `WP-2` Mining storico normalizzato |
+| `WP-0.1` Hardening prima del primo pilota | — | `WP-3` Kernel, manifest e pacchetti |
+| `H-1.1` Integrità append-only e semantica eventi | — | `WP-4` Preflight, registro Output e viste |
+| `H-1.3` Amendment, staged e parità tra superfici | — | `WP-5` Nuova suite di validazione |
+| `SK-0` Sbloccare i cancelli globali (lint, test, validate) | — | `WP-6` Decisione di cutover |
 | `SK-1` Punto di ripristino con tag annotato | — | — |
 | `SK-2` Comando «dove siamo» in sola lettura | — | — |
 | `SK-3` Revisione seduta in sola lettura | — | — |
@@ -57,5 +54,5 @@ R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. I
 
 ## Prossimo passo
 
-Completare `T13`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
+Completare `T14`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
 <!-- mss:generated cruscotto-matteo fine -->

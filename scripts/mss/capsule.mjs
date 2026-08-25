@@ -296,6 +296,7 @@ function quoteWarning(command) {
  * Residuo N4 (dopo `--check-expect` di M-G): comandi noti che con expectedExit 0
  * registrerebbero un `pass` senza prova. Lista chiusa — non è un oracolo di
  * infallibilità; i controlli a segno invertito (`--check-expect` ≠ 0) restano ammessi.
+ * T13 / Q-B: estesa con pattern chiaramente non-prova usati come falsi verdi.
  */
 const NON_FALSIFIABLE_CHECK_PATTERNS = [
   {
@@ -317,6 +318,42 @@ const NON_FALSIFIABLE_CHECK_PATTERNS = [
   {
     re: /^(?:npm(?:\.cmd)?\s+run\s+)?mss:query(?:\s+--)?\s+--verifica\b/i,
     why: 'mss:query --verifica esce 0 anche a conteggio zero (falso verde N4)',
+  },
+  {
+    re: /^(?:pwd|cd)(?:\s+\.)?$/i,
+    why: 'pwd/cd non misura un gate',
+  },
+  {
+    re: /^whoami$/i,
+    why: 'whoami esce 0 senza prova di gate',
+  },
+  {
+    re: /^hostname$/i,
+    why: 'hostname non misura un gate',
+  },
+  {
+    re: /^git(?:\.exe)?\s+rev-parse(?:\s+(?:HEAD|--short(?:\s+HEAD)?|--abbrev-ref\s+HEAD))+$/i,
+    why: 'git rev-parse informativo esce 0 in ogni repo valida (falso verde)',
+  },
+  {
+    re: /^git(?:\.exe)?\s+branch\s+--show-current$/i,
+    why: 'git branch --show-current non misura un gate',
+  },
+  {
+    re: /^(?:node(?:\.exe)?|npm(?:\.cmd)?)\s+(?:--version|-v)$/i,
+    why: 'node/npm --version non misura un gate del lavoro',
+  },
+  {
+    re: /^(?:exit\s+0|cmd(?:\.exe)?\s+\/c\s+exit(?:\s+\/b)?\s*0)$/i,
+    why: 'exit 0 è un pass forzato',
+  },
+  {
+    re: /^(?:ls(?:\s+-[aAhlrt]+)*|dir(?:\s+\/[bws]+)*)\s*$/i,
+    why: 'ls/dir in sola lettura non misura un gate',
+  },
+  {
+    re: /^(?:date|Get-Date)$/i,
+    why: 'date/Get-Date non misura un gate',
   },
 ]
 
@@ -945,9 +982,11 @@ export function buildCapsuleBundle({
  * e ricopiarli a mano e' come si sbaglia `previous_value_or_hash`.
  *
  * `R-T7-06` / Opzione B — asse Output: oltre a `annotation.verification.*`, l'amendment
- * rettifica anche `assertions[0].verification_status` e
- * `assertions[0].verification_or_use_evidence` (stesso esito/prova di `--verify`). Non riscrive
- * il record `final`; non tocca assi persona/sistema; index > 0 resta amendment manuale.
+ * rettifica anche `assertions[i].verification_status` e
+ * `assertions[i].verification_or_use_evidence` (stesso esito/prova di `--verify`).
+ * Indice: default `0` se c'è una sola asserzione; con 2+ serve
+ * `--verify-assertion-index <n>` subito dopo `--verify` (T13 / Q-C).
+ * Non riscrive il record `final`; non tocca assi persona/sistema.
  *
  * @param lookup  funzione (record_id) -> { record, path } | null. Iniettabile per i test.
  */
@@ -1018,7 +1057,7 @@ export function buildVerificationAmendments({
       },
     ]
 
-    // R-T7-06 Opzione B: asse Output — allinea assertions[0] senza riscrivere il final.
+    // R-T7-06 Opzione B + T13/Q-C: asse Output — allinea assertions[i] senza riscrivere il final.
     if (target.annotation?.axis === 'output') {
       const assertions = target.annotation.assertions
       if (!Array.isArray(assertions) || assertions.length === 0) {
@@ -1028,30 +1067,41 @@ export function buildVerificationAmendments({
         )
         return
       }
-      if (assertions.length !== 1) {
+      let assertionIndex = spec.assertionIndex
+      if (assertionIndex === undefined) {
+        if (assertions.length !== 1) {
+          errors.push(
+            `--verify: ${spec.targetRecordId} ha ${assertions.length} assertions Output; ` +
+            'indica quale con --verify-assertion-index <n> subito dopo --verify ' +
+            '(indici 0-based; T13/Q-C).',
+          )
+          return
+        }
+        assertionIndex = 0
+      }
+      if (!Number.isInteger(assertionIndex) || assertionIndex < 0 || assertionIndex >= assertions.length) {
         errors.push(
-          `--verify: ${spec.targetRecordId} ha ${assertions.length} assertions Output; ` +
-          'Opzione B patcha solo assertions[0] con esattamente una asserzione. ' +
-          'Per indici > 0 resta amendment manuale (contratto §6).',
+          `--verify: --verify-assertion-index ${assertionIndex} fuori range per ` +
+          `${spec.targetRecordId} (assertions.length=${assertions.length}, indici validi 0..${assertions.length - 1}).`,
         )
         return
       }
-      const assertion = assertions[0]
+      const assertion = assertions[assertionIndex]
       if (assertion?.verification_status === undefined) {
         errors.push(
-          `--verify: ${spec.targetRecordId} assertions[0] senza verification_status — ` +
+          `--verify: ${spec.targetRecordId} assertions[${assertionIndex}] senza verification_status — ` +
           'campo obbligatorio Output, non inventabile da --verify.',
         )
         return
       }
       changes.push(
         {
-          field_path: 'annotation.assertions[0].verification_status',
+          field_path: `annotation.assertions[${assertionIndex}].verification_status`,
           previous_value_or_hash: assertion.verification_status,
           corrected_value: spec.status,
         },
         {
-          field_path: 'annotation.assertions[0].verification_or_use_evidence',
+          field_path: `annotation.assertions[${assertionIndex}].verification_or_use_evidence`,
           previous_value_or_hash: assertion.verification_or_use_evidence ?? '',
           corrected_value: spec.evidenceRef,
         },
@@ -1195,6 +1245,7 @@ export function parseCapsuleArgs(argv) {
     help: false,
   }
   let lastWasCheck = false
+  let lastWasVerify = false
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i]
     if (a === '--help' || a === '-h') out.help = true
@@ -1207,6 +1258,7 @@ export function parseCapsuleArgs(argv) {
     else if (a === '--check') {
       out.checks.push(parseCheckSpec(argv[++i]))
       lastWasCheck = true
+      lastWasVerify = false
       continue
     }
     else if (a === '--check-expect') {
@@ -1217,13 +1269,33 @@ export function parseCapsuleArgs(argv) {
       if (Object.hasOwn(last, 'expectedExit')) throw new Error('--check-expect puo essere dichiarato una sola volta per --check')
       last.expectedExit = Number(raw)
     }
-    else if (a === '--verify') out.verify.push(parseVerifySpec(argv[++i]))
+    else if (a === '--verify') {
+      out.verify.push(parseVerifySpec(argv[++i]))
+      lastWasVerify = true
+      lastWasCheck = false
+      continue
+    }
+    else if (a === '--verify-assertion-index') {
+      if (!lastWasVerify) {
+        throw new Error('--verify-assertion-index richiede un --verify immediatamente precedente')
+      }
+      const raw = argv[++i]
+      if (!/^\d+$/.test(raw || '')) {
+        throw new Error('--verify-assertion-index richiede un intero >= 0 (indice 0-based dell\'asserzione Output)')
+      }
+      const last = out.verify[out.verify.length - 1]
+      if (Object.hasOwn(last, 'assertionIndex')) {
+        throw new Error('--verify-assertion-index puo essere dichiarato una sola volta per --verify')
+      }
+      last.assertionIndex = Number(raw)
+    }
     else if (a === '--tool') out.tools.push(argv[++i])
     else if (a === '--package') out.packages.push(parsePackageSpec(argv[++i]))
     else if (a === '--append-to') out.appendTo = argv[++i]
     else if (a === '--force-legacy') out.forceLegacy = true
     else throw new Error(`Argomento sconosciuto: ${a}`)
     lastWasCheck = false
+    lastWasVerify = false
   }
   return out
 }
@@ -1247,7 +1319,7 @@ export function runCapsule(argv = process.argv, options = {}) {
       stdout:
         'Usage: npm run mss:capsule -- [--template|--template-r1] [--judgments file.json] --model <modello> ' +
         '[--role ...] [--actor-id ...] [--check "ID=>comando" --check-expect <exit>] [--tool ...] [--package "id|ver|ref"] ' +
-        '[--verify "mss-rec-…|independently_verified|evidence_ref|motivo"] ' +
+        '[--verify "mss-rec-…|independently_verified|evidence_ref|motivo" [--verify-assertion-index <n>]] ' +
         '[--append-to report.md]\n',
       stderr: '',
     }

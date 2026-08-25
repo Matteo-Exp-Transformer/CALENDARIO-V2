@@ -1,0 +1,70 @@
+{
+  "persona": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "signal": "Matteo ha riaperto Q-B e Q-C (No in T12) e ha ordinato di chiuderli in esecuzione insieme al bug lavagna, vietando «procedi e lascia debiti»; pilota resta NO-GO",
+        "actor": "Matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md",
+        "effect": "autorizzazione esecuzione M-N4-EXTEND e M-VERIFY-MULTI in T13; nessuna promozione Persona oltre la decisione operativa",
+        "evidence_state": "observed"
+      }
+    ]
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "T13-LAVAGNA-QB-QC@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Chiusura residui post-T12: lavagna + denylist + verify-index",
+        "decision_or_output_changed": "classifyPlanState: NON INIZIATO/BLOCCATO/NO-GO prima di PASS; denylist N4 estesa; --verify-assertion-index per Output multi; PLAN T13 CHIUSO → T14",
+        "G": 2,
+        "O": 1,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-chiusura-residui-t13-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "chiudere davvero i tre residui post-T12 senza lasciare debiti",
+        "intended_use": "base per T14 / commit T13 con sì; non apre pilota",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo (riapertura Q-B/Q-C + procedi)",
+        "directed_by": "Mandato Meta T13 chat 25-08-26",
+        "authored_by": "cursor-composer-t13-residui",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "test T13 A/B/C verdi; test:mss:tools 0; validate:mss:all 0; mss:status T13→T14 senza debiti Q-B/Q-C né commit T11+T12; WP-1 non in Fatte",
+        "verification_or_use_evidence": "npm run test:mss:tools; npm run validate:mss:all; npm run mss:status; cruscotto WP-1 in Da fare",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/plan-parse.mjs",
+          "scripts/mss/capsule.mjs",
+          "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "docs/Sessioni di lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Chiude debiti T12 Q-B/Q-C + bug lavagna; non apre WP-1/D27; non tocca src/"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

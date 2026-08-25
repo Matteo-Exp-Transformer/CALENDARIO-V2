@@ -258,11 +258,16 @@ export function validatePlanGlosses(board, glosses) {
 
 /**
  * Vocabolario chiuso per bucket lavagna — fuori vocabolario → non-classificata.
+ * Stato primario (NON INIZIATO / BLOCCATO / NO-GO) vince prima del match PASS in prosa:
+ * altrimenti WP-1 «NON INIZIATO — NO-GO (… H-1.3 PASS ≠ …)» finiva in «Fatte».
  * @param {string} stato
  */
 export function classifyPlanState(stato) {
   const s = (stato || '').trim()
   const upper = s.toUpperCase()
+  if (/^NON INIZIATO/.test(upper) || /^BLOCCATO/.test(upper) || /\bNO-GO\b/.test(upper)) {
+    return 'da-fare'
+  }
   if (/^CHIUSO/.test(upper) || upper.includes('ALLINEATO') || upper.includes('ESEGUITO E PUBBLICATO')) {
     return 'fatta'
   }
@@ -273,9 +278,6 @@ export function classifyPlanState(stato) {
   // PASS pulito (senza «con riserve») — Opzione B H-1.3 dopo E2 misurato
   if (/\bPASS\b/i.test(s) && !/NON\s+PASS/i.test(s)) {
     return 'fatta'
-  }
-  if (/^NON INIZIATO/.test(upper) || /^BLOCCATO/.test(upper)) {
-    return 'da-fare'
   }
   if (/buco intenzionale/i.test(s) || /chiusura invalidata/i.test(s)) {
     return 'non-classificata'
