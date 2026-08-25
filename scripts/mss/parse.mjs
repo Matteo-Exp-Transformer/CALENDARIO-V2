@@ -351,6 +351,15 @@ export function collectBundlesFromInput(input) {
         message: 'Report mode declaration is unknown, hybrid, duplicated or contradictory',
       })
     }
+    if (mode.mode === 'light') {
+      diagnostics.push({
+        rule: RULE.LIGHT_NO_EVENT,
+        severity: 'deny',
+        file: input.file || '<report>',
+        fieldPath: 'Modalità',
+        message: 'Light closure must use a SESSION_LOG row linked to eventi-light JSONL, not a Report file',
+      })
+    }
     const extracted = mode.historical
       ? { bundles: [], diagnostics: [], hasHeading: true }
       : extractCapsulesFromMarkdown(content, input.file || '<report>')

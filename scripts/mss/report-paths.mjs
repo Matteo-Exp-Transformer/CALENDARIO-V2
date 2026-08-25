@@ -50,7 +50,7 @@ function walkReportPaths(dir, root, out) {
 function isClosureCandidate(content) {
   const mode = detectReportMode(content)
   const { hasSection } = auditQuestions(content)
-  return mode.requiresCapsule || hasSection
+  return mode.requiresCapsule || mode.mode === 'light' || hasSection
 }
 
 /**

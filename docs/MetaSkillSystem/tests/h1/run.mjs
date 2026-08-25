@@ -833,10 +833,17 @@ function testH13HistoricalModeScopeAndArchitecture() {
     failures.push(`copia byte-identica del report storico accettata su altro path: ${copiedHistorical.denyCodes.join(',')}`)
   }
 
-  for (const mode of ['light', 'standard', 'deep', 'Meta/deep']) {
+  for (const mode of ['standard', 'deep', 'Meta/deep']) {
     const content = reportWithBundle(validBundle(), `Mode ${mode}`).replace('**Modalità:** standard', `**Modalità:** ${mode}`)
     const result = validateMss({ kind: 'report', file: `<contract-mode:${mode}>`, content, workspaceRoot: repoRoot }, { workspaceRoot: repoRoot })
     if (!result.ok) failures.push(`modalità contrattuale ${mode} respinta: ${result.denyCodes.join(',')}`)
+  }
+  {
+    const lightReport = reportWithBundle(validBundle(), 'Mode light').replace('**Modalità:** standard', '**Modalità:** light')
+    const lightResult = validateMss({ kind: 'report', file: '<contract-mode:light>', content: lightReport, workspaceRoot: repoRoot }, { workspaceRoot: repoRoot })
+    if (!lightResult.denyCodes.includes(RULE.LIGHT_NO_EVENT)) {
+      failures.push(`Report Modalità light accettato: ${lightResult.codes.join(',')}`)
+    }
   }
   for (const mode of ['legacy', 'Meta/deep, extra', 'deep standard']) {
     const content = reportWithBundle(validBundle(), `Invalid mode ${mode}`).replace('**Modalità:** standard', `**Modalità:** ${mode}`)
@@ -1111,10 +1118,17 @@ function testReportParserModes() {
   const multiple = `# Report\n\n## Capsula MetaSkillSystem\n\n\`\`\`jsonl\n${capsule}\n\`\`\`\n\n## Capsula MetaSkillSystem\n\n\`\`\`jsonl\n${capsule}\n\`\`\``
   const multipleResult = validateMss({ kind: 'report', file: '<multiple-capsules>', content: multiple, workspaceRoot: repoRoot }, { workspaceRoot: repoRoot })
   if (!multipleResult.codes.includes(RULE.PARSE_JSONL_AMBIGUOUS)) failures.push('multiple capsule sections not rejected')
-  for (const [mode, shouldPass] of [['standard', false], ['deep', false], ['light', true], ['legacy', false]]) {
+  for (const [mode, shouldPass] of [['standard', false], ['deep', false], ['light', false], ['legacy', false]]) {
     const content = `# Report\n\n**Modalità:** ${mode}\n\nNo capsule.`
     const result = validateMss({ kind: 'report', file: `<mode:${mode}>`, content, workspaceRoot: repoRoot }, { workspaceRoot: repoRoot })
     if (result.ok !== shouldPass) failures.push(`mode ${mode}: expected ok=${shouldPass}; codes=${result.codes.join(',')}`)
+  }
+  const lightDeny = validateMss(
+    { kind: 'report', file: '<mode:light-deny>', content: `# Report\n\n**Modalità:** light\n\nNo capsule.`, workspaceRoot: repoRoot },
+    { workspaceRoot: repoRoot },
+  )
+  if (!lightDeny.denyCodes.includes(RULE.LIGHT_NO_EVENT)) {
+    failures.push(`mode light must deny LIGHT_NO_EVENT: ${lightDeny.codes.join(',')}`)
   }
   const standardLogRow = '| 09-08-26 | Standard · `event:mss-evt-0198b000-0001-7000-8000-000000000020` | [Report](Report-standard.md) |'
   const logResult = validateMss(
@@ -2163,6 +2177,8 @@ function testMatrix() {
     'historical_previous_mismatch_is_deny',
     'amendment_invalid_field_path_is_deny',
     'cli_staged_uses_full_snapshot',
+    'light_closure_requires_session_log_jsonl',
+    'light_report_declares_closure_without_event_is_deny',
   ]
   for (const key of required) if (!matrix.declarations?.[key]) failures.push(`matrix missing declaration ${key}`)
   if (!Array.isArray(matrix.controls) || matrix.controls.length < 10) failures.push('matrix controls too few')
@@ -2498,24 +2514,77 @@ function claudeStopBlocked(result) {
   }
 }
 
-/** R4 — light resta fail-open intenzionale (non unificare light≠deep; BACKLOG R-T7-05). */
-function testR4LightRemainsIntentionalFailOpen() {
+/** R4 / M-E2-D — light enforcement: deny Report light; standard resta deny capsula (R-T7-05 chiuso). */
+function testR4LightEnforcementWithoutEvent() {
   const root = createTempGitRepo()
   try {
     writeFixtureReferenceOwner(root)
     const day = todaySessionFolder(new Date())
-    const rel = `${SESSIONI}/${day}/sub/Report-r4-light-no-capsule.md`
+    const rel = `${SESSIONI}/${day}/sub/Report-r4-light-no-event.md`
     writeTemp(root, rel, `# R4 light\n\n**Modalità:** light\n${reportQrs()}`)
     const light = runCursorStopHook(root)
     if (light.status !== 0) return [`R4-light-exit: ${light.status} ${light.stderr}`]
-    if (cursorStopBlocked(light)) return ['R4-light: expected fail-open silence without capsule']
+    if (!cursorStopBlocked(light)) return ['R4-light: expected MSS-LIGHT-NO-EVENT deny on Report light']
+    const lightMsg = JSON.parse(light.stdout || '{}').followup_message || ''
+    if (!lightMsg.includes(RULE.LIGHT_NO_EVENT)) {
+      return [`R4-light: expected ${RULE.LIGHT_NO_EVENT}, got ${lightMsg.slice(0, 120)}`]
+    }
     writeTemp(root, rel, `# R4 standard\n\n**Modalità:** standard\n${reportQrs()}`)
     const std = runCursorStopHook(root)
     if (!cursorStopBlocked(std)) return ['R4-standard: expected REPORT_NO_CAPSULE deny']
+    const stdMsg = JSON.parse(std.stdout || '{}').followup_message || ''
+    if (!stdMsg.includes(RULE.REPORT_NO_CAPSULE)) {
+      return [`R4-standard: expected ${RULE.REPORT_NO_CAPSULE}, got ${stdMsg.slice(0, 120)}`]
+    }
     return []
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
+}
+
+function testH13E2LightEnforcement() {
+  const failures = []
+  const fxV02Log = readFileSync(join(fixturesDir, 'FX-V02-session-log.md'), 'utf8')
+  const fxV02Result = validateMss(
+    {
+      kind: 'session_log',
+      file: join(fixturesDir, 'FX-V02-session-log.md'),
+      content: fxV02Log,
+      workspaceRoot: repoRoot,
+    },
+    { workspaceRoot: repoRoot },
+  )
+  if (!fxV02Result.ok) failures.push(`FX-V02 session_log must pass: ${fxV02Result.denyCodes.join(',')}`)
+
+  const lightReport = `# Light\n\n**Modalità:** light\n\nChiusura light via Report (vietato).\n`
+  const lightResult = validateMss(
+    { kind: 'report', file: '<h13-e2-light-report>', content: lightReport, workspaceRoot: repoRoot },
+    { workspaceRoot: repoRoot },
+  )
+  if (!lightResult.denyCodes.includes(RULE.LIGHT_NO_EVENT)) {
+    failures.push(`light Report must deny ${RULE.LIGHT_NO_EVENT}: ${lightResult.codes.join(',')}`)
+  }
+
+  const chiusuraPath = join(repoRoot, 'docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md')
+  if (!existsSync(chiusuraPath)) return ['CHIUSURA_SESSIONE.md missing']
+  const chiusura = readFileSync(chiusuraPath, 'utf8')
+  if (!/M-E2-D|MSS-LIGHT-NO-EVENT|eventi-light/i.test(chiusura)) {
+    failures.push('CHIUSURA_SESSIONE must document light JSONL+SESSION_LOG enforcement (M-E2-D)')
+  }
+
+  if (!existsSync(matrixPath)) return ['COVERAGE_MATRIX_H1.json missing']
+  const matrix = JSON.parse(readFileSync(matrixPath, 'utf8'))
+  if (!matrix.declarations?.light_closure_requires_session_log_jsonl) {
+    failures.push('matrice must declare light_closure_requires_session_log_jsonl (M-E2-D)')
+  }
+  if (!matrix.declarations?.light_report_declares_closure_without_event_is_deny) {
+    failures.push('matrice must declare light_report_declares_closure_without_event_is_deny')
+  }
+  const jsonlLight = matrix.controls?.find((c) => c.id === 'H1-JSONL-LIGHT')
+  if (!/M-E2-D|Modalità light/i.test(String(jsonlLight?.fallback || ''))) {
+    failures.push('H1-JSONL-LIGHT fallback must cite light Report deny (M-E2-D)')
+  }
+  return failures
 }
 
 function testN3StopHookTwinParity() {
@@ -2644,6 +2713,7 @@ function main() {
     ['H13-E2 / no-verify — pre-commit bypassabile, CI validate:mss:changed blocca report incompleto', testH13E2NoVerifyCiEnforcement],
     ['H13-E2 / unstaged — Report|Verbale non staged entrano nel gate e deny', testH13E2UnstagedReportEnforcement],
     ['H13-E2 / Cloud-Codex-Claude — stop assente, CI validate:mss:changed deny report senza capsula', testH13E2CloudCodexClaudeFallback],
+    ['H13-E2 / light — Report light deny, FX-V02 SESSION_LOG+JSONL pass (M-E2-D)', testH13E2LightEnforcement],
     ['coverage matrix', testMatrix],
     ['A1 — la guardia PROD di Claude è tracciata da git', testA1GuardProdTrackedByGit, 'guardie-e-hook-di-progetto'],
     ['A4 — il cablaggio dell\'hook Claude è tracciato e non trascina i file personali', testA4ClaudeSettingsTrackedNoPersonalFiles, 'guardie-e-hook-di-progetto'],
@@ -2655,7 +2725,7 @@ function main() {
     ['A3 — Claude stop hook anti-loop guard', testA3ClaudeStopHookAntiLoop, 'guardie-e-hook-di-progetto'],
     ['N2 — stop hooks import report-questions only (D18)', testN2StopHooksImportReportQuestionsOnly, 'guardie-e-hook-di-progetto'],
     ['N3 — Cursor nudge vs Claude senior stop hook twin parity', testN3StopHookTwinParity, 'guardie-e-hook-di-progetto'],
-    ['R4 — light resta fail-open intenzionale', testR4LightRemainsIntentionalFailOpen, 'hook-stop-cursor'],
+    ['R4 / M-E2-D — light enforcement deny Report senza evento (FX-V02 path)', testR4LightEnforcementWithoutEvent, 'hook-stop-cursor'],
   ]
   const nonApplicabili = []
   let eseguiti = 0

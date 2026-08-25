@@ -254,6 +254,21 @@ Residuo onesto: senza checklist rispettata e senza passare dalla CI, Cloud/Codex
 chiudere in locale senza nudge. Il buco `stop` resta dichiarato in `COVERAGE_MATRIX_H1.json`
 (`stop_does_not_cover_cloud_codex_claude`).
 
+### Chiusura **light** — JSONL + SESSION_LOG (enforcement Opzione B — M-E2-D)
+
+Sessioni **light** (fix piccolo, 1 zona): **nessun** file `Report-*.md`. Chiusura = evento JSONL in
+`docs/Sessioni di lavoro/GG-MM-AA/eventi-light/<record_id>.jsonl` + **una riga** in `docs/SESSION_LOG.md`
+con `event_id` e link al `.jsonl` (fixture positiva `FX-V02`).
+
+Enforcement misurato (stop hook + pre-commit `H1-JSONL-LIGHT`):
+
+1. Un `Report-*.md` con `**Modalità:** light` → **deny** (`MSS-LIGHT-NO-EVENT`): la chiusura light non
+   passa dal report; usa SESSION_LOG + JSONL.
+2. Riga SESSION_LOG che dichiara light senza link `.jsonl` coerente → **deny** (stessa regola).
+3. Percorso corretto FX-V02 (log + jsonl collegati) → **pass**.
+
+Legacy/undeclared senza modalità restano fail-open sul report (non confonderli con light esplicita).
+
 ---
 
 # PARTE B — Procedure operative di chiusura

@@ -2,7 +2,7 @@
   "id": "COVERAGE_MATRIX_H1",
   "schema_version": "mss.session/0.1.1",
   "system_revision": "mss-v0.1-wp0.1-freeze-2",
-  "denominator_note": "Stop: soltanto il report più recente entro 20 minuti, con modalità standard/deep esplicita o sezione Capsula presente. Pre-commit: vista effettiva globale degli artefatti MSS controllati in HEAD con sostituzioni staged, più Report/Verbale MSS sporchi nel worktree ma non staged (M-E2-B / SK-4 B2/B3); inclusi delete e rename; il manifest staged è autorevole quando interessato e HEAD vale solo se untouched. CLI file: file richiesto confrontato con la storia HEAD delimitata. CI push/PR: validate:mss:changed su Report-*/Verbale-* aggiunti o modificati fra base e head — enforcement post-hoc indipendente da --no-verify locale (M-E2-A) e dallo stop hook assente su Cloud/Codex/Claude (M-E2-C; checklist in CHIUSURA_SESSIONE). Sessioni fuori perimetro, JSONL/fixture unstaged, e report light/legacy/undeclared senza capsula restano fuori denominatore e sono fail-open dichiarati, non pass.",
+  "denominator_note": "Stop: soltanto il report più recente entro 20 minuti, con modalità standard/deep esplicita, light esplicita (deny su Report — M-E2-D), o sezione Capsula/Q/R presente. Pre-commit: vista effettiva globale degli artefatti MSS controllati in HEAD con sostituzioni staged, più Report/Verbale MSS sporchi nel worktree ma non staged (M-E2-B / SK-4 B2/B3); inclusi delete e rename; il manifest staged è autorevole quando interessato e HEAD vale solo se untouched. CLI file: file richiesto confrontato con la storia HEAD delimitata. CI push/PR: validate:mss:changed su Report-*/Verbale-* aggiunti o modificati fra base e head — enforcement post-hoc indipendente da --no-verify locale (M-E2-A) e dallo stop hook assente su Cloud/Codex/Claude (M-E2-C; checklist in CHIUSURA_SESSIONE). Chiusura light corretta = riga SESSION_LOG + JSONL eventi-light (FX-V02); Report light senza evento = deny. Sessioni fuori perimetro, JSONL/fixture unstaged, e report legacy/undeclared senza capsula restano fail-open dichiarati, non pass.",
   "declarations": {
     "precommit_blocks_staged_not_edit": true,
     "precommit_covers_unstaged_mss_reports": true,
@@ -30,7 +30,9 @@
     "core_purity_is_limited_to_record_view_helpers": true,
     "historical_previous_mismatch_is_deny": true,
     "amendment_invalid_field_path_is_deny": true,
-    "cli_staged_uses_full_snapshot": true
+    "cli_staged_uses_full_snapshot": true,
+    "light_closure_requires_session_log_jsonl": true,
+    "light_report_declares_closure_without_event_is_deny": true
   },
   "controls": [
     {
@@ -87,7 +89,7 @@
       "moment": ["pre-commit"],
       "visible_input": "SESSION_LOG link + file .jsonl",
       "effect": "deny",
-      "fallback": "fail-open se riga non dichiara light",
+      "fallback": "fail-open se riga non dichiara light; deny su Report con Modalità light (M-E2-D)",
       "known_bypass": "log non staged; --no-verify",
       "G": 2,
       "O": 1,
@@ -171,8 +173,8 @@
       "moment": ["stop", "pre-commit"],
       "visible_input": "report standard/deep staged, unstaged Report/Verbale, o recente",
       "effect": "deny",
-      "fallback": "fail-open se il report non dichiara modalità standard/deep e non contiene la sezione Capsula",
-      "known_bypass": "Cloud/Codex/Claude senza stop (checklist + CI validate:mss:changed post-hoc; hook Cloud non installabile); report light/legacy/undeclared; report non recente; --no-verify (solo pre-commit locale; CI validate:mss:changed su push/PR)",
+      "fallback": "fail-open se il report non dichiara modalità standard/deep e non contiene la sezione Capsula; deny esplicito su Report Modalità light (M-E2-D / MSS-LIGHT-NO-EVENT)",
+      "known_bypass": "Cloud/Codex/Claude senza stop (checklist + CI validate:mss:changed post-hoc; hook Cloud non installabile); report legacy/undeclared; report non recente; --no-verify (solo pre-commit locale; CI validate:mss:changed su push/PR)",
       "G": 2,
       "O": 1,
       "E": 2

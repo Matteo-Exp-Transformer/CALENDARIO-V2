@@ -115,8 +115,8 @@ async function main() {
     return send({ followup_message: lines.join('\n') })
   }
 
-  // Q/R ok → controllo MSS sullo stesso report. L'adapter richiede la capsula soltanto se la
-  // modalità standard/deep è dichiarata o se la sezione è presente; light/legacy restano fail-open.
+  // Q/R ok → controllo MSS sullo stesso report. Standard/deep richiedono capsula; light su Report
+  // nega (MSS-LIGHT-NO-EVENT: JSONL + SESSION_LOG); legacy/undeclared restano fail-open.
   const mssLines = []
   let historicalSnapshots = []
   try {
