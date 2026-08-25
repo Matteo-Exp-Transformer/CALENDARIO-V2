@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * Pre-commit fine-sessione + validator MSS H-1 sullo staged.
+ * Pre-commit fine-sessione + validator MSS H-1 sullo staged e sui Report/Verbale unstaged.
  *
  * - report incompleto: blocca
  * - artefatti MSS staged invalidi: blocca (deny)
+ * - Report/Verbale MSS modificati ma non staged: entrano nel gate (M-E2-B / SK-4 B2/B3)
  * - mente fredda una volta per signature staged
  */
 
@@ -13,7 +14,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { auditQuestions } from '../../scripts/mss/report-questions.mjs'
 import { validateStagedMssFiles, isMssRelevantPath, REPORT_PATH_RE } from '../../scripts/mss/adapter.mjs'
-import { collectGitHeadHistory, collectStagedMssEntries } from '../../scripts/mss/git-adapter.mjs'
+import { collectGitHeadHistory, collectPrecommitMssEntries } from '../../scripts/mss/git-adapter.mjs'
 import { detectReportMode } from '../../scripts/mss/parse.mjs'
 
 function git(args, cwd = process.cwd()) {
@@ -98,7 +99,10 @@ function main() {
     fail(lines.join('\n'))
   }
 
-  const mssEntries = collectStagedMssEntries(root)
+  const mssEntries = collectPrecommitMssEntries(root)
+  const unstagedOnlyPaths = new Set(
+    mssEntries.filter((entry) => entry.unstagedOnly).map((entry) => normalizePath(entry.path)),
+  )
 
   if (mssEntries.length) {
     const historicalSnapshots = collectGitHeadHistory(root)
@@ -107,7 +111,8 @@ function main() {
     for (const { path, result } of results) {
       const denies = result.diagnostics.filter((d) => d.severity === 'deny')
       if (!denies.length) continue
-      denyLines.push(`- ${path}`)
+      const label = unstagedOnlyPaths.has(normalizePath(path)) ? `${path} (unstaged)` : path
+      denyLines.push(`- ${label}`)
       for (const d of denies.slice(0, 12)) {
         denyLines.push(`  [${d.rule}] ${d.fieldPath}`)
       }
@@ -115,11 +120,11 @@ function main() {
     if (denyLines.length) {
       fail(
         [
-          'PRE-COMMIT MSS: artefatti MetaSkillSystem staged non validi (blocco pubblicazione, non edit).',
+          'PRE-COMMIT MSS: artefatti MetaSkillSystem staged/unstaged non validi (blocco pubblicazione, non edit).',
           '',
           ...denyLines,
           '',
-          'Correggi, git add, rilancia. Motore: npm run validate:mss',
+          'Correggi, git add (anche i Report/Verbale sporchi nel worktree), rilancia. Motore: npm run validate:mss',
         ].join('\n'),
       )
     }

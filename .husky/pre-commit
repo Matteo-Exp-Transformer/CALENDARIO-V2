@@ -1,4 +1,9 @@
 #!/usr/bin/env sh
+# MSS policy (H-1.3 / H13-E2 M-E2-A/B): blocca report MSS staged incompleti o invalidi
+# e Report/Verbale MSS modificati ma non staged (entrano nel gate via fine-sessione-commit-check).
+# Bypass umano residuo: `git commit --no-verify` salta questo hook.
+# Enforcement misurabile post-hoc: CI job `mss` esegue `npm run validate:mss:changed`
+# su push/PR (main, env/test) — non dipende da Husky locale.
 
 npx lint-staged
 node .cursor/hooks/fine-sessione-commit-check.mjs

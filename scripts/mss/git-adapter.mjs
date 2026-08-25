@@ -2,7 +2,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { isMssRelevantPath } from './adapter.mjs'
+import { isMssRelevantPath, REPORT_PATH_RE } from './adapter.mjs'
 import { CONFIG, FIXTURES_ROOT } from './config.mjs'
 
 function git(root, args, { allowFailure = false } = {}) {
@@ -100,6 +100,51 @@ export function collectStagedMssEntries(root) {
     })
   }
   return entries
+}
+
+/**
+ * Report/Verbale MSS sporchi nel worktree ma assenti dallo stage (M-E2-B / SK-4 B2/B3).
+ * Entrano nel gate pre-commit come entry sintetiche validate sul contenuto worktree.
+ * Non include JSONL/fixture unstaged (residuo E2 dichiarato in matrice).
+ */
+export function collectUnstagedMssReportEntries(root, { excludePaths = [] } = {}) {
+  const excluded = new Set([...excludePaths].map((path) => path.replace(/\\/g, '/')))
+  const dirty = new Set()
+
+  const unstagedDiff = git(root, ['diff', '--name-only', '-z', '--diff-filter=ACMR'], { allowFailure: true }) || ''
+  for (const path of unstagedDiff.split('\0').filter(Boolean)) dirty.add(path.replace(/\\/g, '/'))
+
+  const untracked = git(root, ['ls-files', '--others', '--exclude-standard', '-z'], { allowFailure: true }) || ''
+  for (const path of untracked.split('\0').filter(Boolean)) dirty.add(path.replace(/\\/g, '/'))
+
+  const entries = []
+  for (const path of [...dirty].sort()) {
+    if (excluded.has(path)) continue
+    if (!REPORT_PATH_RE.test(path)) continue
+    const wt = worktreeContent(root, path)
+    if (wt == null) continue
+    const inIndex = show(root, `:${path}`)
+    const inHead = show(root, `HEAD:${path}`)
+    entries.push({
+      status: inIndex == null && inHead == null ? 'A' : 'M',
+      path,
+      previousPath: null,
+      // Valida il worktree: è l'artefatto che altrimenti resterebbe fuori gate.
+      content: wt,
+      headContent: inHead,
+      worktreeContent: wt,
+      unstagedOnly: true,
+    })
+  }
+  return entries
+}
+
+/** Vista pre-commit: staged MSS + Report/Verbale unstaged-only (Opzione B E2-B). */
+export function collectPrecommitMssEntries(root) {
+  const staged = collectStagedMssEntries(root)
+  const stagedPaths = staged.map((entry) => entry.path)
+  const unstagedOnly = collectUnstagedMssReportEntries(root, { excludePaths: stagedPaths })
+  return [...staged, ...unstagedOnly]
 }
 
 export function collectGitHeadHistory(root) {

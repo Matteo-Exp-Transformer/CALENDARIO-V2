@@ -85,6 +85,7 @@ const fixturesDir = join(repoRoot, 'docs/MetaSkillSystem/fixtures/v0.1')
 const matrixPath = join(repoRoot, 'docs/MetaSkillSystem/COVERAGE_MATRIX_H1.json')
 const stopHookPath = join(repoRoot, '.cursor/hooks/fine-sessione-nudge.mjs')
 const precommitHookPath = join(repoRoot, '.cursor/hooks/fine-sessione-commit-check.mjs')
+const changedReportsCli = join(repoRoot, 'scripts/mss/validate-changed-reports.mjs')
 // A2/A3 (24-08-26): guardie PROD (Cursor+Claude+kit) e stop hook Claude — copie gemelle degli
 // hook Cursor sopra, coperte nella stessa suite (mandato M-A/M-B §2).
 const cursorGuardProdHookPath = join(repoRoot, '.cursor/hooks/guard-prod.mjs')
@@ -1923,7 +1924,124 @@ function testH13E2CiBypassClosed() {
   if (!/--no-verify/.test(fixtureControl.known_bypass || '')) {
     return ['H1-FIXTURE-PROTOCOL must still declare --no-verify bypass']
   }
+  if (!matrix.declarations?.ci_enforces_changed_mss_reports) {
+    return ['COVERAGE_MATRIX must declare ci_enforces_changed_mss_reports (M-E2-A)']
+  }
   return []
+}
+
+function testH13E2NoVerifyCiEnforcement() {
+  const root = createTempGitRepo()
+  try {
+    writeTemp(root, 'README.md', '# baseline\n')
+    runGit(root, ['add', 'README.md'])
+    const baseline = runGit(root, ['commit', '-m', 'baseline'])
+    if (baseline.status !== 0) return [`baseline commit failed: ${baseline.stderr}`]
+    const base = baseline.stdout?.trim() || runGit(root, ['rev-parse', 'HEAD']).stdout.trim()
+
+    const path = `${SESSIONI}/25-08-26/Report-h13-e2-no-verify-probe.md`
+    writeTemp(root, path, `# Probe\n\n**Modalità:** deep\n${reportQrs()}`)
+    runGit(root, ['add', path])
+
+    const precommit = runPrecommit(root)
+    if (
+      precommit.status === 0 ||
+      !(`${precommit.stderr}${precommit.stdout}`).includes(RULE.REPORT_NO_CAPSULE)
+    ) {
+      return ['pre-commit must deny deep report without capsule before --no-verify path']
+    }
+
+    const bypass = runGit(root, ['commit', '--no-verify', '-m', 'simulate --no-verify bypass'])
+    if (bypass.status !== 0) {
+      return [`git commit --no-verify must succeed when hook is bypassed: ${bypass.stderr}`]
+    }
+    const head = runGit(root, ['rev-parse', 'HEAD']).stdout.trim()
+
+    const ci = spawnSync(
+      process.execPath,
+      [changedReportsCli, '--base', base, '--head', head, '--repo', root],
+      { cwd: repoRoot, encoding: 'utf8' },
+    )
+    const ciOutput = `${ci.stdout || ''}${ci.stderr || ''}`
+    if (ci.status !== 1) {
+      return [`validate-changed-reports must reject --no-verify commit: status=${ci.status}; ${ciOutput}`]
+    }
+    if (!/MSS-REPORT-NO-CAPSULE|ROSSO:/.test(ciOutput)) {
+      return [`CI gate must surface MSS deny on incomplete report: ${ciOutput}`]
+    }
+    if (!/--no-verify/.test(ciOutput)) {
+      return ['CI failure message must document independence from local --no-verify']
+    }
+
+    const huskyPath = join(repoRoot, '.husky/pre-commit')
+    if (!existsSync(huskyPath)) return ['.husky/pre-commit missing']
+    const husky = readFileSync(huskyPath, 'utf8')
+    if (!/validate:mss:changed|--no-verify/i.test(husky)) {
+      return ['.husky/pre-commit must document --no-verify bypass and CI validate:mss:changed fallback']
+    }
+
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testH13E2UnstagedReportEnforcement() {
+  const root = createTempGitRepo()
+  try {
+    writeTemp(root, 'README.md', '# baseline\n')
+    runGit(root, ['add', 'README.md'])
+    const baseline = runGit(root, ['commit', '-m', 'baseline'])
+    if (baseline.status !== 0) return [`baseline commit failed: ${baseline.stderr}`]
+
+    writeTemp(root, 'README.md', '# baseline\nstaged change\n')
+    runGit(root, ['add', 'README.md'])
+
+    // B2: Report- in sotto-cartella, solo worktree (non staged) → deny misurabile.
+    const reportPath = `${SESSIONI}/25-08-26/sk4/deep/nested/Report-h13-e2-unstaged-probe.md`
+    writeTemp(root, reportPath, `# Unstaged probe\n\n**Modalità:** deep\n${reportQrs()}`)
+
+    const reportGate = runPrecommit(root)
+    const reportOut = `${reportGate.stderr || ''}${reportGate.stdout || ''}`
+    if (reportGate.status === 0 || !reportOut.includes(RULE.REPORT_NO_CAPSULE)) {
+      return [`pre-commit must deny unstaged deep Report without capsule: status=${reportGate.status}; ${reportOut}`]
+    }
+    if (!/unstaged/i.test(reportOut)) {
+      return [`deny message must label unstaged Report path: ${reportOut}`]
+    }
+
+    rmSync(join(root, reportPath), { force: true })
+
+    // B3: Verbale- stesso perimetro ricorsivo, unstaged → deny.
+    const verbalePath = `${SESSIONI}/25-08-26/sk4/deep/nested/Verbale-h13-e2-unstaged-probe.md`
+    writeTemp(root, verbalePath, `# Unstaged verbale\n\n**Modalità:** deep\n${reportQrs()}`)
+    const verbaleGate = runPrecommit(root)
+    const verbaleOut = `${verbaleGate.stderr || ''}${verbaleGate.stdout || ''}`
+    if (verbaleGate.status === 0 || !verbaleOut.includes(RULE.REPORT_NO_CAPSULE)) {
+      return [`pre-commit must deny unstaged deep Verbale without capsule: status=${verbaleGate.status}; ${verbaleOut}`]
+    }
+    if (!/unstaged/i.test(verbaleOut)) {
+      return [`deny message must label unstaged Verbale path: ${verbaleOut}`]
+    }
+
+    if (!existsSync(matrixPath)) return ['COVERAGE_MATRIX_H1.json missing']
+    const matrix = JSON.parse(readFileSync(matrixPath, 'utf8'))
+    if (!matrix.declarations?.precommit_covers_unstaged_mss_reports) {
+      return ['COVERAGE_MATRIX must declare precommit_covers_unstaged_mss_reports (M-E2-B)']
+    }
+    const capsule = matrix.controls?.find((c) => c.id === 'H1-REPORT-CAPSULE')
+    if (!/unstaged/i.test(String(capsule?.visible_input || ''))) {
+      return ['H1-REPORT-CAPSULE visible_input must mention unstaged Report/Verbale']
+    }
+    const husky = readFileSync(join(repoRoot, '.husky/pre-commit'), 'utf8')
+    if (!/unstaged|non staged/i.test(husky)) {
+      return ['.husky/pre-commit must document unstaged Report/Verbale gate (M-E2-B)']
+    }
+
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 }
 
 function testMatrix() {
@@ -1932,6 +2050,8 @@ function testMatrix() {
   const failures = []
   const required = [
     'precommit_blocks_staged_not_edit',
+    'precommit_covers_unstaged_mss_reports',
+    'ci_enforces_changed_mss_reports',
     'stop_does_not_cover_cloud_codex_claude',
     'bypass_no_verify_and_unstaged',
     'h1_does_not_prove_global_capture_continuity',
@@ -2427,6 +2547,8 @@ function main() {
     ['H-1.3 historical records + frozen immutability', testH13HistoricalRecordAndFixtureImmutability, 'sedute-storiche'],
     ['H-1.2 scoped report whitespace', testH12ScopedReportWhitespace, 'sedute-storiche'],
     ['H13-E2 / SK-5 — CI cablata, matrice senza bypass stale', testH13E2CiBypassClosed],
+    ['H13-E2 / no-verify — pre-commit bypassabile, CI validate:mss:changed blocca report incompleto', testH13E2NoVerifyCiEnforcement],
+    ['H13-E2 / unstaged — Report|Verbale non staged entrano nel gate e deny', testH13E2UnstagedReportEnforcement],
     ['coverage matrix', testMatrix],
     ['A1 — la guardia PROD di Claude è tracciata da git', testA1GuardProdTrackedByGit, 'guardie-e-hook-di-progetto'],
     ['A4 — il cablaggio dell\'hook Claude è tracciato e non trascina i file personali', testA4ClaudeSettingsTrackedNoPersonalFiles, 'guardie-e-hook-di-progetto'],
