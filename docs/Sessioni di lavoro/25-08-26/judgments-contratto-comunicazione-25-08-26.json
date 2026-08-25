@@ -1,0 +1,63 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "COMUNICAZIONE-REGOLA-ZERO@2026-08-25",
+        "trigger_event": "Matteo segnala che gli agenti producono testi lunghi, tecnici e ripetitivi e chiede un formato diretto e comprensibile.",
+        "decision_or_output_changed": "La prima frase diventa obbligatoriamente autosufficiente: elemento, intervento e risultato verificabile. Il formato finale guida ogni agente con Dove siamo, Ti consiglio, Pronto per il prossimo passo e Tua azione; le istruzioni globali, Cursor e prepara-prompt lo rendono parte del mandato degli esecutori.",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "contratto-comunicazione-diretta-25-08-26",
+        "primary_type": "governance",
+        "canonical_version": "docs/COMUNICAZIONE_UTENTE_SKILL.md",
+        "recipient": "Matteo e gli agenti che lavorano nel repository",
+        "problem_or_job": "rendere le risposte degli agenti brevi, complete e comprensibili senza sigle o domande aggiuntive",
+        "intended_use": "guidare le risposte in chat e le chiusure dei task con una frase iniziale autosufficiente e il materiale già pronto per proseguire",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "richiesta diretta di migliorare il linguaggio degli agenti e il cruscotto",
+        "authored_by": "Codex",
+        "verified_by": "Matteo: approvazione del linguaggio del cruscotto",
+        "acceptance_criterion": "la skill, le istruzioni globali e i prompt agli esecutori impongono elemento → intervento → risultato verificabile; il cruscotto non mostra codici interni nella vista principale",
+        "verification_or_use_evidence": "anteprima del cruscotto controllata da Matteo; node --check; test:mss:tools; validate:mss:views; validate:docs",
+        "verification_status": "self_report",
+        "owner_ref": "docs/COMUNICAZIONE_UTENTE_SKILL.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "AGENTS.md",
+          ".claude/CLAUDE.md",
+          ".cursor/rules/comandi-base.mdc",
+          ".cursor/skills/calendarbackup-comunicazione-utente/SKILL.md",
+          "docs/PREPARA_PROMPT_SKILL.md",
+          "scripts/mss/views-html.mjs",
+          "docs/MetaSkillSystem/Cruscotto MSS.html"
+        ],
+        "relations_no_double_count": [
+          "Il cruscotto è una dimostrazione visiva del contratto, non una seconda regola indipendente.",
+          "L'osservazione dell'uso reale da parte di agenti futuri resta da raccogliere."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

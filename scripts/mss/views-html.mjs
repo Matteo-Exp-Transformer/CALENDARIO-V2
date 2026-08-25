@@ -11,9 +11,8 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { homedir } from 'node:os'
-import { classifyPlanState, parsePlanBoard } from './plan-parse.mjs'
+import { classifyPlanState, parsePlanBoard, parsePlanGate, parsePlanLastCycle } from './plan-parse.mjs'
 import { isMainModule, repoRootFromModule } from './runtime.mjs'
-import { deriveMatteoDashboard } from './views.mjs'
 
 const ROOT = repoRootFromModule(import.meta.url)
 
@@ -74,36 +73,85 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;')
 }
 
-function mdToHtml(md) {
-  return md
-    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/^\| (.+) \|$/gm, (_, row) => {
-      const cells = row.split('|').map((c) => c.trim())
-      return `<tr>${cells.map((c) => `<td>${c}</td>`).join('')}</tr>`
-    })
-    .replace(/(<tr>[\s\S]*?<\/tr>\n?)+/g, (m) => `<table>${m}</table>`)
-    .replace(/^- \[([^\]]+)\]\(([^)]+)\)$/gm, '<li><a href="$2">$1</a></li>')
-    .replace(/(<li>[\s\S]*?<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
-    .replace(/^- `([^`]+)` (.+)$/gm, '<li><code>$1</code> $2</li>')
-    .replace(/^\*([^*]+)\*$/gm, '<p><em>$1</em></p>')
-    .replace(/\n\n/g, '\n')
-    .split('\n')
-    .map((line) => {
-      if (/^<(h2|blockquote|table|ul|p|tr|td)/.test(line)) return line
-      if (line.trim() === '') return ''
-      return `<p>${line}</p>`
-    })
-    .join('\n')
+function plainText(value) {
+  return String(value || '')
+    .replace(/\*\*/g, '')
+    .replace(/`/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
-function bucketCounts(planText) {
-  const board = parsePlanBoard(planText)
-  const counts = { fatta: 0, 'con-riserva': 0, 'da-fare': 0, 'non-classificata': 0 }
-  for (const row of board) counts[classifyPlanState(row.stato)]++
-  return counts
+const WORK_EXPLANATIONS = {
+  'WP-1': {
+    title: 'Provare il sistema durante una sessione di lavoro reale',
+    action: 'Usare il sistema mentre un agente svolge un lavoro vero.',
+    purpose: 'Capire se raccoglie le informazioni senza perderle o inventarle.',
+  },
+  'WP-2': {
+    title: 'Ordinare le informazioni delle sessioni già svolte',
+    action: 'Raccogliere e collegare le informazioni utili nei resoconti passati.',
+    purpose: 'Ritrovare problemi e decisioni senza rileggere ogni chat.',
+  },
+  'WP-3': {
+    title: 'Dare regole chiare al sistema degli agenti',
+    action: 'Organizzare ruoli, regole e priorità in un unico sistema coerente.',
+    purpose: 'Evitare istruzioni in conflitto o informazioni duplicate.',
+  },
+  'WP-4': {
+    title: 'Controllare una sessione prima di chiuderla',
+    action: 'Creare una verifica che intercetti dati mancanti, conflitti e lavori fuori obiettivo.',
+    purpose: 'Sapere subito se un risultato è davvero pronto.',
+  },
+  'WP-5': {
+    title: 'Mettere alla prova le regole con casi difficili',
+    action: 'Testare il sistema con esempi che provano a farlo sbagliare.',
+    purpose: 'Scoprire i punti deboli prima di usarlo stabilmente.',
+  },
+  'WP-6': {
+    title: 'Decidere se rendere stabile il nuovo sistema',
+    action: 'Valutare le prove raccolte e scegliere se sostituire il metodo attuale.',
+    purpose: 'Fare il passaggio solo quando non si perdono informazioni importanti.',
+  },
+  'E-2': {
+    title: 'Valutare controlli automatici più forti',
+    action: 'Decidere quali errori il sistema deve bloccare da solo.',
+    purpose: 'Ridurre gli errori ripetuti senza aggiungere regole inutili.',
+  },
+}
+
+function workExplanation(row) {
+  const known = WORK_EXPLANATIONS[row.id]
+  if (known) return known
+  const label = plainText(row.etichetta)
+  return {
+    title: label || 'Completare un miglioramento del sistema',
+    action: `Lavorare su ${label || 'questa parte del sistema'}.`,
+    purpose: 'Rendere il lavoro degli agenti più affidabile e più facile da controllare.',
+  }
+}
+
+function workAvailability(row) {
+  const status = String(row.stato || '').toUpperCase()
+  if (status.includes('NO-GO')) return 'Fermo: richiede una tua decisione esplicita prima di partire.'
+  if (status.startsWith('BLOCCATO')) return 'Parte dopo il primo utilizzo reale del sistema.'
+  if (status.startsWith('NON INIZIATO')) return 'Da preparare quando arriverà il suo turno.'
+  return 'Da valutare.'
+}
+
+function currentFocus(gate, lastCycle) {
+  if (/RIAPERTURA|WP-1|D27/i.test(gate.nextLabel)) {
+    return {
+      title: 'Nessun nuovo lavoro è autorizzato in questo momento',
+      text: 'Le correzioni previste sono concluse. La prima prova con un lavoro reale resta ferma finché non deciderai di avviarla.',
+      action: 'Quando vorrai ripartire, la scelta da fare sarà se autorizzare questa prima prova controllata.',
+    }
+  }
+  return {
+    title: 'Il prossimo lavoro è pronto per essere aperto',
+    text: lastCycle ? `L’ultimo miglioramento è stato concluso; ora si può passare alla fase successiva.` : 'Il piano indica il prossimo lavoro da svolgere.',
+    action: `Il prossimo passo è: ${plainText(gate.nextLabel)}.`,
+  }
 }
 
 function assertOutNotInVersionedDocs(outPath, root) {
@@ -121,73 +169,72 @@ function assertOutNotInVersionedDocs(outPath, root) {
 }
 
 /**
- * @param {{ mdBody: string, gitIso: string|null, cantieri: Array<{id:string,nome:string,stato:string,ingresso:string}>, counts: Record<string, number> }} opts
+ * @param {{ focus: {title:string,text:string,action:string}, work: Array<{title:string,action:string,purpose:string,availability:string}>, completed:number, cantieri: Array<{nome:string,stato:string}> }} opts
  */
-export function buildHtml({ mdBody, gitIso, cantieri, counts }) {
-  const cantieriSection =
-    cantieri.length === 0
-      ? ''
-      : `
-    <section>
-      <h2>Registro cantieri (roadmap privata §3)</h2>
-      <table>
-        <thead><tr><th>ID</th><th>Cantiere</th><th>Stato</th><th>Ingresso</th></tr></thead>
-        <tbody>
-${cantieri
-  .map(
-    (c) =>
-      `        <tr><td><code>${escapeHtml(c.id)}</code></td><td>${escapeHtml(c.nome)}</td><td>${escapeHtml(c.stato)}</td><td><small>${escapeHtml(c.ingresso)}</small></td></tr>`,
-  )
-  .join('\n')}
-        </tbody>
-      </table>
-    </section>`
+export function buildHtml({ focus, work, completed, cantieri }) {
+  const workCards = work
+    .map(
+      (item) => `
+        <article class="work-card">
+          <p class="eyebrow">Cosa fare</p>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p><strong>Intervento:</strong> ${escapeHtml(item.action)}</p>
+          <p><strong>Serve a:</strong> ${escapeHtml(item.purpose)}</p>
+          <p class="availability">${escapeHtml(item.availability)}</p>
+        </article>`,
+    )
+    .join('\n')
+  const otherProjects = cantieri.length
+    ? `<details><summary>Altri progetti che stai seguendo</summary><ul>${cantieri
+        .map((c) => `<li><strong>${escapeHtml(plainText(c.nome))}.</strong> ${escapeHtml(plainText(c.stato))}</li>`)
+        .join('')}</ul></details>`
+    : ''
 
   return `<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cruscotto MSS</title>
+  <title>Il tuo sistema di lavoro</title>
   <style>
-    :root { --bg: #0f1419; --card: #1a2332; --text: #e7ecf3; --muted: #8b9cb3; --accent: #5b9fd4; --warn: #e8a838; --ok: #6bc98a; --err: #e86a6a; }
-    * { box-sizing: border-box; }
-    body { font-family: system-ui, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 1.5rem; line-height: 1.55; }
-    .wrap { max-width: 960px; margin: 0 auto; }
-    header { border-bottom: 1px solid #2a3548; padding-bottom: 1rem; margin-bottom: 1.5rem; }
-    h1 { font-size: 1.5rem; margin: 0 0 .5rem; }
-    .meta { color: var(--muted); font-size: .9rem; }
-    .stats { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
-    .stat { background: var(--card); padding: .75rem 1rem; border-radius: 8px; min-width: 120px; }
-    .stat strong { display: block; font-size: 1.4rem; color: var(--accent); }
-    section { background: var(--card); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
-    h2 { font-size: 1.1rem; margin-top: 0; color: var(--accent); border-bottom: 1px solid #2a3548; padding-bottom: .4rem; }
-    blockquote { border-left: 3px solid var(--muted); margin: .5rem 0; padding-left: 1rem; color: var(--muted); font-size: .92rem; }
-    code { background: #0a0e14; padding: .1em .35em; border-radius: 4px; font-size: .9em; }
-    table { width: 100%; border-collapse: collapse; font-size: .88rem; margin: .5rem 0; }
-    th, td { border: 1px solid #2a3548; padding: .45rem .6rem; text-align: left; vertical-align: top; }
-    th { background: #121820; color: var(--muted); }
-    a { color: var(--accent); }
-    ul { padding-left: 1.2rem; }
-    .footer { color: var(--muted); font-size: .85rem; margin-top: 2rem; }
+    :root { --bg:#f6f5f1; --surface:#fff; --ink:#22211e; --muted:#6c6962; --line:#dedbd3; --accent:#ba5d3b; --accent-soft:#f8e9e2; --ok:#286448; --ok-soft:#e4f1e8; --warn:#81520f; --warn-soft:#f8efd9; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .wrap { width:min(1040px, calc(100% - 32px)); margin:0 auto; padding:48px 0 64px; }
+    header { display:flex; justify-content:space-between; gap:24px; align-items:flex-start; margin-bottom:28px; }
+    h1 { font-size:clamp(2rem, 5vw, 3rem); line-height:1.08; letter-spacing:-.045em; margin:0; }
+    .intro { color:var(--muted); max-width:590px; margin:10px 0 0; }
+    .done { flex:0 0 auto; background:var(--ok-soft); color:var(--ok); border-radius:14px; padding:14px 18px; font-size:.9rem; }
+    .done strong { display:block; font-size:1.5rem; line-height:1.05; }
+    .focus { background:var(--ink); color:#fff; padding:28px; border-radius:20px; margin-bottom:38px; }
+    .focus .eyebrow { color:#eebdab; } .focus h2 { font-size:clamp(1.35rem, 3vw, 2rem); line-height:1.15; margin:4px 0 10px; letter-spacing:-.025em; }
+    .focus p { max-width:730px; margin:0 0 12px; color:#f0ece6; } .focus .next { color:#eebdab; margin-bottom:0; }
+    .section-heading { max-width:690px; margin-bottom:18px; } .section-heading h2 { font-size:1.45rem; margin:0 0 4px; letter-spacing:-.025em; } .section-heading p { margin:0; color:var(--muted); }
+    .work-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .work-card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:0 2px 9px #3d39310b; }
+    .work-card h3 { margin:4px 0 14px; font-size:1.15rem; line-height:1.25; letter-spacing:-.015em; } .work-card p { margin:8px 0; } .eyebrow { color:var(--accent); font-weight:700; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; margin:0; }
+    .availability { display:inline-block; background:var(--warn-soft); color:var(--warn); border-radius:8px; padding:5px 8px; font-size:.86rem; margin-top:14px !important; }
+    details { margin-top:30px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 18px; color:var(--muted); } summary { cursor:pointer; color:var(--ink); font-weight:650; } details ul { margin:12px 0 0; padding-left:20px; } details li { margin:6px 0; }
+    footer { color:var(--muted); font-size:.88rem; margin-top:32px; }
+    @media (max-width:700px) { .wrap { padding-top:28px; } header { display:block; } .done { display:inline-block; margin-top:18px; } .work-grid { grid-template-columns:1fr; } .focus { padding:22px; } }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <main class="wrap">
     <header>
-      <h1>Cruscotto MSS</h1>
-      <p class="meta">Metodo M/D · generato a mano da <code>scripts/mss/views-html.mjs</code> (fuori da validate:mss:all)</p>
-      <p class="meta"><strong>Da quanto è fermo (git HEAD):</strong> ${gitIso ? escapeHtml(gitIso) : 'non ricostruibile'}</p>
-      <div class="stats">
-        <div class="stat"><strong>${counts.fatta}</strong> Fatte</div>
-        <div class="stat"><strong>${counts['con-riserva']}</strong> Con riserva</div>
-        <div class="stat"><strong>${counts['da-fare']}</strong> Da fare</div>
-        <div class="stat"><strong>${counts['non-classificata']}</strong> Non classificate</div>
-      </div>
+      <div><h1>Il tuo sistema di lavoro</h1><p class="intro">Qui vedi i lavori con il loro significato: cosa viene migliorato, perché serve e quando può partire.</p></div>
+      <div class="done"><strong>${completed}</strong> miglioramenti già conclusi</div>
     </header>
-    <section class="cruscotto">${mdToHtml(mdBody)}</section>${cantieriSection}
-    <p class="footer">HTML standalone — cantieri (se presenti) da roadmap privata; non finiscono nel .md versionato né nei cancelli CI.</p>
-  </div>
+    <section class="focus" aria-labelledby="focus-title">
+      <p class="eyebrow">Dove siamo ora</p><h2 id="focus-title">${escapeHtml(focus.title)}</h2>
+      <p>${escapeHtml(focus.text)}</p><p class="next"><strong>Prossimo passo:</strong> ${escapeHtml(focus.action)}</p>
+    </section>
+    <section aria-labelledby="work-title"><div class="section-heading"><h2 id="work-title">I prossimi lavori, spiegati in modo diretto</h2><p>Ogni scheda dice quale parte del sistema viene toccata, che intervento riceve e quale risultato deve produrre.</p></div>
+      <div class="work-grid">${workCards}</div>
+    </section>
+    ${otherProjects}
+    <footer>Questa pagina nasconde volontariamente i codici interni. Se vuoi il dettaglio tecnico, chiedilo sull’attività che ti interessa.</footer>
+  </main>
 </body>
 </html>
 `
@@ -230,7 +277,12 @@ export function runViewsHtml({
     throw new Error(`MSS-VIEWS-HTML-PLAN: owner assente «${planPath}».`)
   }
   const planText = readFileSync(planPath, 'utf8')
-  const mdBody = deriveMatteoDashboard(planText)
+  const board = parsePlanBoard(planText)
+  const gate = parsePlanGate(planText)
+  const lastCycle = parsePlanLastCycle(planText)
+  const work = board
+    .filter((row) => classifyPlanState(row.stato) === 'da-fare' || row.id === 'E-2')
+    .map((row) => ({ ...workExplanation(row), availability: workAvailability(row) }))
   const gitIso = gitLastCommitIso(root)
   let cantieri = []
   try {
@@ -240,11 +292,11 @@ export function runViewsHtml({
   } catch {
     cantieri = []
   }
-  const counts = bucketCounts(planText)
-  const html = buildHtml({ mdBody, gitIso, cantieri, counts })
+  const completed = board.filter((row) => classifyPlanState(row.stato) === 'fatta').length
+  const html = buildHtml({ focus: currentFocus(gate, lastCycle), work, completed, cantieri })
   mkdirSync(dirname(outPath), { recursive: true })
   writeFileSync(outPath, html, 'utf8')
-  return { outPath, gitIso, cantieriCount: cantieri.length, counts }
+  return { outPath, gitIso, cantieriCount: cantieri.length, workCount: work.length }
 }
 
 function usage() {

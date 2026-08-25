@@ -730,6 +730,7 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 |---|---|
 | Report-chiusura-residui-t13-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md` |
 | Report-chiusura-sk10-firma-matteo-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-chiusura-sk10-firma-matteo-25-08-26.md` |
+| Report-contratto-comunicazione-diretta-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-contratto-comunicazione-diretta-25-08-26.md` |
 | Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md` |
 | Report-cruscotto-mdp-fase0-fase1-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-cruscotto-mdp-fase0-fase1-25-08-26.md` |
 | Report-d14-indice-report-t12-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-d14-indice-report-t12-25-08-26.md` |

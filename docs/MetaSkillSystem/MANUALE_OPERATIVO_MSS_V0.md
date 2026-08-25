@@ -232,11 +232,12 @@ non una capacità esportata dal motore nelle repo ospiti.
 
 | | |
 |---|---|
-| **Legge** | `PLAN_V0.md` (stesso parser M+D di `generate:mss:views`) + `git log -1 --format=%cI` + roadmap privata §3 se leggibile |
+| **Legge** | `PLAN_V0.md` (punto attuale + lavori da fare) + roadmap privata §3 se leggibile |
 | **Scrive** | un `.html` **fuori** da `docs/` versionati (default: scratchpad Cursor); rifiuta `--out` sotto `docs/` |
 | **Uso sicuro** | `npm run mss:views-html` oppure `node scripts/mss/views-html.mjs [--out path] [--plan path] [--roadmap path]` |
 | **Cancelli** | **non** è in `validate:mss:all` / CI — solo invocazione manuale |
 
+La vista traduce ogni lavoro in **cosa fare → intervento → scopo** e nasconde le sigle interne.
 Cantieri L6/privati restano solo nell'HTML locale; non entrano nel `.md` versionato.
 
 ### 2.4-quinquies `npm run mss:move -- <sorgente> <destinazione>` — sposta e aggiorna i link vivi

@@ -140,10 +140,12 @@ spiegazione per Matteo). Deve essere auto-contenuto e contenere, quando pertinen
   aggiornamento skill»: l'allineamento skill è già obbligatorio (APP_CONTEXT § 7.2) — vedi § C.
 - **Criterio di fatto**: come si capisce che è finito (comportamento atteso, `npm run validate`).
 - **Chiusura verso Matteo (obbligatoria nel prompt esecutore e revisore):** alla fine del lavoro,
-  l'agente deve consegnare a Matteo — in linguaggio semplice, senza sigle, abbreviazioni o termini
-  tecnici — **una checklist di cosa verificare in app** se ha fatto più di una modifica, oppure
-  **una breve spiegazione** se la modifica è una sola. Non sostituisce report/checklist tecnica §7:
-  è il riassunto leggibile per il ristoratore che controlla a mano.
+  l'agente deve consegnare a Matteo una sintesi con i titoli **«Cosa cambia per te»**, **«Dove
+  siamo»**, **«Ti consiglio»**, **«Pronto per il prossimo passo»** e **«Tua azione»** (solo le
+  sezioni pertinenti). La prima frase deve essere autosufficiente: elemento → intervento →
+  risultato verificabile. Per ogni attività usa una frase completa, mai sigle, task-ID o dettagli
+  tecnici da decifrare. Includi già la checklist semplice o il prompt che gli serve per proseguire.
+  Non sostituisce report/checklist tecnica §7: è il riassunto leggibile per Matteo.
 
 **Usa il VOCABOLARIO come lessico-comando.** Il vocabolario è l'insieme delle parole *definite e
 approvate* da Matteo per generare comandi: quando nel prompt indichi un'area, un'azione o un
@@ -186,9 +188,10 @@ giri di chat e reinterpretazioni dell'agente esecutore.
 
 **Chiusura nel prompt.** Includi sempre un blocco fine-sessione che richiama APP_CONTEXT § 7: a
 conferma di Matteo → report/capsula § 7.1 + **allineamento skill § 7.2** delle aree toccate + righe in
-`docs/FOLLOW_UP.md` per controlli rimandati. È già obbligatorio: non presentarlo come opzione né
-escluderlo. Aggiungi anche la riga **«Chiusura verso Matteo»** (checklist semplice o spiegazione
-breve se una sola modifica — vedi bullet sopra in §1.B). Nei prompt **deep o Meta**, richiedi anche
+`docs/FOLLOW_UP.md` per controlli rimandati. È già obblatorio: non presentarlo come opzione né
+escluderlo. Aggiungi anche la riga **«Chiusura verso Matteo»** con il formato approvato: prima frase
+autosufficiente, poi solo le sezioni utili fra «Dove siamo», «Ti consiglio», «Pronto per il prossimo
+passo» e «Tua azione» (vedi bullet sopra in §1.B). Nei prompt **deep o Meta**, richiedi anche
 l'handoff operativo di `CHIUSURA_SESSIONE.md` §10-bis: stato vero adesso, decisioni chiuse, autorità,
 owner e prossimo task con gate; non una lista di documenti.
 
@@ -283,19 +286,23 @@ file isolati; domande brevi a opzioni/sì-no; niente lezioni tecniche non richie
 invece è tecnico e preciso (lo legge un agente) — la distinzione è netta: spiegazione a Matteo =
 semplice; prompt per l'agente = strutturato.
 
-**Checklist / allineamento verso Matteo (30-05-26):** tabelle compatte (Dove | Cosa fai | OK se);
-flusso utente e nomi schermata in app; no gergo agente (overlay, guard, eyebrow). Spiegazioni lunghe
-solo se chieste. Il prompt esecutore resta tecnico.
+**Formato obbligatorio verso Matteo:** apri con una frase autosufficiente nella forma
+**elemento → intervento → risultato verificabile**. Poi usa solo le sezioni che servono:
+**«Dove siamo»** (max tre attività complete), **«Ti consiglio»** (una direzione e il perché),
+**«Pronto per il prossimo passo»** (prompt/checklist/report già incluso) e **«Tua azione»**
+(una sola, solo se necessaria). Niente sigle, task-ID, tabelle di stato o gergo agente nella parte
+che Matteo legge per decidere. Tabelle solo se Matteo dice «ragioniamo» o se un confronto è davvero
+più chiaro di poche frasi. Spiegazioni lunghe solo se chieste. Il prompt esecutore resta tecnico.
 
 **Sintesi post-revisione / handoff (approvato 30-05-26, ciclo Menu QR).** Quando Matteo chiede
 cosa decidere e come proseguire dopo un revisore, rispondi in questo ordine (poche righe, no ridondanza):
 
-1. **Cosa decidere** — linguaggio schermata + effetto; ogni scelta aperta con **A / B / C** oppure
-   **Sì / No** e una riga **Raccomandato:** (es. «Raccomandato: A»).
-2. **Dove siamo nel ciclo** — tabella fasi (1 Mappa · 2 Revisione · 3 Fix · 4 Revisione fix) con ✅/⏳/⬜.
-3. **Checklist ciclo** — stessa sezione, elenco `- [ ]` / `- [x]` che si aggiorna a ogni fase (non
-   sostituire la tabella: vanno **sempre insieme**).
-4. **Prossimo passo** — una riga (es. «Prompt Fase 3» o «conferma D1/D2»).
+1. **Cosa devi decidere** — solo se esiste davvero una scelta aperta; linguaggio schermata +
+   effetto, poche opzioni e una riga **«Ti consiglio»**.
+2. **Dove siamo** — massimo tre frasi nella forma elemento → intervento → scopo; non mostrare le
+   fasi come codici o stati da interpretare.
+3. **Pronto per il prossimo passo** — consegna già il prompt o la checklist necessari.
+4. **Tua azione** — una riga, solo se Matteo deve decidere o verificare qualcosa.
 
 **Handoff / follow-up aggiornamento (31-05-26).** Quando Matteo chiede un follow-up per il
 prossimo agente prepara-prompt (o «aggiorna handoff»), **prima** del blocco copia-incolla includi
@@ -416,7 +423,10 @@ Quando Matteo dice che l'agente esecutore ha finito:
 ### Chiusura verso Matteo (dopo procedure fine chat)
 
 Quando hai completato revisione (se rapida), aggiornamento report e raccolta dati comunicazione
-(OSSERVAZIONI/PROPOSTE se previsto), chiudi con **2–4 righe** che rispondano esplicitamente:
+(OSSERVAZIONI/PROPOSTE se previsto), chiudi con il formato approvato: **«Cosa cambia per te»**
+(prima frase autosufficiente), poi solo le sezioni pertinenti fra **«Dove siamo»**, **«Ti consiglio»**,
+**«Pronto per il prossimo passo»** e **«Tua azione»**. Dentro quelle sezioni devono comparire, quando
+pertinenti, questi fatti operativi:
 
 - **Ciclo task:** sì — può aprire un’altra chat; questa è **completa a livello tecnico e operativo**
   per il lavoro richiesto (codice/validate/checklist/report skill area).
@@ -433,9 +443,10 @@ Quando hai completato revisione (se rapida), aggiornamento report e raccolta dat
 - **Resta fuori** (solo se applicabile): commit non fatto, smoke non confermato, follow-up esplicito.
 - **Terminali:** se in sessione l’esecutore ha avviato shell/`npm run dev`, ricorda a Matteo di chiudere **solo** quelle tab agente (`APP_CONTEXT` §7.3) — non il suo dev locale.
 
-Esempio: «Puoi chiudere questa chat e aprirne un’altra: task ok, report in Sessioni di lavoro/…,
-dati comunicazione raccolti. Puoi chiudere le tab terminale lasciate dall’agente; tieni il tuo `npm run dev` se ti serve ancora.»
-dati comunicazione raccolti. Resta solo commit se lo vuoi / sessione revisore quando decidi tu.»
+Esempio: «**Cosa cambia per te:** la verifica finale della seduta è stata completata, quindi il
+resoconto conserva tutte le informazioni raccolte. **Pronto per il prossimo passo:** puoi aprire una
+nuova chat senza dover ricostruire il punto raggiunto; report e dati comunicazione sono già aggiornati.
+**Tua azione:** nessuna.»
 
 Se la revisione include commit (Matteo lo chiede o è prassi del ciclo), eseguilo **dopo** la chiusura
 in chat: commit codice e commit `docs` separati se il repo lo fa di solito; non includere file fuori scope del task.

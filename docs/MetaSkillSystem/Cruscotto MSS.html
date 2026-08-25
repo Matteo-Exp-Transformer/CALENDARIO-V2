@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Il tuo sistema di lavoro</title>
+  <style>
+    :root { --bg:#f6f5f1; --surface:#fff; --ink:#22211e; --muted:#6c6962; --line:#dedbd3; --accent:#ba5d3b; --accent-soft:#f8e9e2; --ok:#286448; --ok-soft:#e4f1e8; --warn:#81520f; --warn-soft:#f8efd9; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .wrap { width:min(1040px, calc(100% - 32px)); margin:0 auto; padding:48px 0 64px; }
+    header { display:flex; justify-content:space-between; gap:24px; align-items:flex-start; margin-bottom:28px; }
+    h1 { font-size:clamp(2rem, 5vw, 3rem); line-height:1.08; letter-spacing:-.045em; margin:0; }
+    .intro { color:var(--muted); max-width:590px; margin:10px 0 0; }
+    .done { flex:0 0 auto; background:var(--ok-soft); color:var(--ok); border-radius:14px; padding:14px 18px; font-size:.9rem; }
+    .done strong { display:block; font-size:1.5rem; line-height:1.05; }
+    .focus { background:var(--ink); color:#fff; padding:28px; border-radius:20px; margin-bottom:38px; }
+    .focus .eyebrow { color:#eebdab; } .focus h2 { font-size:clamp(1.35rem, 3vw, 2rem); line-height:1.15; margin:4px 0 10px; letter-spacing:-.025em; }
+    .focus p { max-width:730px; margin:0 0 12px; color:#f0ece6; } .focus .next { color:#eebdab; margin-bottom:0; }
+    .section-heading { max-width:690px; margin-bottom:18px; } .section-heading h2 { font-size:1.45rem; margin:0 0 4px; letter-spacing:-.025em; } .section-heading p { margin:0; color:var(--muted); }
+    .work-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .work-card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:0 2px 9px #3d39310b; }
+    .work-card h3 { margin:4px 0 14px; font-size:1.15rem; line-height:1.25; letter-spacing:-.015em; } .work-card p { margin:8px 0; } .eyebrow { color:var(--accent); font-weight:700; font-size:.78rem; letter-spacing:.08em; text-transform:uppercase; margin:0; }
+    .availability { display:inline-block; background:var(--warn-soft); color:var(--warn); border-radius:8px; padding:5px 8px; font-size:.86rem; margin-top:14px !important; }
+    details { margin-top:30px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 18px; color:var(--muted); } summary { cursor:pointer; color:var(--ink); font-weight:650; } details ul { margin:12px 0 0; padding-left:20px; } details li { margin:6px 0; }
+    footer { color:var(--muted); font-size:.88rem; margin-top:32px; }
+    @media (max-width:700px) { .wrap { padding-top:28px; } header { display:block; } .done { display:inline-block; margin-top:18px; } .work-grid { grid-template-columns:1fr; } .focus { padding:22px; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div><h1>Il tuo sistema di lavoro</h1><p class="intro">Qui vedi i lavori con il loro significato: cosa viene migliorato, perché serve e quando può partire.</p></div>
+      <div class="done"><strong>17</strong> miglioramenti già conclusi</div>
+    </header>
+    <section class="focus" aria-labelledby="focus-title">
+      <p class="eyebrow">Dove siamo ora</p><h2 id="focus-title">Nessun nuovo lavoro è autorizzato in questo momento</h2>
+      <p>Le correzioni previste sono concluse. La prima prova con un lavoro reale resta ferma finché non deciderai di avviarla.</p><p class="next"><strong>Prossimo passo:</strong> Quando vorrai ripartire, la scelta da fare sarà se autorizzare questa prima prova controllata.</p>
+    </section>
+    <section aria-labelledby="work-title"><div class="section-heading"><h2 id="work-title">I prossimi lavori, spiegati in modo diretto</h2><p>Ogni scheda dice quale parte del sistema viene toccata, che intervento riceve e quale risultato deve produrre.</p></div>
+      <div class="work-grid">
+        <article class="work-card">
+          <p class="eyebrow">Cosa fare</p>
+          <h3>Provare il sistema durante una sessione di lavoro reale</h3>
+          <p><strong>Intervento:</strong> Usare il sistema mentre un agente svolge un lavoro vero.</p>
+          <p><strong>Serve a:</strong> Capire se raccoglie le informazioni senza perderle o inventarle.</p>
+          <p class="availability">Fermo: richiede una tua decisione esplicita prima di partire.</p>
+        </article>
+
+        <article class="work-card">
+          <p class="eyebrow">Cosa fare</p>
+          <h3>Ordinare le informazioni delle sessioni già svolte</h3>
+          <p><strong>Intervento:</strong> Raccogliere e collegare le informazioni utili nei resoconti passati.</p>
+          <p><strong>Serve a:</strong> Ritrovare problemi e decisioni senza rileggere ogni chat.</p>
+          <p class="availability">Parte dopo il primo utilizzo reale del sistema.</p>
+        </article>
+
+        <article class="work-card">
+          <p class="eyebrow">Cosa fare</p>
+          <h3>Dare regole chiare al sistema degli agenti</h3>
+          <p><strong>Intervento:</strong> Organizzare ruoli, regole e priorità in un unico sistema coerente.</p>
+          <p><strong>Serve a:</strong> Evitare istruzioni in conflitto o informazioni duplicate.</p>
+          <p class="availability">Da preparare quando arriverà il suo turno.</p>
+        </article>
+
+        <article class="work-card">
+          <p class="eyebrow">Cosa fare</p>
+          <h3>Controllare una sessione prima di chiuderla</h3>
+          <p><strong>Intervento:</strong> Creare una verifica che intercetti dati mancanti, conflitti e lavori fuori obiettivo.</p>
+          <p><strong>Serve a:</strong> Sapere subito se un risultato è davvero pronto.</p>
+          <p class="availability">Da preparare quando arriverà il suo turno.</p>
+        </article>
+
+        <article class="work-card">
+          <p class="eyebrow">Cosa fare</p>
+          <h3>Mettere alla prova le regole con casi difficili</h3>
+          <p><strong>Intervento:</strong> Testare il sistema con esempi che provano a farlo sbagliare.</p>
+          <p><strong>Serve a:</strong> Scoprire i punti deboli prima di usarlo stabilmente.</p>
+          <p class="availability">Da preparare quando arriverà il suo turno.</p>
+        </article>
+
+        <article class="work-card">
+          <p class="eyebrow">Cosa fare</p>
+          <h3>Decidere se rendere stabile il nuovo sistema</h3>
+          <p><strong>Intervento:</strong> Valutare le prove raccolte e scegliere se sostituire il metodo attuale.</p>
+          <p><strong>Serve a:</strong> Fare il passaggio solo quando non si perdono informazioni importanti.</p>
+          <p class="availability">Da preparare quando arriverà il suo turno.</p>
+        </article>
+
+        <article class="work-card">
+          <p class="eyebrow">Cosa fare</p>
+          <h3>Valutare controlli automatici più forti</h3>
+          <p><strong>Intervento:</strong> Decidere quali errori il sistema deve bloccare da solo.</p>
+          <p><strong>Serve a:</strong> Ridurre gli errori ripetuti senza aggiungere regole inutili.</p>
+          <p class="availability">Da valutare.</p>
+        </article></div>
+    </section>
+    <details><summary>Altri progetti che stai seguendo</summary><ul><li><strong>Interrogazione skill (6 blocchi).</strong> ✅ FASE 2 CHIUSA — 6/6; C8 resta aperto ma non è il focus corrente</li><li><strong>Albero skill definitivo + profilo v1 + profilo recruiter (Fase 3).</strong> ⏸️ NON AVVIATO — il gate dei sei blocchi è superato; attende una scelta esplicita di Matteo dopo SYS-1</li><li><strong>Skill system del repo (in affinamento).</strong> 🟢 in corso, parallelo</li><li><strong>Prodotto PrenotaZen.</strong> 🟢 in corso</li><li><strong>Tutoraggio HubSpot.</strong> 🛑 SOSPESO (decisione sua, 07-08-26)</li><li><strong>Corsi.</strong> ⏸️ fermo</li><li><strong>Candidature e profilo pubblico.</strong> ⏸️ fermo, dipende da C2</li><li><strong>⭐ Il divario «fa / non nomina» — esegue la mossa e non la vede.</strong> 🟢 APERTO 08-08-26 (decisione MET-E)</li><li><strong>⛔ L'instradamento non regge su un agente che non ha letto niente.</strong> ✅ CHIUSO 09-08-26 — ABBANDONATO, decisione di Matteo con agente senior. Il collaudo resta 🔴 fallito; nessuna ripetizione</li><li><strong>⭐ MetaSkillSystem v0.</strong> 🟢 FOCUS CORRENTE — stato, progressi, gate e idee vivono solo nel masterplan</li></ul></details>
+    <footer>Questa pagina nasconde volontariamente i codici interni. Se vuoi il dettaglio tecnico, chiedilo sull’attività che ti interessa.</footer>
+  </main>
+</body>
+</html>

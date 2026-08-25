@@ -17,6 +17,35 @@ Non sostituisce `APP_CONTEXT_SKILL.md` (routing, LOCK, edition). Non va nel flus
 
 Matteo chiede approfondimenti lui quando vuole. **Non anticipare spiegazioni non richieste.**
 
+## Regola zero: la prima frase deve reggersi da sola
+
+La prima frase, sotto un titolo come **«Cosa cambia per te»**, deve dire in linguaggio diretto
+**quale elemento viene toccato, che cosa gli viene fatto e quale risultato Matteo potrà vedere o
+verificare**. Deve avere senso anche letta da sola, senza le righe sotto.
+
+Formula pratica:
+
+> **[Schermata, elemento o funzione]** viene **[corretto / testato / controllato / aggiunto]** per
+> **[risultato concreto]**. Puoi verificarlo **[azione semplice o effetto visibile]**.
+
+Esempio corretto:
+
+> La registrazione finale della seduta viene corretta, così salva tutti i dati necessari senza
+> lasciare parti mancanti. Puoi verificare che il resoconto resti completo anche quando la chat si
+> chiude.
+
+Esempio da evitare:
+
+> `SK-7` / `T13` aperto: sistemare la capsula e rieseguire il gate.
+
+Non usare nella prima frase sigle, identificatori interni, stati di task, nomi di comandi o parole
+che Matteo deve decifrare. Se un dettaglio tecnico serve davvero, traducilo prima; il codice o la
+sigla possono comparire solo dopo, tra parentesi e mai come unica informazione.
+
+Quando descrivi un lavoro ancora da fare, non elencare «task aperti»: racconta ogni attività come
+un'affermazione completa **elemento → intervento → scopo**. Per esempio: «Dobbiamo controllare il
+salvataggio finale della seduta per assicurarci che i dati raccolti restino completi.»
+
 Per ogni modifica, scrivi al massimo 2–3 frasi:
 1. **Cosa cambia** per il ristoratore (schermata + effetto concreto).
 2. **Perché** si tocca quella parte (in parole semplici).
@@ -49,12 +78,16 @@ Quando chiudi un task, la **risposta di default in chat** ha questa forma — pe
 si focalizzi subito sull'essenziale, e chieda lui il dettaglio se serve. **Default sintetico, non
 minimo:** dai abbastanza per capire e agire, non un muro di testo da decifrare.
 
-1. **1–2 frasi** su cosa è cambiato per chi usa l'app (schermata + effetto).
-2. **Tabella compatta** quando ci sono più punti/esiti — colonne tipo **Dove | Cosa fai | OK se**
-   (flusso utente e nomi schermata in app, **no gergo agente**: niente overlay/guard/eyebrow/query key).
-3. **Checklist** se serve verificare qualcosa: ogni riga = **dove guardare** + **cosa devi vedere**
-   (es. «Admin → tab Menu → vedi il pulsante QR»). Mai route tecniche tipo `/c/antipasti` verso Matteo.
-4. **Una riga finale**: cosa resta / serve una tua azione (sì/no) / «chiedimi se vuoi il dettaglio».
+1. **«Cosa cambia per te»** — 1–2 frasi autosufficienti, applicando la Regola zero
+   (elemento + intervento + risultato verificabile).
+2. **«Dove siamo»** — massimo tre attività, ciascuna nella forma **elemento → intervento → scopo**;
+   mai una lista di codici, task-ID o stati interni.
+3. **«Ti consiglio»** — una direzione chiara e il motivo, quando Matteo deve scegliere o il lavoro
+   ha un passo successivo.
+4. **«Pronto per il prossimo passo»** — includi già ciò che gli evita un nuovo giro: prompt da
+   incollare, cosa deve verificare, report aggiornato oppure dichiarazione esplicita che non serve
+   nulla. Non prometterlo per dopo.
+5. **«Tua azione»** — una sola riga, solo se serve davvero una decisione o una verifica di Matteo.
 
 > **Default sintetico, dettaglio on-demand.** Non anticipare derivazione tecnica, nomi file, logica
 > interna: Matteo li chiede quando servono. Ma la sintesi deve bastare a decidere senza altri giri.

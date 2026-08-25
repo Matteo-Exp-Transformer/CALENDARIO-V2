@@ -30,7 +30,8 @@ La modalità la assegna `PREPARA_PROMPT_SKILL.md` §1.A e la scrive nel prompt. 
 ## Le sezioni di un report standard/deep (in ordine)
 
 ### 1. Cappello (3 righe, sempre in cima)
-- **Cosa è cambiato:** 1 frase, effetto per l'utente finale.
+- **Cosa è cambiato:** una frase autosufficiente: elemento → intervento → risultato che Matteo
+  può verificare. Non iniziare con sigle, stati o riferimenti a file.
 - **Cosa resta:** lavori aperti / follow-up, o «niente».
 - **Serve una tua azione:** sì (cosa) / no.
 

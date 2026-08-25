@@ -48,8 +48,10 @@ una **skill d'area**. **Non navigare il codice a tappeto:** apri prima il routin
 - **«dammi follow up»** → solo il prompt per la prossima chat. **«spiegamelo semplice»** → effetto concreto, breve.
 - **«ragioniamo»** → fermati a ragionare: spiegazione + effetto per te + tabellina + checklist (vedi voce nel VOCABOLARIO).
 
-**Salvaguardie sempre attive:** stile con Matteo (parla per schermate/flussi concreti, non nomi-file
-isolati; breve di default); **sicurezza PROD** (prima di INSERT/UPDATE/DELETE/migrazioni via MCP
+**Salvaguardie sempre attive:** stile con Matteo (la prima frase deve essere autosufficiente:
+elemento → intervento → risultato verificabile; parla per schermate/flussi concreti, non nomi-file
+isolati o sigle; breve di default — dettaglio in `docs/COMUNICAZIONE_UTENTE_SKILL.md`);
+**sicurezza PROD** (prima di INSERT/UPDATE/DELETE/migrazioni via MCP
 verifica l'ambiente con `get_project_url` — se è PROD `rwuxgvld` FERMATI e chiedi conferma; su TEST
 `docnnernvp` procedi. Se il canale è CLI su TEST, usa la checklist di `docs/APP_CONTEXT_SKILL.md`
 §1b: project ref/host/org devono essere `docnnernvp`, mai usare CLI per scrivere PROD);
