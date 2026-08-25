@@ -5,9 +5,10 @@
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
-> **Ultimo movimento:** **T10 / M-H13-PASS** — `H-1.3` **PASS** (Opzione B: E2-A..D chiuse con
-> enforcement misurato; residui umani espliciti in matrice). **M-T8** e **SK-10** restano CHIUSI.
-> Prossimo lavoro **P2 backlog** (`T11`: D14 / R-T7-04 / R-T7-06 — non `WP-1`). Audit P1 in
+> **Ultimo movimento:** **T11 / P2** — D14 ROADMAP/HANDOFF **PROVATO**; N4 residuo deny **PROVATO**;
+> R-T7-06 **CHIUSA** Opzione B; report orchestratore. **T10** / `H-1.3` **PASS** restano chiusi.
+> Prossimo: commit P2 solo con sì Matteo; residui documentali (indice report; `PROMPT_ORCHESTRATOR`
+> N4 ancora stale); **non** `WP-1`. Audit P1 in
 > [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
 > `WP-1` **NO-GO** · `D27` chiusa finché Matteo non riapre in chat dedicata.
 >
@@ -75,7 +76,7 @@ lavoro del masterplan.
 | 2 | `WP-0.1` — hardening pre-pilota | `CHIUSO NEL DISEGNO` 09-08-26 | efficacia da osservare nel primo pilota |
 | 3 | `H-1` — validator + hook rapidi | **chiusura invalidata dalla revisione H-1.1** | resta storia del primo hardening |
 | 3.1 | `H-1.1` — integrità append-only e semantica | **`CHIUSO NEL DISEGNO` 10-08-26** | revisione completa esterna prima di WP-1 |
-| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS` 25-08-26** — ✅ riserva `H13-POST-L01` CHIUSA 24-08-26 (`M13`); ✅ T7 `B-E2-CI` chiuso (`SK-5`); ✅ Opzione B **M-E2-A..D CHIUSE** (CI post-hoc no-verify; Report/Verbale unstaged; Cloud checklist+CI; light deny `MSS-LIGHT-NO-EVENT`); residui umani misurati in `COVERAGE_MATRIX_H1.json` (`--no-verify` Git, hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) — **non** stale «bypass intenzionali accettati» | P2 backlog (`T11`); **non** apre WP-1; G5 non PASS |
+| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS` 25-08-26** — ✅ riserva `H13-POST-L01` CHIUSA 24-08-26 (`M13`); ✅ T7 `B-E2-CI` chiuso (`SK-5`); ✅ Opzione B **M-E2-A..D CHIUSE** (CI post-hoc no-verify; Report/Verbale unstaged; Cloud checklist+CI; light deny `MSS-LIGHT-NO-EVENT`); residui umani misurati in `COVERAGE_MATRIX_H1.json` (`--no-verify` Git, hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) — **non** stale «bypass intenzionali accettati» | P2 (`T11`) **CHIUSO**; **non** apre WP-1; G5 non PASS |
 | 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NO-GO** (`D27` chiusa; `H-1.3` PASS ≠ via libera pilota) | ricostruzione fredda senza perdita/invenzione |
 | 5 | `WP-2` — mining storico normalizzato | `BLOCCATO DA PRIMO PILOTA` | eventi citano fonti e schema/versione |
 | 6 | `WP-3` — kernel, manifest, pacchetti e chiavi | `NON INIZIATO` | autorità e precedenze formalizzate |
@@ -94,7 +95,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 |---|---|---|---|
 | S0 | `SK-0` — sbloccare i cancelli globali | **`CHIUSO E OSSERVATO` 21-08-26** | ✅ `npm run lint` **exit 0** (era 363 problemi / 17 errori) · ✅ `npm run test` **163 file, 1346 test, exit 0** · ✅ `npm run validate` **exit 0** · ✅ `validate:docs` **3 886 → 17** path rotti |
 | S1 | `SK-1` — punto di ripristino (tag annotato) | **ESEGUITO E PUBBLICATO** 24-08-26 | tag annotato `mss/baseline-h13` su `HEAD` pre-`M-A`/`M-B`, pubblicato su `origin` il 24-08-26 con decisione `M5` di Matteo: `git ls-remote --tags origin "mss/*"` lo conferma dal remoto, non solo in locale |
-| S2 | `SK-2` — `mss:status` (sola lettura) | **`ALLINEATO` 25-08-26 (`T7`)** | ✅ gate da parser PLAN condiviso con `generate:mss:views` (ultimo ciclo, non gate storici) · ✅ sezione viste anti-stale · ✅ lavagna M/D/P nel cruscotto (§4-quater glossa, §4-ter prevale) · ✅ test nominato `SK-2 / status: gate autorizzato…` in `test:mss:tools` · ⚠️ ROADMAP/HANDOFF restano viste manuali fino a estensione dedicata |
+| S2 | `SK-2` — `mss:status` (sola lettura) | **`ALLINEATO` 25-08-26 (`T7`)** | ✅ gate da parser PLAN condiviso con `generate:mss:views` (ultimo ciclo, non gate storici) · ✅ sezione viste anti-stale · ✅ lavagna M/D/P nel cruscotto (§4-quater glossa, §4-ter prevale) · ✅ test nominato `SK-2 / status: gate autorizzato…` in `test:mss:tools` · ✅ **D14 25-08-26:** ROADMAP/HANDOFF generate (`roadmap-senior` / `handoff-senior`) + test `D14/V1` · ⚠️ indice report ancora manuale |
 | S3 | `SK-3` — `mss:review` (sola lettura) | **`CHIUSO` 24-08-26 (`T2`, `M12`)** | ✅ `npm run mss:review` esiste ed è sola lettura (stato Git invariato) · ✅ test nominato `T2 / mss:review — …` in `test:mss:tools` (seduta sporca trova owner/L5/L6/capsula assente; seduta pulita `problems.length === 0`) · ✅ M12: gate rieseguiti verdi e controverifica OpenAI/gpt-5.6-sol, famiglia diversa dall’esecutore Cursor/Composer |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`CHIUSO` 25-08-26 — firma Matteo post-revisione Cursor T6** | ✅ B1: due record legacy nuovi staged insieme ricevono entrambi `MSS-LEGACY-NEW-FORBIDDEN`, mentre lo storico canonico già in `HEAD` resta leggibile · ✅ B2/B3: `Report-` e `Verbale-` ricorsivi entrano nei gate staged/worktree · ✅ D18: `mss:review` importa `REPORT_PATH_RE` da `adapter.mjs` · test nominati in `test:mss` e `test:mss:tools` · revisione indipendente Cursor `PASS_CON_RISERVE` · firma verbatim Matteo 25-08-26 |
 | S5 | `SK-5` — controlli MSS in CI su `env/test` | **`CHIUSO` 24-08-26 — decisione `M13` di Matteo.** Nessuna prova tecnica restava da produrre: era l'unico dei quattro pacchetti «in attesa di firma» davvero pronto | `npm run validate` è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. ✅ **24-08-26: primo push eseguito (decisione `M5`) e job `mss` osservato VERDE su GitHub Actions reale** con questa forma — non più una simulazione locale. Verifica: `gh run list --branch env/test` |
@@ -694,7 +695,7 @@ bersaglio non è in `git HEAD`. Nessun report della giornata era committato, qui
 `Senior-Eval-Pack/ROADMAP_V0.md` è stata **rimossa**, non corretta — aveva accumulato tre stati
 diversi di `SK-7`; i conteggi di test cablati in `Senior-Eval-Pack/HANDOFF_SENIOR_V0.md` sono stati
 sostituiti dal comando che li produce. È un tampone: torneranno alla prima seduta produttiva finché
-`D14` resta aperto.
+`D14` ROADMAP/HANDOFF **PROVATO** 25-08-26; residuo indice report.
 
 **Storico di questa sezione, per non riaprire strade già chiuse:**
 
@@ -758,7 +759,7 @@ Condizioni `M12` tutte vere:
    rifiuto `unverified`+`verified_by`, `git init` senza commit con owner verde).
 
 - **`N3`:** avviso leggibile su apici singoli / path non quotato; virgolette doppie restano pulite.
-- **`N4`:** `--check-expect <exit>` lega l'exit atteso al `--check` immediatamente precedente.
+- **`N4`:** `--check-expect <exit>` lega l'exit atteso al `--check` immediatamente precedente. ✅ **Residuo M-C (comando infallibile → `pass` vacuo):** **PROVATO** 25-08-26 (`M-SK7-N4`) — denylist chiusa in `capsule.mjs` (deny exit 2, nessuna scrittura); test `capsule: N4 / SK-7 — controllo infallibile deny…`; `--check-expect` ≠ 0 resta ammissibile.
 - **`N5`:** porta `--verify` + cancello `MSS-VERIFIER-STATUS-INCOHERENT` (anche via amendment).
 - **`N6`:** passo `owner` di `mss:doctor` legge solo il blocco owner, non la sezione Git.
 
@@ -975,9 +976,10 @@ Report orchestratore: [`Report-orchestratore-t7-backlog-pilota-25-08-26.md`](../
 - **R-T7-01:** ✅ **CHIUSA** 25-08-26 — commit T7+T9+Opzione B pubblicati su `origin/env/test` (`0a86c81`–`764d862` + atti M-T8); push autorizzato Matteo «ok per tutti e due».
 - **R-T7-02:** ✅ **CHIUSA** 25-08-26 — controverifica M12 Codex **PULITO** su Opzione B F1–F3: [`Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md) · fix `0a86c81`.
 - **R-T7-03:** ✅ **CHIUSA** 25-08-26 (`T10` / M-H13-PASS) — `H-1.3` = **`PASS`**; E2-A..D chiuse; residui umani misurati in matrice (non stale).
-- **R-T7-04:** ROADMAP/HANDOFF Senior-Eval restano viste manuali (D14 parziale).
+- **R-T7-04:** ✅ **CHIUSA** 25-08-26 (`M-D14`) — ROADMAP/HANDOFF Senior-Eval generate da `PLAN_V0` (`generate:mss:views` / `validate:mss:views`); test nominato `D14/V1 — ROADMAP e HANDOFF generate…`. Residuo D14: indice report ancora manuale.
 - **R-T7-05:** ✅ **CHIUSA** 25-08-26 (`M-E2-D`) — light fail-open chiuso; Report `Modalità: light` → deny `MSS-LIGHT-NO-EVENT`; FX-V02 invariato.
-- **R-T7-06:** limite strutturale `--verify` su campi Output (`assertions[]`) — documentato, non allentato.
+- **R-T7-06:** ✅ **CHIUSA** 25-08-26 (`M-R-T7-06` Opzione B) — `--verify` su asse Output patcha anche `assertions[0].verification_status` + `verification_or_use_evidence` (amendment append-only); test `capsule: R-T7-06 / Opzione B — --verify patcha assertions[] Output`.
+- **N4 residuo (P2.2):** ✅ **PROVATO** 25-08-26 (`M-SK7-N4`) — deny denylist su `--check` non falsificabili; test `capsule: N4 / SK-7 — controllo infallibile deny…`.
 
 **Invariati:** `WP-1` = NO-GO; `D27` chiusa finché Matteo non riapre in chat dedicata; nessun lavoro `src/`.
 
@@ -1009,7 +1011,7 @@ Report orchestratore: [`Report-orchestratore-t9-blindatura-struttura-25-08-26.md
 - **R-T9-01:** ✅ **CHIUSA** 25-08-26 — `plan-parse.mjs` riconosce `M-*` e `T\d+`; fix Opzione B `0a86c81`; M12 Codex **PULITO** (F1: ultimo chiuso T6, prossimo T8).
 - **R-T9-02:** ✅ **CHIUSA** 25-08-26 — parità kit/produzione hook nudge; fix `0a86c81`; prove `complete` / `missing-qr` / `no-capsule` in `test:mss` (N3).
 - **R-T9-03:** ✅ **CHIUSA** 25-08-26 — protocollo `1.0.1`, coppia viva `0.1.1`/`freeze-2`; `--force-legacy` rifiutato; fix `0a86c81` + M12 F3.
-- Deliberati invariati: R4 light≠deep · D14 ROADMAP/HANDOFF · H-1.3 E2 · R-T7-06 Output `--verify`.
+- Deliberati invariati: R4 light≠deep · H-1.3 E2 (poi chiuso T10). D14 ROADMAP/HANDOFF chiuso in `M-D14`. R-T7-06 Output `--verify` chiuso in `M-R-T7-06`.
 
 #### Chiusura formale ciclo `T9` — 25-08-2026
 
@@ -1032,9 +1034,9 @@ Mandato: [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../Sessioni%20di%20lavoro/2
 **Riserve residue post-M-T8 (deliberate, non bug):**
 
 - **R-T7-03:** ✅ **CHIUSA** in `T10` / M-H13-PASS — vedi sotto.
-- **R-T7-04:** invariata (D14 backlog → `T11`).
+- **R-T7-04:** ✅ CHIUSA 25-08-26 (`M-D14`) — vedi sopra.
 - **R-T7-05:** ✅ **CHIUSA** in `M-E2-D` — vedi sotto.
-- **R-T7-06:** invariata (P2).
+- **R-T7-06:** ✅ **CHIUSA** 25-08-26 (`M-R-T7-06` Opzione B) — vedi riserve ciclo T7.
 - **H-1.3:** promosso a **`PASS`** in `T10` (non più `PASS_CON_RISERVE`).
 
 **Prossima azione autorizzata (superseduta da T10):** ~~famiglie **E2 / H-1.3**~~ — chiuse in T10.
@@ -1078,12 +1080,32 @@ Fonte: [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../Sessioni%20di%20lavoro/25-
 
 **Riserve chiuse in T10:** R-T7-03 · R-T7-05.
 
-**Prossima azione autorizzata: `T11`** (P2 backlog: D14 ROADMAP/HANDOFF generate, R-T7-06 verify Output assertions; WP-1 resta NO-GO).
+**Prossima azione autorizzata (superseduta da T11):** ~~`T11`~~ — chiuso sotto.
 
 #### Chiusura formale ciclo `T10` — 25-08-2026
 
 - **Ciclo `T10`:** **CHIUSO** (E2-A..D + H13-PASS + orchestratore E2).
 - **Commit/push:** autorizzati Matteo «commit push e proseguiamo».
+
+### Diciottesimo ciclo del 25-08-2026 — `T11` eseguito e **CHIUSO**.
+
+Mandato: P2 backlog post-T10 @ HEAD `892f6e4`. Fonte: [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md) §P2 · Opzione B R-T7-06 autorizzata Matteo in chat.
+
+| Famiglia | Controverifica | Atti |
+|---|---|---|
+| M-D14 ROADMAP/HANDOFF generate | **PROMUOVERE** | [`Report-d14-viste-roadmap-handoff-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-d14-viste-roadmap-handoff-25-08-26.md) · test `D14/V1` |
+| M-SK7-N4 controlli falsificabili | **PROMUOVERE** | [`Report-sk7-n4-controlli-falsificabili-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-sk7-n4-controlli-falsificabili-25-08-26.md) · test `N4 / SK-7` |
+| M-R-T7-06 verify Output Opzione B | **PROMUOVERE** (§6 orchestratore rieseguito; transcript revisore troncato) | [`Report-r-t7-06-verify-output-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-r-t7-06-verify-output-25-08-26.md) · test `R-T7-06 / Opzione B` |
+| Orchestratore T11/P2 | — | [`Report-orchestratore-t11-p2-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t11-p2-25-08-26.md) |
+
+**Verdetto:** **P2 completo** (famiglie + orchestratore). Residuo D14: indice report ancora manuale. `PROMPT_ORCHESTRATOR_MSS_24-08-26.md` ancora stale su N4 (non aggiornato in questo ciclo). `WP-1` resta **NO-GO**. `D27` resta **chiusa**.
+
+**Prossima azione autorizzata: `T12`** (commit/pubblicazione T11+P2 solo con sì Matteo; residui documentali indice report + allineo PROMPT_ORCHESTRATOR N4; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO).
+
+#### Chiusura formale ciclo `T11` — 25-08-2026
+
+- **Ciclo `T11`:** **CHIUSO** (M-D14 + M-SK7-N4 + M-R-T7-06 Opzione B + orchestratore).
+- **Commit/push:** **non** eseguiti — Matteo non ha chiesto commit; pronti al commit se dice sì.
 
 ### Decisioni di Matteo — 23-08-2026 (`D16`–`D24`, CHIUSE)
 
@@ -1198,7 +1220,7 @@ può diventare stale: o è corretto, o non gira.
 | `D11` | Da dove si parte | **`SK-0` subito** | eseguito e chiuso in giornata: tre righe di configurazione; `npm run validate` verde per la prima volta |
 | `D12` | Primo attrezzo dopo `SK-0` | **`mss:query`** | si costruisce prima il *lettore* dei dati, e gira sulle **41 capsule già esistenti**. Se da quelle non esce nulla di utile, lo si scopre spendendo un comando, prima di automatizzare la raccolta |
 | `D13` | Regola sull'indipendenza del revisore | **sì, ma come avviso — non bloccante** | il validator **segnala** quando writer e revisore condividono la famiglia di modello, e non blocca. `E = 1/2`, non `E = 3`. Scelta consapevole: non sempre è disponibile una seconda famiglia. La riserva `R1` resta **aperta** e va citata come tale |
-| `D14` | Viste che si aggiornano a mano | **`ROADMAP`, `HANDOFF` e indice dei report diventano generati** | un documento generato non può diventare stale: o è corretto o non gira. Chiude i debiti previsti `SEP-D06` e `SEP-D07` |
+| `D14` | Viste che si aggiornano a mano | **`ROADMAP` e `HANDOFF` generate** (25-08-26 `M-D14`); **indice report ancora manuale** | un documento generato non può diventare stale: o è corretto o non gira. Chiude `SEP-D06`/`SEP-D07` sulle due viste; residuo indice = debito aperto |
 | `D15` | `D6`, `D7`, `D8`, `D10` del plan directory | **congelate** su raccomandazione del consulente | riordinare l'albero prima di avere gli attrezzi ripeterebbe il costo misurato del primo move |
 
 **Nota di onestà su `D13`.** La scelta «avviso» lascia l'indipendenza a enforcement debole. È una

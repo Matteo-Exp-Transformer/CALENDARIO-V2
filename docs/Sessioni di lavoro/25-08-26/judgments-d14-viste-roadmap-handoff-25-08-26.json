@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "rule_id_version": "D14/V1@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato M-D14: estendere generate:mss:views a ROADMAP_V0 e HANDOFF_SENIOR_V0 anti-stale",
+        "decision_or_output_changed": "VIEWS include roadmap-senior e handoff-senior derivate da PLAN_V0 fra marcatori; validate:mss:views le controlla; test nominato D14/V1 prova owner→rosso e generate→verde. R-T7-04 CHIUSA; residuo D14 = indice report manuale. WP-1 non toccato.",
+        "G": 2,
+        "O": 2,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-d14-viste-roadmap-handoff-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-d14-viste-roadmap-handoff-25-08-26.md",
+        "recipient": "Matteo, orchestratore T11 e revisore",
+        "problem_or_job": "chiudere il debito D14/R-T7-04 sulle viste ROADMAP e HANDOFF manuali",
+        "intended_use": "prova eseguibile anti-stale; handoff per T11 residuo R-T7-06",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato M-D14 inline parent",
+        "authored_by": "cursor-composer-m-d14",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "generate/validate:mss:views exit 0 sulle tre viste; test D14/V1 verde; validate:mss:all exit 0; git diff --check exit 0; capsule.mjs non toccato",
+        "verification_or_use_evidence": "npm run generate:mss:views; validate:mss:views; test:mss:tools (D14/V1); validate:mss:all; git diff --check",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/views.mjs",
+          "docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md",
+          "docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md"
+        ],
+        "relations_no_double_count": [
+          "non chiude T11 intero; non implementa indice report; non tocca capsule.mjs / WP-1 / R-T7-06"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

@@ -1,19 +1,19 @@
 # Roadmap — Senior Eval Pack v0
 
-> Vista statica della sequenza definita in `MASTERPLAN_V0.md`.
-> Non possiede stato, gate, decisioni vive o percentuali di avanzamento.
+> Vista della sequenza. **Non possiede stato:** gate e prossimo passo vivi vivono in
+> [`../PLAN_V0.md`](../PLAN_V0.md). Il blocco fra marcatori e generato; fuori resta prosa umana.
 
-> ## ⚠️ Questa roadmap copre una traccia **parcheggiata** — aggiornato 22-08-2026
+> ## ⚠️ Questa roadmap copre una traccia **parcheggiata** — aggiornato 25-08-2026
 >
 > Il percorso `SEP-*` qui sotto **non è il fronte di lavoro attuale**. Dal 21-08-2026 la traccia
 > viva è **`SK-*`**: lo «scheletro con attrezzi» di `../PLAN_V0.md` §4-bis, con il target in §16.
 >
-> Parcheggiata **non** vuol dire annullata, e nessuno stato è stato promosso: `SEP-G5` **non** è
-> PASS, `WP-1` resta **NO-GO**, `H-1.3` resta `PASS_CON_RISERVE` (non PASS pulito).
+> Parcheggiata **non** vuol dire annullata. Stato di `SEP-G5`, `WP-1`, `H-1.3` e prossimo gate:
+> **solo** dall'owner o dal blocco generato sotto — non da questa nota.
 >
-> **Se cerchi il prossimo passo, non è in questo file:** apri `../PLAN_V0.md` §4-bis e
-> `HANDOFF_SENIOR_V0.md` §3. Il punto 9 qui sotto indicava «plan directory/export/sandbox» come
-> prossimo atomico: quel task è **congelato dalla decisione `D15`** di Matteo.
+> **Se cerchi il prossimo passo:** apri `../PLAN_V0.md` §4-bis / §15, oppure il blocco generato
+> sotto / `HANDOFF_SENIOR_V0.md` §3. Il punto 9 qui sotto indicava «plan directory/export/sandbox»
+> come prossimo atomico: quel task è **congelato dalla decisione `D15`** di Matteo.
 
 ## Percorso
 
@@ -32,67 +32,87 @@
 7. **Consolidare il routing** — usare evidenze d'uso per correggere le rotte senza duplicare owner o
    aprire nuovi router implicitamente (`SEP-9`).
 8. **Analizzare la struttura di archiviazione** — inventario read-only di file, link, owner,
-   sovrapposizioni e vincoli (`SEP-10`). *Vista 10-08-2026:* A1–A4 + B1 + B2 chiuse nel disegno;
-   B2 = `ADEGUATO_CON_RISERVE`; D1–D5 registrate (`024`); lo stato vivo resta nel masterplan.
+   sovrapposizioni e vincoli (`SEP-10`). *Vista storica 10-08-2026:* A1–A4 + B1 + B2 chiuse nel
+   disegno; B2 = `ADEGUATO_CON_RISERVE`; D1–D5 registrate (`024`). Lo stato vivo resta nel masterplan.
 9. **Preparare / avviare la migrazione documentale controllata** — matrice source→target, ordine,
-   test, rollback e autorizzazione per fase (`SEP-11`, gate `SEP-G5`). *Vista 21-08-2026:*
-   F1–F3+review e F4-doc chiusi; baseline L5+hook committed e pushed in `ee0ab39`; H-1.3 =
-   **`PASS_CON_RISERVE`** (non PASS pulito); preparazione `036` chiusa documentalmente in `037`.
-   ~~Prossimo atomico = plan directory/export/sandbox~~ → **CONGELATO il 21-08-2026 dalla
-   decisione `D15`** (`../PLAN_V0.md` §16.4): riordinare l'albero prima di avere gli attrezzi
-   ripeterebbe il costo misurato del primo move. F5 resta fuori. SEP-5 bloccato; **SEP-G5 non
-   PASS**; WP-1 **NO-GO**.
+   test, rollback e autorizzazione per fase (`SEP-11`, gate `SEP-G5`). ~~Prossimo atomico = plan
+   directory/export/sandbox~~ → **CONGELATO il 21-08-2026 dalla decisione `D15`**
+   (`../PLAN_V0.md` §16.4). F5 resta fuori. SEP-5 bloccato finché l'owner non dice altrimenti.
 10. **Passare da sperimentale ad affidabile** — solo dopo almeno un ciclo prospettico revisionato,
     debiti critici risolti o accettati e decisione esplicita di Matteo (`SEP-12`).
 
 ## Traccia viva — `SK-*` (dal 21-08-2026)
 
-> **Questa vista non elenca più gli stati.** Fino al 24-08-2026 conteneva una tabella per pacchetto,
-> rettificata a mano a ogni ciclo: le rettifiche si sono **stratificate** invece di sostituirsi, e
-> `SK-7` è arrivato ad avere tre stati diversi nello stesso file. La tabella è stata **rimossa**, non
-> corretta: aggiungerne una quarta versione avrebbe ripetuto il difetto.
->
-> **Per lo stato dei pacchetti `SK-*`:** `../PLAN_V0.md` §4-bis e §4-ter (unico owner), oppure
-> `npm run mss:status`, che li legge da lì.
->
-> Il ripristino di una vista qui è previsto **solo** quando esisterà il generatore (`V1`/`D14`):
-> mandato in [`../PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](../PROMPT_ORCHESTRATOR_MSS_24-08-26.md) §3.
->
-> Ordine dichiarato, che resta valido: **prima ciò che è gratis e sblocca, poi ciò che legge, poi ciò
-> che scrive.**
+Ordine dichiarato (resta valido, non e stato): **prima cio che e gratis e sblocca, poi cio che
+legge, poi cio che scrive.**
 
+<!-- mss:generated roadmap-senior inizio -->
+> Generato da `npm run generate:mss:views` leggendo il solo owner [`PLAN_V0.md`](../PLAN_V0.md).
+> Questa vista non possiede stato: se il controllo anti-stale e rosso, rigenerala; non correggerla a mano.
 
-**Perché questo ordine, in una riga ciascuno.** `SK-4` per primo perché il 22-08 tre dei suoi
-bypass sono stati **incontrati lavorando**, e uno di essi nasconde una **seduta di revisione**: il
-buco copre proprio le prove che il sistema esiste per raccogliere. Poi `SK-11`+`SK-5`, perché
-nello stesso giorno la **stessa classe di difetto è ricomparsa tre volte** — un difetto identico che
-si ripete misura l'assenza di test, non la disattenzione di chi scrive. `SK-7` **dopo**, perché un
-generatore che scrive in un archivio non presidiato moltiplica il problema invece di risolverlo.
+## Gate vivo (da owner)
 
-**Debito trasversale scoperto il 22-08, ✅ CHIUSO il 23-08:** il sistema **sapeva registrare cose
-che non sapeva rileggere**. `mss:query` leggeva gli stati grezzi e non applicava gli amendment che
-il contratto §6 prescrive. Dal 23-08 li applica: `--verifica`, `--fail`, riepilogo e `--json`
-mostrano **grezzo ed effettivo affiancati** (la differenza fra i due è essa stessa un dato), e le
-catene che non si risolvono sono elencate, mai riparate. La logica **non è duplicata**: `query.mjs`
-delega a `core.mjs::applyAmendmentsView()`, la stessa funzione del validator.
+- **Ultimo ciclo chiuso:** `T11` **CHIUSO**
+- **Titolo ciclo:** Diciottesimo ciclo del 25-08-2026
+- **Prossima azione:** `T12` (commit/pubblicazione T11+P2 solo con sì Matteo; residui documentali indice report + allineo PROMPT_ORCHESTRATOR N4; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO)
+- **R1:** CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2
 
-**Piani sessione 23-08-26 (vista, non owner):** esecuzione **completata** su `SK-4` (Cursor),
-**A1–A4** Codex `SK-11`, **Fasi B/C** post-revisione (`self_report`), **Fase D** documentale
-(rettifiche append-only + igiene whitespace). Commit storico locale **`d1598b6`** (M1, no rewrite).
-Modifiche B/C tracked non committate oltre quel commit. Registro:
-`docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md` · owner in `PLAN_V0.md` §4-bis.
+## Lavagna pacchetti (M)
 
-**Prossimo passo autorizzato:** revisione integrata **E**, poi gate locale e decisione push (M2).
-Nessuna GitHub Actions reale osservata. `validate:docs`: 17 workspace / 26 checkout pulito.
+*Fatte 18 · Con riserva 0 · Da fare 5 · Non classificate 2*
+
+| Fatte | Con riserva | Da fare |
+|---|---|---|
+| `WP-0` Parametri macro e prima capsula del sistema | — | `WP-2` Mining storico normalizzato |
+| `MP-0` Report osservazioni e masterplan unico | — | `WP-3` Kernel, manifest e pacchetti |
+| `WP-0.1` Hardening prima del primo pilota | — | `WP-4` Preflight, registro Output e viste |
+| `H-1.1` Integrità append-only e semantica eventi | — | `WP-5` Nuova suite di validazione |
+| `H-1.3` Amendment, staged e parità tra superfici | — | `WP-6` Decisione di cutover |
+| `WP-1` Piloti reali in modalità ombra | — | — |
+| `SK-0` Sbloccare i cancelli globali (lint, test, validate) | — | — |
+| `SK-1` Punto di ripristino con tag annotato | — | — |
+| `SK-2` Comando «dove siamo» in sola lettura | — | — |
+| `SK-3` Revisione seduta in sola lettura | — | — |
+| `SK-4` Chiusura bypass e contratto capsula | — | — |
+| `SK-5` Controlli MSS in CI su env/test | — | — |
+| `SK-6` Interrogazione capsule in sola lettura | — | — |
+| `SK-7` Generazione capsule da checklist | — | — |
+| `SK-8` Suite test eseguibile da cwd esterna | — | — |
+| `SK-9` Spostamento file con aggiornamento riferimenti | — | — |
+| `SK-10` Manuale operativo e bootstrap | — | — |
+| `SK-11` Test automatici degli attrezzi MSS | — | — |
+
+**Non classificate (M):**
+- `H-1` Validator e hook rapidi (prima tranche) — _chiusura invalidata dalla revisione H-1.1_
+- `E-2` Enforcement superiore (ancora da decidere) — _buco intenzionale_
+
+## Riserve aperte
+
+- `SK-2` (Comando «dove siamo» in sola lettura): ⚠️ indice report ancora manuale
+- `SK-6` (Interrogazione capsule in sola lettura): ⚠️ copertura test del lettore parziale (suite tools, non H-1 intero) · rettificato 22-08-26: capsula `SK-6` corretta con `amendment`; criterio revisori su `recorded_by.role` · ✅ **23-08-26 vista effettiva:** `query.mjs` delega `core.mjs::applyAmendmentsView()` · ✅ **23-08-26 P1:** `--fail` usa denominatori calcolati, non literal storici · revisioni/controlli: numero mobile → `npm run mss:query -- --verifica` · **Matteo ha dichiarato `SK-6` CHIUSO (`D16`)**
+
+## Prossimo passo
+
+Completare `T12`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
+
+## Dati mobili
+
+Nessun conteggio di test, sedute, controlli o HEAD e congelato qui. Chiedilo al momento a:
+- `npm run mss:status`
+- `npm run mss:query -- --verifica` / `--fail`
+- `npm run test:mss:tools` / `npm run validate:mss:all`
+
+<!-- mss:generated roadmap-senior fine -->
 
 ## Lettura operativa
 
-- Per sapere dove siamo o quale gate blocca il passo successivo: `MASTERPLAN_V0.md`.
+- Per sapere dove siamo o quale gate blocca il passo successivo: `MASTERPLAN_V0.md` (pack) e
+  [`../PLAN_V0.md`](../PLAN_V0.md) (SYS-1).
 - Per costruire o giudicare un'istanza: `CONTRATTO_EVAL_SENIOR_V0.md`.
 - Per precedenti e famiglie metodologiche: `CATALOGO_SEDUTE_E_METODI_V0.md`.
 - Per scegliere il documento minimo da aprire: `SENIOR_EVAL_SKILL.md`.
 - Per riprendere l'ultimo lavoro e chiudere una nuova sessione: `HANDOFF_SENIOR_V0.md`; il suo
-  prossimo task va sempre verificato nel masterplan.
+  prossimo task va sempre verificato nell'owner.
 - Per lo stato globale del MetaSkillSystem: `../PLAN_V0.md`; questa roadmap non lo replica.
 
 Ogni sessione senior completa il ciclo catalogo → masterplan → eventuale roadmap → report e

@@ -26,6 +26,16 @@ export const VIEWS = Object.freeze([
     owner: 'docs/MetaSkillSystem/PLAN_V0.md',
     target: 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md',
   }),
+  Object.freeze({
+    id: 'roadmap-senior',
+    owner: 'docs/MetaSkillSystem/PLAN_V0.md',
+    target: 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md',
+  }),
+  Object.freeze({
+    id: 'handoff-senior',
+    owner: 'docs/MetaSkillSystem/PLAN_V0.md',
+    target: 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md',
+  }),
 ])
 
 const markers = (id) => ({
@@ -55,6 +65,65 @@ function formatLavagnaCell(items, index) {
   return r ? `\`${r.id}\` ${r.display}` : ''
 }
 
+function readPlanOwner(planText) {
+  let gate
+  try {
+    gate = parsePlanGate(planText)
+  } catch (error) {
+    throw new Error(error.message.replace(/^MSS-PLAN-UNREADABLE:/, 'MSS-VIEWS-OWNER-UNREADABLE:'))
+  }
+  const board = parsePlanBoard(planText)
+  const glosses = parsePlanGlosses(planText)
+  const glossesById = glossaMap(glosses)
+  return {
+    gate,
+    board,
+    glosses,
+    glossesById,
+    validation: validatePlanGlosses(board, glosses),
+    buckets: bucketBoard(board, glossesById),
+    lastCycle: parsePlanLastCycle(planText),
+  }
+}
+
+function bannerLines(ownerHref) {
+  return [
+    `> Generato da \`npm run generate:mss:views\` leggendo il solo owner [\`PLAN_V0.md\`](${ownerHref}).`,
+    '> Questa vista non possiede stato: se il controllo anti-stale e rosso, rigenerala; non correggerla a mano.',
+    '',
+  ]
+}
+
+function stopLines(board, next) {
+  const wp1 = board.find((r) => r.id === 'WP-1')
+  const h13 = board.find((r) => r.id === 'H-1.3')
+  const h13Bucket = h13 ? classifyPlanState(h13.stato) : null
+  const wp1Hint = wp1 ? `\`${wp1.id}\` resta _${wp1.stato}_` : '`WP-1` resta NO-GO'
+  if (h13Bucket === 'fatta') {
+    return `Completare \`${next}\`. ${wp1Hint} (\`H-1.3\` PASS ≠ via libera pilota).`
+  }
+  return `Completare \`${next}\`. ${wp1Hint}; non dichiarare \`H-1.3\` PASS pulito se l'owner non lo dice.`
+}
+
+function mobileNumbersReminder() {
+  return [
+    '## Dati mobili',
+    '',
+    'Nessun conteggio di test, sedute, controlli o HEAD e congelato qui. Chiedilo al momento a:',
+    '- `npm run mss:status`',
+    '- `npm run mss:query -- --verifica` / `--fail`',
+    '- `npm run test:mss:tools` / `npm run validate:mss:all`',
+    '',
+  ]
+}
+
+/** Link in PLAN sono relativi a MetaSkillSystem/; le viste Senior-Eval-Pack sono un livello piu' in basso. */
+function hrefFromSeniorPack(href) {
+  if (!href) return href
+  if (href.startsWith('../')) return `../${href}`
+  return href
+}
+
 /**
  * Il parser e volutamente stretto: prende l'ultimo ciclo «eseguito e CHIUSO/PROVATO» e la
  * prossima azione con etichetta tra parentesi. Se il piano cambia forma, il comando diventa
@@ -62,25 +131,11 @@ function formatLavagnaCell(items, index) {
  */
 export function deriveMatteoDashboard(planText) {
   const lines = []
-  let gate
-  try {
-    gate = parsePlanGate(planText)
-  } catch (error) {
-    throw new Error(error.message.replace(/^MSS-PLAN-UNREADABLE:/, 'MSS-VIEWS-OWNER-UNREADABLE:'))
-  }
-
-  const board = parsePlanBoard(planText)
-  const glosses = parsePlanGlosses(planText)
-  const glossesById = glossaMap(glosses)
-  const validation = validatePlanGlosses(board, glosses)
-  const buckets = bucketBoard(board, glossesById)
-  const lastCycle = parsePlanLastCycle(planText)
+  const { gate, board, glossesById, validation, buckets, lastCycle } = readPlanOwner(planText)
 
   const { closedId, closedState, next, nextLabel, r1, r1FromExplicitLine: r1Current } = gate
 
-  lines.push(`> Generato da \`npm run generate:mss:views\` leggendo il solo owner [\`PLAN_V0.md\`](PLAN_V0.md).`)
-  lines.push('> Questa vista non possiede stato: se il controllo anti-stale e rosso, rigenerala; non correggerla a mano.')
-  lines.push('')
+  lines.push(...bannerLines('PLAN_V0.md'))
 
   lines.push('## Ultimo aggiornamento')
   lines.push(
@@ -164,13 +219,121 @@ export function deriveMatteoDashboard(planText) {
 
   lines.push('## Prossimo passo')
   lines.push('')
-  const h13 = board.find((r) => r.id === 'H-1.3')
-  const h13Bucket = h13 ? classifyPlanState(h13.stato) : null
-  if (h13Bucket === 'fatta') {
-    lines.push(`Completare \`${next}\`. Non riaprire \`WP-1\` (\`H-1.3\` PASS ≠ via libera pilota).`)
-  } else {
-    lines.push(`Completare \`${next}\`. Non riaprire \`WP-1\` e non dichiarare \`H-1.3\` PASS pulito.`)
+  lines.push(stopLines(board, next))
+
+  return lines.join('\n') + '\n'
+}
+
+/**
+ * ROADMAP Senior-Eval — traccia viva SK/WP da PLAN, senza stati inventati né numeri mobili.
+ */
+export function deriveSeniorRoadmap(planText) {
+  const lines = []
+  const { gate, board, glossesById, validation, buckets, lastCycle } = readPlanOwner(planText)
+  const { closedId, closedState, next, nextLabel, r1 } = gate
+
+  lines.push(...bannerLines('../PLAN_V0.md'))
+  lines.push('## Gate vivo (da owner)')
+  lines.push('')
+  lines.push(`- **Ultimo ciclo chiuso:** \`${closedId}\` **${closedState}**`)
+  if (lastCycle?.titolo) lines.push(`- **Titolo ciclo:** ${lastCycle.titolo}`)
+  lines.push(`- **Prossima azione:** \`${next}\` (${nextLabel})`)
+  lines.push(`- **R1:** ${r1}`)
+  lines.push('')
+
+  if (!validation.ok) {
+    lines.push('<!-- MSS-VIEWS-GLOSSA-ORFANA -->')
+    lines.push('')
+    lines.push('> **MSS-VIEWS-GLOSSA-ORFANA** — glossa D per id assente in M (§4/§4-bis):')
+    for (const id of validation.orphans) {
+      lines.push(`> - \`${id}\` → ${glossesById.get(id) || '(senza testo)'}`)
+    }
+    lines.push('')
   }
+
+  if (board.length > 0) {
+    const nF = buckets.fatta.length
+    const nR = buckets['con-riserva'].length
+    const nD = buckets['da-fare'].length
+    const nN = buckets['non-classificata'].length
+    lines.push('## Lavagna pacchetti (M)')
+    lines.push('')
+    lines.push(`*Fatte ${nF} · Con riserva ${nR} · Da fare ${nD}${nN ? ` · Non classificate ${nN}` : ''}*`)
+    lines.push('')
+    lines.push('| Fatte | Con riserva | Da fare |')
+    lines.push('|---|---|---|')
+    const maxRows = Math.max(nF, nR, nD, 1)
+    for (let i = 0; i < maxRows; i++) {
+      lines.push(`| ${formatLavagnaCell(buckets.fatta, i) || '—'} | ${formatLavagnaCell(buckets['con-riserva'], i) || '—'} | ${formatLavagnaCell(buckets['da-fare'], i) || '—'} |`)
+    }
+    if (nN > 0) {
+      lines.push('')
+      lines.push('**Non classificate (M):**')
+      for (const r of buckets['non-classificata']) {
+        lines.push(`- \`${r.id}\` ${r.display} — _${r.stato}_`)
+      }
+    }
+    lines.push('')
+  }
+
+  const riserve = board.filter((r) => r.riserva)
+  if (riserve.length) {
+    lines.push('## Riserve aperte')
+    lines.push('')
+    for (const r of riserve) {
+      lines.push(`- \`${r.id}\` (${displayLabel(r, glossesById)}): ${r.riserva}`)
+    }
+    lines.push('')
+  }
+
+  lines.push('## Prossimo passo')
+  lines.push('')
+  lines.push(stopLines(board, next))
+  lines.push('')
+  lines.push(...mobileNumbersReminder())
+
+  return lines.join('\n') + '\n'
+}
+
+/**
+ * HANDOFF Senior-Eval — istantanea operativa da PLAN; niente HEAD/conteggi congelati.
+ */
+export function deriveSeniorHandoff(planText) {
+  const lines = []
+  const { gate, board, lastCycle } = readPlanOwner(planText)
+  const { closedId, closedState, next, nextLabel, r1 } = gate
+  const wp1 = board.find((r) => r.id === 'WP-1')
+  const h13 = board.find((r) => r.id === 'H-1.3')
+
+  lines.push(...bannerLines('../PLAN_V0.md'))
+  lines.push('### Istantanea attiva')
+  lines.push('')
+  lines.push(`- **Ultimo ciclo chiuso:** \`${closedId}\` **${closedState}**`)
+  if (lastCycle?.titolo) lines.push(`- **Ciclo:** ${lastCycle.titolo}`)
+  if (lastCycle?.atti?.length) {
+    lines.push('- **Atti del ciclo (puntatori owner):**')
+    for (const a of lastCycle.atti) {
+      lines.push(`  - [${a.label}](${hrefFromSeniorPack(a.href)})`)
+    }
+  }
+  lines.push(`- **Prossima azione autorizzata:** \`${next}\` (${nextLabel})`)
+  lines.push(`- **R1:** ${r1}`)
+  if (h13) lines.push(`- **\`H-1.3\` (M):** _${h13.stato}_`)
+  if (wp1) lines.push(`- **\`WP-1\` (M):** _${wp1.stato}_`)
+  lines.push('- **Owner di stato:** [`../PLAN_V0.md`](../PLAN_V0.md) — in caso di divergenza vince l\'owner.')
+  lines.push('- **Cruscotto:** [`../CRUSCOTTO_MATTEO_MSS.md`](../CRUSCOTTO_MATTEO_MSS.md) (stesso generatore).')
+  lines.push('')
+  lines.push('### Prossimo task atomico')
+  lines.push('')
+  lines.push(stopLines(board, next))
+  lines.push('')
+  lines.push('### STOP invariati (da M, non da memoria)')
+  lines.push('')
+  lines.push('- Non aprire `WP-1` se M lo tiene NO-GO.')
+  lines.push('- Non promuovere gate SEP/`SEP-G5` da questa vista.')
+  lines.push('- Non correggere a mano il blocco fra marcatori: rigenera con `npm run generate:mss:views`.')
+  lines.push('')
+  lines.push(...mobileNumbersReminder())
 
   return lines.join('\n') + '\n'
 }
@@ -190,6 +353,8 @@ export function replaceGeneratedBlock(text, id, body) {
 
 export function renderView(view, ownerText) {
   if (view.id === 'cruscotto-matteo') return deriveMatteoDashboard(ownerText)
+  if (view.id === 'roadmap-senior') return deriveSeniorRoadmap(ownerText)
+  if (view.id === 'handoff-senior') return deriveSeniorHandoff(ownerText)
   throw new Error(`MSS-VIEWS-UNKNOWN: vista non supportata «${view.id}».`)
 }
 

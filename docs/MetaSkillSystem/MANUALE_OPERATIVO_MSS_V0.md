@@ -112,8 +112,10 @@ con l'exit code dichiarato.
 
 ✅ **`N4` PROVATO — `--check` confronta l'exit code atteso.** Senza `--check-expect` resta
 compatibile e attende `0`; con l'opzione registra sia exit reale sia atteso nel criterio. Un comando
-che non può fallire (`git status --short`) non diventa per questo una prova utile: scegli comunque
-comandi **capaci di fallire**.
+nella denylist chiusa di controlli non falsificabili (`git status --short`, `true`, `echo`,
+`mss:query -- --verifica`, …) con atteso `0` è **rifiutato** (exit `2`, nessuna scrittura): non
+diventa un `pass` vacuo. Con `--check-expect` ≠ `0` lo stesso comando resta ammissibile (prova a
+segno invertito). Test: `capsule: N4 / SK-7 — controllo infallibile deny` in `test:mss:tools`.
 
 ✅ **`N6` PROVATO — `mss:doctor`, passo `owner`, legge solo gli owner.** Una repo appena
 `git init`ata può dichiarare Git non ricostruibile senza far diventare rosso il passo owner: il
@@ -125,6 +127,8 @@ davvero assente o non interpretabile.
 **`N1` PROVATO 24-08-26 (`M-C`).** L'attrezzo ora esegue `validateMss` sul bundle **prima** di scrivere: con `--append-to` valida il report **prospettico** (`--require-capsule`), altrimenti il solo JSONL. Se esce rosso: exit `2`, diagnostica su stderr, **nessuna scrittura**. La guardia «il report ha già una capsula» usa la stessa definizione del validator (`parse.mjs::findCapsuleHeadings`), quindi riconosce anche le intestazioni numerate (`## 6-bis. Capsula MetaSkillSystem`). Esegui comunque `validate:mss` dopo: è il gate dichiarato, non un doppione.
 
 **`N2` PROVATO 24-08-26 (`M-C`).** Un revisore registra una verifica con `--verify "<mss-rec-…>|<esito>|<evidence_ref>|<motivo>"` (ripetibile): l'attrezzo emette un `amendment` conforme al contratto §6, leggendo i valori precedenti **dal record bersaglio**. Bersaglio ed esito non si deducono; `self_report` è rifiutato (un secondo attore non può ridichiarare l'autodichiarazione altrui). Se `--role` nomina un revisore e la seduta non emette nessun amendment, l'attrezzo **avvisa** e non blocca. Il template resta con `verified_by: []`: è la verità per una seduta che non ha verificato nessuno.
+
+✅ **`R-T7-06` / Opzione B PROVATO 25-08-26.** Se il bersaglio è asse **Output** con esattamente una `assertions[]`, lo stesso `--verify` rettifica anche `annotation.assertions[0].verification_status` e `verification_or_use_evidence` (oltre a `annotation.verification.*`). Non riscrive il record `final`; non allenta il validator; multi-assertion o assertions vuote → exit `2` con messaggio esplicito (indice > 0 resta amendment manuale). Test: `capsule: R-T7-06 / Opzione B — --verify patcha assertions[] Output` in `test:mss:tools`.
 
 ### 2.4-sexies `npm run mss:review` — che cosa ho toccato (sola lettura)
 
@@ -146,8 +150,6 @@ comandi solo se ricostruibili dalla capsula). Test nominato:
 solo `independently_verified` o `contradicted`; il validator applica la stessa regola al dato
 effettivo dopo gli amendment, così un record `unverified` o `not_applicable` non può dichiarare un
 verificatore da nessuna strada.
-
-⚠️ **Limite aperto (`M-C`, lasciato a Matteo):** `--check` deduce l'esito dall'exit code, quindi un comando che non può fallire registra un `pass` che non prova nulla. Un `controls[]` di comandi infallibili sembra una prova e non lo è.
 
 ### 2.4-bis `npm run mss:doctor` — checklist di primo run
 
@@ -190,16 +192,19 @@ cartella dei documenti copiati, perché i loro link parlano dell'albero di origi
 | **Scrive** | solo fra i marcatori `<!-- mss:generated … inizio/fine -->` della vista bersaglio |
 | **Uso sicuro** | `npm run generate:mss:views` dopo una modifica all'owner |
 
-La prima vista è il cruscotto di Matteo. Fuori dai marcatori resta testo umano; dentro non si
-corregge a mano. Il generatore deriva da `PLAN_V0.md`:
+La prima vista e il cruscotto di Matteo; dal mandato D14 anche ROADMAP e HANDOFF del Senior-Eval-Pack
+sono generate dallo stesso owner. Fuori dai marcatori resta testo umano; dentro non si corregge a
+mano. Il generatore deriva da `PLAN_V0.md`:
 
 - **Gate** (ultimo ciclo, prossima azione, R1) — come `mss:status`
-- **L'ultimo ciclo chiuso** — ultimo §15 con pattern «eseguito e **STATO**»
+- **L'ultimo ciclo chiuso** — ultimo §15 con pattern «eseguito e **STATO**» (cruscotto)
 - **Lavagna** — solo se §4/§4-bis hanno righe: tre colonne (Fatte / Con riserva / Da fare) con
   conteggi; stato da M (§4-ter prevale); etichetta da §4-quater se presente, altrimenti etichetta tecnica;
   righe M non classificabili compaiono come **Non classificate** (conteggio in testa + elenco sotto)
 - **Riserve aperte** — celle con ⚠️ in M; omessa se vuota
 - **Errore glossa orfana** — id in §4-quater assente da M
+- **ROADMAP / HANDOFF** — stessa lavagna/gate; niente HEAD ne conteggi di test congelati (solo
+  rimandi ai comandi)
 
 `npm run validate:mss:views` rigenera in memoria e confronta: se owner e vista
 divergono esce rosso e indica il comando di rigenerazione. È un attrezzo **di questo progetto**,
@@ -319,7 +324,7 @@ Pre-commit (se committi): stesso perimetro `Report-*` / `Verbale-*` con `require
 | **Cloud / Codex / Claude senza stop** | Hook `stop` **non installabile** su Cloud/remote; fallback Opzione B (M-E2-C): checklist in `CHIUSURA_SESSIONE.md` + CI `validate:mss:changed` | Non promettere hook Cloud; matrice `stop_does_not_cover_cloud_codex_claude` + `cloud_codex_claude_fallback_checklist_plus_ci` |
 | **guard PROD** | Tracciato e coperto (Cursor+Claude+kit) da `npm run test:mss`; cancello CI = `npm run validate:mss:all`, **osservato verde su GitHub Actions reale il 24-08-26** | Prima di scritture Supabase verificare comunque l'ambiente a mano: il test copre la logica, non sostituisce la prudenza umana |
 | **SK-4 / SK-5 / SK-11** | APERTI post-audit | Chiusura formale solo Matteo; bypass residui in prosa |
-| **ROADMAP / HANDOFF generati** | `D14` non implementato | Allineamento manuale; controllare §4-ter |
+| **ROADMAP / HANDOFF generati** | `D14` ROADMAP+HANDOFF **PROVATO** (indice report ancora manuale) | `npm run generate:mss:views` / `validate:mss:views`; test `D14/V1` |
 
 ---
 

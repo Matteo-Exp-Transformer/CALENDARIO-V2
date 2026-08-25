@@ -10,7 +10,7 @@ description: >-
 > **Package:** `mss.senior-eval-pack/0.1.0` · **Stato:** sperimentale.
 > **Owner di questo documento:** continuità operativa e registro dei passaggi fra senior.
 > **Non possiede lo stato:** stato, gate e prossimo task autorizzato restano in
-> `MASTERPLAN_V0.md`.
+> `MASTERPLAN_V0.md` (pack) e in [`../PLAN_V0.md`](../PLAN_V0.md) (SYS-1).
 
 ## 1. Funzione
 
@@ -37,9 +37,9 @@ Non sostituisce:
 ## 2. Ordine di ingresso del prossimo senior
 
 1. Apri `SENIOR_EVAL_SKILL.md` e identifica la rotta.
-2. Leggi questo handoff per conoscere l'ultimo punto operativo.
-3. Verifica stato e gate direttamente in `MASTERPLAN_V0.md`; in caso di divergenza vince il
-   masterplan.
+2. Leggi questo handoff per conoscere l'ultimo punto operativo (blocco generato §3).
+3. Verifica stato e gate direttamente in `MASTERPLAN_V0.md` e `../PLAN_V0.md`; in caso di
+   divergenza vince l'owner SYS-1.
 4. Apri il report puntato dall'handoff per le prove complete.
 5. Usa `CATALOGO_SEDUTE_E_METODI_V0.md` per precedenti e metodi; usa
    `CONTRATTO_EVAL_SENIOR_V0.md` prima di progettare o giudicare una seduta.
@@ -48,232 +48,50 @@ Non sostituisce:
 
 ## 3. Handoff attivo
 
-> Questa sezione e una vista sostituibile. Deve riportare sempre fonte e revisione. Non promuove
-> autonomamente alcuno stato. In caso di divergenza con `MASTERPLAN_V0.md`, vince il masterplan.
+> Questa sezione e una vista sostituibile (marcatori). Deve riportare sempre fonte e revisione
+> derivate dall'owner. Non promuove autonomamente alcuno stato. In caso di divergenza con
+> `../PLAN_V0.md`, vince l'owner. Le istantanee manuali stratificate pre-D14 sono state ritirate:
+> la storia resta nel registro §7 e nei report puntati.
 
-### ⚠️ Rettifica di rotta — leggi questo prima del resto
+<!-- mss:generated handoff-senior inizio -->
+> Generato da `npm run generate:mss:views` leggendo il solo owner [`PLAN_V0.md`](../PLAN_V0.md).
+> Questa vista non possiede stato: se il controllo anti-stale e rosso, rigenerala; non correggerla a mano.
 
-### Istantanea prevalente — P2A 23-08-26
+### Istantanea attiva
 
-> Fonte: mandato P2A chat · owner: `../PLAN_V0.md` §4-bis `S10` / §15 · manuale:
-> [`../MANUALE_OPERATIVO_MSS_V0.md`](../MANUALE_OPERATIVO_MSS_V0.md).
+- **Ultimo ciclo chiuso:** `T11` **CHIUSO**
+- **Ciclo:** Diciottesimo ciclo del 25-08-2026
+- **Atti del ciclo (puntatori owner):**
+  - [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md)
+  - [`Report-d14-viste-roadmap-handoff-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-d14-viste-roadmap-handoff-25-08-26.md)
+  - [`Report-sk7-n4-controlli-falsificabili-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-sk7-n4-controlli-falsificabili-25-08-26.md)
+  - [`Report-r-t7-06-verify-output-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-r-t7-06-verify-output-25-08-26.md)
+  - [`Report-orchestratore-t11-p2-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t11-p2-25-08-26.md)
+- **Prossima azione autorizzata:** `T12` (commit/pubblicazione T11+P2 solo con sì Matteo; residui documentali indice report + allineo PROMPT_ORCHESTRATOR N4; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO)
+- **R1:** CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2
+- **`H-1.3` (M):** _PASS 25-08-26 — ✅ riserva H13-POST-L01 CHIUSA 24-08-26 (M13); ✅ T7 B-E2-CI chiuso (SK-5); ✅ Opzione B M-E2-A..D CHIUSE (CI post-hoc no-verify; Report/Verbale unstaged; Cloud checklist+CI; light deny MSS-LIGHT-NO-EVENT); residui umani misurati in COVERAGE_MATRIX_H1.json (--no-verify Git, hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) — non stale «bypass intenzionali accettati»_
+- **`WP-1` (M):** _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_
+- **Owner di stato:** [`../PLAN_V0.md`](../PLAN_V0.md) — in caso di divergenza vince l'owner.
+- **Cruscotto:** [`../CRUSCOTTO_MATTEO_MSS.md`](../CRUSCOTTO_MATTEO_MSS.md) (stesso generatore).
 
-- **Fotografia Git:** `env/test`, HEAD e `origin/env/test` = `46b8bca`; working tree con modifiche
-  P1 + P2A non committate (preservate).
-- **P2A:** creato manuale operativo + puntatori in METASKILL/PLAN/ROADMAP/HANDOFF/AUDIT.
-  `SK-10` = **IN CORSO — P2A**; **non** chiuso; **non** bootstrap repo nuova provato.
-- **P1 / P0 / SK-7:** invariati — gate A/B Matteo; D2/D3 vivi; WP-1 NO-GO.
-- **Prossimo gate:** P2B export motore + checklist bootstrap; poi gate A/B SK-7 se Matteo apre.
-- **STOP invariati:** commit/push senza sì · reimplementazione SK-7 silenziosa · WP-1 · claim `R8`/`SK-10` chiusi.
+### Prossimo task atomico
 
-### Istantanea precedente — post-P1 23-08-26
+Completare `T12`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
 
-> Fonte: `../AUDIT_STATO_REALE_23-08-26.md` + `…/Report-p1-d1-d4-d5-23-08-26.md`;
-> owner di stato: `../PLAN_V0.md` §4-ter / §15.
+### STOP invariati (da M, non da memoria)
 
-- **Fotografia Git:** `env/test`, HEAD e `origin/env/test` = `46b8bca` (working tree con P1 non committato).
-- **P1 D1/D4/D5:** chiusi in questa seduta — parità `requireCapsule`, denominatori calcolati,
-  owner §4-bis rettificato. Report: [`Report-p1-d1-d4-d5-23-08-26.md`](../../Sessioni%20di%20lavoro/23-08-26/Report-p1-d1-d4-d5-23-08-26.md).
-- **P0 / SK-7:** invariato — gate A/B Matteo; D2/D3 vivi; nessuna reimplementazione silenziosa.
-- **Prossimo gate:** P2B export/bootstrap; (A) patch SK-7 oppure (B) autorità reimplementazione.
-- **STOP invariati:** `WP-1` NO-GO; nessuna riscrittura `final`; nessun `CHIUSO`/`M3`/`R8` senza Matteo.
+- Non aprire `WP-1` se M lo tiene NO-GO.
+- Non promuovere gate SEP/`SEP-G5` da questa vista.
+- Non correggere a mano il blocco fra marcatori: rigenera con `npm run generate:mss:views`.
 
-### Istantanea precedente — post-P0 23-08-26
+## Dati mobili
 
-> Conservata per traccia; prevale l’istantanea P2A sopra.
+Nessun conteggio di test, sedute, controlli o HEAD e congelato qui. Chiedilo al momento a:
+- `npm run mss:status`
+- `npm run mss:query -- --verifica` / `--fail`
+- `npm run test:mss:tools` / `npm run validate:mss:all`
 
-- **Fotografia Git:** `env/test`, HEAD e `origin/env/test` = `46b8bca` (working tree con P1 non committato).
-- **P1 D1/D4/D5:** chiusi — parità `requireCapsule`, denominatori calcolati,
-  owner §4-bis rettificato. Report: [`Report-p1-d1-d4-d5-23-08-26.md`](../../Sessioni%20di%20lavoro/23-08-26/Report-p1-d1-d4-d5-23-08-26.md).
-- **P0 / SK-7:** invariato — gate A/B Matteo; D2/D3 vivi; nessuna reimplementazione silenziosa.
-- **Prossimo gate:** (A) patch SK-7 oppure (B) autorità reimplementazione; poi P2 discovery.
-- **STOP invariati:** `WP-1` NO-GO; nessuna riscrittura `final`; nessun `CHIUSO`/`M3` senza Matteo.
-
-### Istantanea precedente — audit reale 23-08-26 (pre-P0)
-
-> Conservata per traccia; prevale l’istantanea post-P0 sopra.
-
-- **Fotografia Git:** `env/test`, HEAD e `origin/env/test` = `46b8bca`; working tree pulito quando
-  verificato. Il fix SK-7 è stato dichiarato terminato dall’esecutore, ma non è presente in questo
-  riferimento: non attribuirgli esito verde finché commit/diff e test non sono disponibili.
-- **Fatti verdi:** H-1 42 fixture + 38 gruppi; tools 23/23; job MSS remoto esiste; reader e
-  generator sono eseguibili.
-- **Blocchi reali:** D1 pre-commit/CI non paritari; D2/D3 capsule può fabbricare prove false;
-  D4/D5 numeri stale; hook Claude non portabile né testato; guard PROD senza rete; D14 promesso ma
-  non implementato. Le chiusure D20 restano storiche, non sono un via libera tecnico.
-- **Prossimo task atomico (storico):** P0 = recuperare, integrare e verificare SK-7 —
-  **eseguito come assenza** (vedi istantanea prevalente).
-- **STOP invariati:** `WP-1` NO-GO; nessuna riscrittura di un record `final`; nessun move; nessun
-  claim `CHIUSO`/`M3` o commit/push senza decisione di Matteo.
-
-L'handoff precedente (21-08-2026) indicava come prossimo task atomico **«plan directory/export/
-sandbox»**. **Quel task è congelato.** La decisione `D15` di Matteo del 21-08-2026
-(`../PLAN_V0.md` §16.4) ha congelato `D6`–`D10` del plan directory su raccomandazione del
-consulente esterno: riordinare l'albero prima di avere gli attrezzi ripeterebbe il costo misurato
-del primo move. Un senior che avesse seguito l'handoff precedente avrebbe eseguito **esattamente
-ciò che era stato fermato**.
-
-**La traccia viva non è più `SEP-*`: è `SK-*`** (`../PLAN_V0.md` §4-bis, target in §16). Il
-Senior-Eval-Pack è **parcheggiato, non annullato**: `SEP-G5` **non** PASS, `WP-1` **NO-GO**,
-`H-1.3` `PASS_CON_RISERVE`. Nessuno di quegli stati è cambiato — semplicemente non sono il fronte.
-
-### Istantanea
-
-- **Aggiornato il:** 23-08-2026 (Fase D documentale).
-- **HEAD committato storico (M1):** `d1598b64a545fc988b3f4db3c8650858a3de493d` · **`origin/env/test`:** `eee6cf7` (1 commit locale avanti, non pushato).
-- **Sedute coperte:** ciclo SK-4/SK-11/SK-5 23-08 · revisione indipendente doppia · Fasi B/C/D post-revisione.
-- **Autori:** esecutori B/C (OpenAI Codex, `self_report`) · writer Fase D (Cursor Auto) · revisori indipendenti precedenti (OpenAI Codex, xAI/Grok).
-- **Metodo:** fotografia HEAD reale; rettifiche append-only su claim falsi (D5 whitespace, D6 Unicode); pulizia whitespace candidato tracked; nessuna riscrittura record `final`.
-- **Tipo di evidenza:** comandi Git e MSS con exit code; hash JSONL pre/post; `REPORT_PATH_RE.test()` su path Unicode.
-- **Comparabilità:** `non_comparabile`.
-- **Ultimi report:** `…/INDICE-SESSIONE-23-08-26.md` · `…/Report-fase-d-docs-amendment-23-08-26.md` · `…/Report-fase-b-fix-regex-query-23-08-26.md` · `…/Report-fase-c-ci-d1-23-08-26.md` · report revisori originari · report ciclo SK-4/SK-11.
-
-### Fatto osservato (Fase D)
-
-Le tre viste (indice, roadmap, handoff) erano **stale** rispetto a `d1598b6` e alle Fasi B/C. D ha
-riallineato senza duplicare owner: stato formale resta in `PLAN_V0.md` §4-bis. B/C restano
-`self_report` fino a E. Nessuna GA remota osservata. Debito `validate:docs` 17/26 reso visibile.
-
-### Prossimo task atomico derivato
-
-**Unico gate = revisione integrata E** (`Prompt-fase-e-revisione-fix-23-08-26.md`).
-
-1. Revisore E verifica B/C/D con famiglia diversa raccomandata (D17, non blocco).
-2. Gate locale: `git diff --check origin/env/test` exit 0; test:mss; validate:docs baseline reale.
-3. Solo dopo E verde + decisione Matteo: commit documentale + commit tecnico B/C + push (M2).
-4. Prova GitHub Actions reale post-push.
-
-Ingresso unico: `docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md`.
-
-### Cosa non è dimostrato
-
-- Che B/C siano **independently_verified** (restano `self_report`).
-- Che la CI remota GitHub Actions sia verde (non osservata).
-- Che `validate:docs` sia verde (17 workspace / 26 checkout pulito — debito noto).
-- Che `SEP-G5`, `WP-1`, `H-1.3` pulito o cutover siano avanzati: **non lo sono**.
-
-### Gate
-
-Invariati: `SEP-G1` = `PASS_CON_RISERVE` · `SEP-G5` **non** PASS · `H-1.3` = `PASS_CON_RISERVE` · `WP-1` **NO-GO**.
-
-### STOP e decisioni di Matteo
-
-- **Chiuse (non riaprire):** `M1`–`M3` · `D16`–`D19` · `D1-A` · `G1`–`G6` SK-4.
-- **Aperte:** revisione integrata E · commit/push dopo E (M2).
-- **STOP invariati:** `WP-1` **NO-GO** · `SEP-G5` **non** PASS · claim `CHIUSO` con riserve · commit/push senza sì.
-
----
-
-### ⚠️ Snapshot storico — sezione precedente (pre-Fase D, 23-08-26 mattina)
-
-> La sezione sotto è **congelata** come testimonianza del handoff prima della catena post-revisione B/C/D. In caso di divergenza con l'istantanea sopra, vince l'istantanea Fase D.
-
-- **Aggiornato il:** 23-08-2026.
-- **Sedute coperte:** `mss-ses-01a0294a-…` (`SK-6`) · fix post-revisione · revisione OpenAI · vista effettiva D16.
-- **Autori:** Anthropic Claude Opus 5 (costruzione + supervisione) · Anthropic Claude Sonnet 5
-  (esecuzione fix) · **OpenAI Codex** (revisione indipendente, famiglia di modello diversa).
-- **Metodo:** costruire il **lettore** prima dello scrittore; dichiarare in output il criterio usato,
-  così che chi legge possa rifiutarlo; far rimisurare gli stessi numeri a una famiglia di modello
-  diversa, con **fotografia dell'hash del file sotto esame** per non misurare un bersaglio mobile.
-- **Tipo di evidenza:** comandi eseguiti con exit code reali + censimento indipendente riprodotto da
-  un parser scritto fuori dal repository, che non importa `scripts/mss/query.mjs`.
-- **Comparabilità:** `non_comparabile`.
-- **Ultimi report:** `docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md` (ingresso unico) ·
-  `…/Report-ciclo-SK-4-23-08-26.md` · `…/Report-sk4-revisione-indipendente-23-08-26.md` ·
-  `…/Report-ciclo-SK-11-SK-5-23-08-26.md` · `…/Report-senior-chiusura-sessione-23-08-26.md` ·
-  `…/Report-vista-effettiva-mss-query-23-08-26.md`.
-
-### Fatto osservato
-
-Esiste `npm run mss:query`: sola lettura, interroga le capsule già scritte e risponde a cinque
-domande. **Le capsule, interrogate per la prima volta, hanno prodotto dati veri.** Il principale:
-in 43 sedute `independently_verified` non era **mai** comparso e `verified_by` era vuoto in tutte
-le annotazioni — **eppure le review indipendenti erano state fatte davvero**. Il divario non era fra
-lavoro fatto e non fatto, ma fra ciò che i report raccontano in prosa e ciò che la capsula registra.
-
-La revisione indipendente ha rimisurato sette affermazioni: **sei confermate, una contraddetta**.
-
-### Effetto prodotto
-
-- Il criterio di riconoscimento dei revisori è passato da `controls[].esecutore` (testo libero che
-  contiene anche stringhe di comando) a `recorded_by.role` (campo con semantica propria). Il numero
-  misurato è cresciuto di circa un fattore 4. **Verificato che è un soprainsieme stretto: zero
-  controlli persi.** Il numero esatto è mobile — cresce a ogni seduta di revisione: chiedilo al comando.
-- La capsula del report `SK-6` è stata **rettificata con un `amendment`**, non riscritta.
-- **Primo uso reale del meccanismo di rettifica in tutta la storia del sistema:** il revisore
-  indipendente ha marcato un'annotazione `independently_verified` e una `contradicted`.
-
-### Problema strutturale corrente
-
-1. ✅ **RISOLTO il 23-08-2026** — era «il sistema sa registrare cose che non sa rileggere»:
-   `mss:query` leggeva gli stati **grezzi** e non applicava gli amendment del contratto §6, così la
-   prima rettifica indipendente della storia del sistema era invisibile al lettore costruito per
-   trovarla. Ora la catena è applicata: grezzo ed effettivo compaiono **affiancati** in `--verifica`,
-   `--fail`, riepilogo e `--json`; `independently_verified` e `contradicted` passano da 0 a 1 e 1; le
-   catene non risolte sono mostrate, mai riparate. La regola vive in **un solo posto**
-   (`core.mjs::applyAmendmentsView()`, delegata anche dal validator). Report:
-   `docs/Sessioni di lavoro/23-08-26/Report-vista-effettiva-mss-query-23-08-26.md`.
-2. ✅ **RISOLTO il 23-08-2026** — erano i tre bypass dell'enforcement (`SK-4`): legacy-new senza
-   `controls`, report in sotto-cartella, prefisso `Verbale-`. B1–B3 **respinti con comando**;
-   `REPORT_PATH_RE` condivisa in `adapter.mjs`; contratto allineato `0.1.1`/`freeze-2`. Stato owner
-   **`PROVATO`** in `PLAN_V0.md` §4-bis `S4`; chiusura formale riservata a Matteo. Report:
-   `docs/Sessioni di lavoro/23-08-26/Report-ciclo-SK-4-23-08-26.md` + revisione R1.
-3. **Copertura test attrezzi — parziale.** Il numero di test è **mobile**: eseguire
-   `npm run test:mss:tools` e `npm run test:mss`, mai copiarlo qui (era la fonte di `V3`). Restano
-   scoperti: guardie PROD, hook di chiusura Claude, e il percorso in cui `mss:capsule` scrive una
-   capsula che il validator rifiuta (`N1`). Dettaglio e mandato:
-   [`../PROMPT_ORCHESTRATOR_MSS_24-08-26.md`](../PROMPT_ORCHESTRATOR_MSS_24-08-26.md) §3.
-4. `rule_id_version` è **testo libero**, non un identificatore: non esiste alcun campo strutturato
-   per i **gate** né per i **file toccati**.
-5. Gli **hook**: dal 23-08 lo script di chiusura Claude è tracciato, ma **il file di impostazioni
-   che lo attiva no**, e la guardia PROD del canale Claude non è tracciata affatto. Su una repo
-   clonata quell'enforcement non esiste (`A1`/`A4` del mandato orchestratore).
-
-### Cosa non è dimostrato
-
-- Che gli attrezzi `mss:*` siano **pienamente** coperti: la suite `tools` è la prima rete, ma
-  protezioni e autovalidazione del generatore restano scoperte (`A2`, `A3`, `N1`).
-- Che le capsule scritte a mano dicano il vero: durante la costruzione un generatore ha registrato
-  `fail` su comandi che in realtà **passavano** (su Windows `npm` è `npm.cmd`). Un controllo falso
-  invalida la raccolta quanto uno omesso.
-- Che `SEP-G5`, `WP-1`, `H-1.3` pulito o il cutover siano avanzati: **non lo sono**.
-
-### Prossimo task atomico derivato
-
-**Ciclo esecutivo 23-08-26 completato — non riaprire decisioni chiuse.**
-
-1. **Matteo — chiusura `SK-4`:** R1 raccomanda **accetta**; B1–B3 respinti. Dichiarare `CHIUSO` in
-   `PLAN_V0.md` §4-bis se concordi; poi commit/push del working tree (grande diff non committato).
-2. **Codex — revisione A5 `SK-11`:** controprova rossa/ripristino; poi chiusura `SK-11` e avvio
-   **`SK-5`** (CI MSS su `env/test`). Piano: `…/PLAN-CODEX-SK-11-SK-5-23-08-26.md`.
-3. **Backlog non bloccante** (da R1 SK-4): hook `.cursor/hooks/fine-sessione-commit-check.mjs` ancora
-   con regex `[^/]+` per audit Q/R; `--require-capsule` non propagato su path staged CLI.
-4. **`SK-7` (`mss:capsule`) dopo `SK-5`**, non prima — sequenza `D12` invariata.
-
-Ingresso unico sessione: `docs/Sessioni di lavoro/23-08-26/INDICE-SESSIONE-23-08-26.md`.
-
-### Dato nuovo per `D13` (indipendenza del revisore)
-
-`D13` ha reso la regola **avviso, non blocco**, ed è una decisione legittima di Matteo che resta in
-piedi. Va però registrato il primo dato reale: il 22-08 una famiglia di modello **diversa** (OpenAI)
-ha revisionato un lavoro di autore Anthropic e **ha trovato difetti che l'autore non aveva visto** —
-incluso quello strutturale al punto 1. È un'osservazione, non una richiesta di riaprire `D13`.
-
-### Gate
-
-Invariati e **non toccati** da queste sedute: `SEP-G1` = `PASS_CON_RISERVE` · `SEP-G5` **non** PASS ·
-`H-1.3` = `PASS_CON_RISERVE` (non PASS pulito) · `WP-1` **NO-GO**.
-
-### STOP e decisioni di Matteo
-
-- **Chiuse (non riaprire):** `D16` `SK-6` CHIUSO · `D17` cambio-famiglia = avviso, non gate ·
-  `D18` snellire, non duplicare · `D19` push quando repo pulita · `G1`–`G6` SK-4 (piani lanciati
-  23-08-26).
-- **Aperte:** chiusura formale `SK-4` (Matteo, post-R1) · revisione A5 Codex `SK-11` · `SK-5` CI ·
-  commit/push working tree 23-08-26.
-- **STOP invariati:** `WP-1` **NO-GO** · `SEP-G5` **non** PASS · `F5`/move · claim di PASS pulito ·
-  `docs/_lavoro/` · `stash drop` senza sì esplicito · commit/push senza sì.
-
+<!-- mss:generated handoff-senior fine -->
 ## 4. Chiusura obbligatoria di ogni sessione senior
 
 L'agente chiude nell'ordine seguente:
@@ -282,12 +100,14 @@ L'agente chiude nell'ordine seguente:
 2. finalizza output, prove, fallimenti, confondenti e limiti;
 3. aggiunge al catalogo un record della seduta e versiona il metodo se è realmente cambiato;
 4. aggiorna il masterplan solo per stati o gate realmente variati;
-5. riallinea la roadmap soltanto come vista, se necessario;
+5. dopo mutazioni all'owner, rigenera le viste con `npm run generate:mss:views` (ROADMAP/HANDOFF
+   incluso) — non rettificare a mano il blocco fra marcatori;
 6. produce un report senior completo con capsula `mss.session/0.1.1`;
 7. esegue validator capsula, `npm run test:mss`, controlli owner/routing e `git diff --check` sul
    perimetro posseduto;
 8. fotografa Git finale e verifica che lo staging non sia cambiato senza mandato;
-9. **come ultimo atto**, sostituisce l'handoff attivo e aggiunge una voce al registro append-only.
+9. **come ultimo atto**, aggiunge una voce al registro append-only §7 (l'istantanea attiva §3 e
+   generata, non riscritta a mano).
 
 Se una verifica fallisce, l'handoff riporta il fallimento e il blocco: non descrive il lavoro come
 chiuso. Se report, catalogo e masterplan divergono, STOP; correggere l'owner competente prima di
@@ -295,7 +115,11 @@ aggiornare questa vista.
 
 ## 5. Campi minimi dell'handoff attivo
 
-Ogni aggiornamento conserva almeno:
+Il blocco §3 e derivato da `PLAN_V0` (gate, ciclo, STOP da M). Campi umani aggiuntivi (metodo,
+comparabilità, debito narrativo) restano nel report della seduta e, se serve, in una voce §7.
+Il generatore non congela HEAD ne conteggi di test.
+
+Ogni aggiornamento umano al registro §7 conserva almeno:
 
 - data, `session_id`, autore, ruolo e configurazione agente;
 - metodo/versione, tipo di evidenza, verifica e comparabilità;
@@ -312,10 +136,10 @@ Non copiare nel handoff intere narrative, capsule o dati privati: usare puntator
 
 ## 6. Rettifiche
 
-- La sezione attiva può essere sostituita soltanto dopo un nuovo report finalizzato.
-- Il registro non si riscrive: una correzione aggiunge una voce `RETTIFICA` con target, motivo,
+- La sezione attiva (§3) si aggiorna solo via `npm run generate:mss:views` dopo un owner aggiornato.
+- Il registro §7 non si riscrive: una correzione aggiunge una voce `RETTIFICA` con target, motivo,
   autore, fonte e relazione `amends`, `supersedes_interpretation` o `contradicts`.
-- Una rettifica dell'handoff non cambia retroattivamente catalogo, report o masterplan.
+- Una rettifica del registro non cambia retroattivamente catalogo, report o masterplan.
 - Un conflitto irrisolto resta visibile e blocca l'uso della vista come punto di ripartenza.
 
 ## 7. Registro append-only

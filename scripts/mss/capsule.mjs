@@ -292,6 +292,58 @@ function quoteWarning(command) {
   return null
 }
 
+/**
+ * Residuo N4 (dopo `--check-expect` di M-G): comandi noti che con expectedExit 0
+ * registrerebbero un `pass` senza prova. Lista chiusa — non è un oracolo di
+ * infallibilità; i controlli a segno invertito (`--check-expect` ≠ 0) restano ammessi.
+ */
+const NON_FALSIFIABLE_CHECK_PATTERNS = [
+  {
+    re: /^git(?:\.exe)?\s+status(?:\s+(?:--short|-s|--porcelain(?:-v[12])?|-uall|-uno))*$/i,
+    why: 'git status in sola lettura non misura un gate (exit 0 non prova nulla)',
+  },
+  {
+    re: /^true$/i,
+    why: 'true esce sempre 0',
+  },
+  {
+    re: /^:$/,
+    why: 'no-op shell (:) esce sempre 0',
+  },
+  {
+    re: /^echo(?:\s|$)/i,
+    why: 'echo non misura un gate',
+  },
+  {
+    re: /^(?:npm(?:\.cmd)?\s+run\s+)?mss:query(?:\s+--)?\s+--verifica\b/i,
+    why: 'mss:query --verifica esce 0 anche a conteggio zero (falso verde N4)',
+  },
+]
+
+export function nonFalsifiableCheckReason(command, expectedExit = 0) {
+  if (expectedExit !== 0) return null
+  const cmd = String(command ?? '').trim().replace(/\s+/g, ' ')
+  if (!cmd) return null
+  for (const { re, why } of NON_FALSIFIABLE_CHECK_PATTERNS) {
+    if (re.test(cmd)) return why
+  }
+  return null
+}
+
+export class NonFalsifiableCheckError extends Error {
+  constructor(controlId, command, reason) {
+    super(
+      `Rifiutato: controllo non falsificabile (N4) "${controlId}=>${command}" — ${reason}. ` +
+      'Scegli un comando capace di fallire, oppure --check-expect con exit ≠ 0 se il fallimento è la prova.',
+    )
+    this.name = 'NonFalsifiableCheckError'
+    this.code = 'CHECK_NON_FALSIFIABLE'
+    this.controlId = controlId
+    this.command = command
+    this.reason = reason
+  }
+}
+
 export function runChecks(checkSpecs, { cwd = ROOT, executor = 'mss:capsule' } = {}) {
   return checkSpecs.map(({ control_id, command, expectedExit = 0 }) => {
     const trimmed = (command ?? '').trim()
@@ -305,6 +357,10 @@ export function runChecks(checkSpecs, { cwd = ROOT, executor = 'mss:capsule' } =
         esecutore: `${executor}: comando vuoto o non valido — non eseguito`,
         evidence_refs: [],
       }
+    }
+    const vacuous = nonFalsifiableCheckReason(trimmed, expectedExit)
+    if (vacuous) {
+      throw new NonFalsifiableCheckError(control_id, trimmed, vacuous)
     }
     const result = spawnCheckCommand(trimmed, cwd)
     // Un comando che non è partito NON è un comando fallito: registrarlo `fail`
@@ -888,6 +944,11 @@ export function buildCapsuleBundle({
  * dal corpus solo i valori PRECEDENTI, che non sono un giudizio ma un fatto gia' scritto —
  * e ricopiarli a mano e' come si sbaglia `previous_value_or_hash`.
  *
+ * `R-T7-06` / Opzione B — asse Output: oltre a `annotation.verification.*`, l'amendment
+ * rettifica anche `assertions[0].verification_status` e
+ * `assertions[0].verification_or_use_evidence` (stesso esito/prova di `--verify`). Non riscrive
+ * il record `final`; non tocca assi persona/sistema; index > 0 resta amendment manuale.
+ *
  * @param lookup  funzione (record_id) -> { record, path } | null. Iniettabile per i test.
  */
 export function buildVerificationAmendments({
@@ -956,6 +1017,46 @@ export function buildVerificationAmendments({
         corrected_value: timestamp,
       },
     ]
+
+    // R-T7-06 Opzione B: asse Output — allinea assertions[0] senza riscrivere il final.
+    if (target.annotation?.axis === 'output') {
+      const assertions = target.annotation.assertions
+      if (!Array.isArray(assertions) || assertions.length === 0) {
+        errors.push(
+          `--verify: ${spec.targetRecordId} e asse output senza assertions[] — ` +
+          'non c\'e verification_status Output da rettificare (R-T7-06).',
+        )
+        return
+      }
+      if (assertions.length !== 1) {
+        errors.push(
+          `--verify: ${spec.targetRecordId} ha ${assertions.length} assertions Output; ` +
+          'Opzione B patcha solo assertions[0] con esattamente una asserzione. ' +
+          'Per indici > 0 resta amendment manuale (contratto §6).',
+        )
+        return
+      }
+      const assertion = assertions[0]
+      if (assertion?.verification_status === undefined) {
+        errors.push(
+          `--verify: ${spec.targetRecordId} assertions[0] senza verification_status — ` +
+          'campo obbligatorio Output, non inventabile da --verify.',
+        )
+        return
+      }
+      changes.push(
+        {
+          field_path: 'annotation.assertions[0].verification_status',
+          previous_value_or_hash: assertion.verification_status,
+          corrected_value: spec.status,
+        },
+        {
+          field_path: 'annotation.assertions[0].verification_or_use_evidence',
+          previous_value_or_hash: assertion.verification_or_use_evidence ?? '',
+          corrected_value: spec.evidenceRef,
+        },
+      )
+    }
 
     records.push({
       ...sharedTop(ids, timestamp, recordedBy, packagesLoaded),
@@ -1205,9 +1306,17 @@ export function runCapsule(argv = process.argv, options = {}) {
 
   const tools = args.tools.length ? args.tools : TOOLS_DEFAULT
   const packages = args.packages.length ? args.packages : PACKAGE_DEFAULT
-  const checks = args.checks.length
-    ? runChecks(args.checks, { cwd: root, executor: options.executor || 'mss:capsule' })
-    : []
+  let checks = []
+  if (args.checks.length) {
+    try {
+      checks = runChecks(args.checks, { cwd: root, executor: options.executor || 'mss:capsule' })
+    } catch (error) {
+      if (error?.code === 'CHECK_NON_FALSIFIABLE' || error instanceof NonFalsifiableCheckError) {
+        return { exitCode: 2, stdout: '', stderr: `${error.message}\n` }
+      }
+      throw error
+    }
+  }
 
   let records
   try {

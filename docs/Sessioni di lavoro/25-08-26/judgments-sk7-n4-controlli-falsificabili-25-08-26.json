@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "N4/SK-7@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato M-SK7-N4: deny controlli --check non falsificabili (residuo post M-G check-expect)",
+        "decision_or_output_changed": "Denylist chiusa in capsule.mjs: git status / true / : / echo / mss:query --verifica con expectedExit 0 → exit 2 nessuna scrittura; check-expect ≠ 0 resta ammissibile; test nominato N4/SK-7; limite aperto rimosso dal MANUALE",
+        "G": 2,
+        "O": 1,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-sk7-n4-controlli-falsificabili-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-sk7-n4-controlli-falsificabili-25-08-26.md",
+        "recipient": "Matteo, orchestratore T11/P2.2",
+        "problem_or_job": "chiudere residuo N4: pass vacuo da comando infallibile",
+        "intended_use": "controverifica; gate P2.2 senza riaprire N1/N2 né WP-1",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo (Opzione B deny)",
+        "directed_by": "PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md §P2.2 M-SK7-N4",
+        "authored_by": "cursor-composer-m-sk7-n4",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "test N4/SK-7 deny verde; check-expect M-G invariato; validate:mss sul report; no views/ROADMAP",
+        "verification_or_use_evidence": "npm run test:mss:tools — OK capsule: N4 / SK-7; FAIL V1/D14 parallelo fuori perimetro",
+        "verification_status": "self_report",
+        "owner_ref": "scripts/mss/capsule.mjs",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/capsule.mjs",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md"
+        ],
+        "relations_no_double_count": [
+          "Residuo N4 dopo M-G --check-expect; non tocca validator core; non WP-1"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

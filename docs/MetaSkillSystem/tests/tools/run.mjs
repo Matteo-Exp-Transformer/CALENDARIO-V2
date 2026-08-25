@@ -34,6 +34,7 @@ import {
   parseCapsuleArgs,
   parseCheckSpec,
   parseVerifySpec,
+  nonFalsifiableCheckReason,
   collectGitContext,
   buildSourceRefsFromGit,
   buildJudgmentsTemplate,
@@ -46,7 +47,12 @@ import { CONFIG, buildReportPathRe, normalizeConfig } from '../../../../scripts/
 import { REPORT_PATH_RE } from '../../../../scripts/mss/adapter.mjs'
 import { collectExportPaths, findDanglingImports } from '../../../../scripts/mss/export-kit.mjs'
 import { runDoctor } from '../../../../scripts/mss/doctor.mjs'
-import { runViews, deriveMatteoDashboard } from '../../../../scripts/mss/views.mjs'
+import {
+  runViews,
+  deriveMatteoDashboard,
+  deriveSeniorRoadmap,
+  deriveSeniorHandoff,
+} from '../../../../scripts/mss/views.mjs'
 import { PROTOCOL_ID, PROTOCOL_VERSION, REVISION_CURRENT, REVISION_LEGACY, SCHEMA_CURRENT, SCHEMA_LEGACY } from '../../../../scripts/mss/rules.mjs'
 import {
   IDS,
@@ -583,9 +589,9 @@ const tests = [
     const live = runStatus({ root: REPO_ROOT, isTTY: false })
     assert.equal(live.exitCode, 0, live.stderr)
     const liveGate = parsePlanGate(readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md'), 'utf8'))
-    assert.equal(liveGate.closedId, 'T10')
-    assert.equal(liveGate.next, 'T11')
-    assert.match(live.stdout, /ultimo chiuso\s+`T10`/)
+    assert.equal(liveGate.closedId, 'T11')
+    assert.equal(liveGate.next, 'T12')
+    assert.match(live.stdout, /ultimo chiuso\s+`T11`/)
     assert.match(live.stdout, new RegExp(`prossimo\\s+\`${liveGate.next}\``))
     assert.doesNotMatch(live.stdout, /prossimo\s+`M-E`/)
     assert.doesNotMatch(live.stdout, /32 gruppi/)
@@ -889,6 +895,34 @@ const tests = [
     assert.throws(() => parseCapsuleArgs([process.argv[0], 'capsule.mjs', '--check', 'A=>node --version', '--tool', 'fs', '--check-expect', '1']), /immediatamente precedente/)
     assert.throws(() => parseCapsuleArgs([process.argv[0], 'capsule.mjs', '--check', 'A=>node --version', '--check-expect', '-1']), /maggiore o uguale/)
   }],
+  ['capsule: N4 / SK-7 — controllo infallibile deny (git status --short non è prova)', () => {
+    assert.match(nonFalsifiableCheckReason('git status --short'), /git status/)
+    assert.match(nonFalsifiableCheckReason('true'), /true/)
+    assert.match(nonFalsifiableCheckReason('npm run mss:query -- --verifica'), /mss:query/)
+    assert.equal(nonFalsifiableCheckReason('git status --short', 1), null, 'check-expect ≠ 0 resta falsificabile')
+    assert.equal(nonFalsifiableCheckReason('npm run test:mss:tools'), null)
+    assert.throws(
+      () => runChecks([{ control_id: 'VACUO', command: 'git status --short' }], { cwd: REPO_ROOT }),
+      (error) => error?.code === 'CHECK_NON_FALSIFIABLE' && /N4/.test(error.message),
+    )
+    const denied = runCapsule([
+      process.argv[0],
+      'capsule.mjs',
+      '--judgments', JUDGMENTS_MINIMAL,
+      '--model', 'fixture-model',
+      '--check', 'N4-VACUO=>git status --short',
+    ], { root: REPO_ROOT, env: { TERM_PROGRAM: 'cursor' } })
+    assert.equal(denied.exitCode, 2, denied.stderr)
+    assert.match(denied.stderr, /non falsificabile \(N4\)/)
+    assert.match(denied.stderr, /git status/)
+    assert.equal(denied.stdout, '')
+    const [inverted] = runChecks(
+      [{ control_id: 'N4-INV', command: 'git status --short', expectedExit: 1 }],
+      { cwd: REPO_ROOT },
+    )
+    assert.equal(inverted.esito, 'fail', inverted.esecutore)
+    assert.match(inverted.criterio, /atteso exit 1/)
+  }],
   ['capsule: parseCheckSpec — D3 storico ambiguo rifiutato', () => {
     assert.throws(
       () => parseCheckSpec('test:mss:npm run test:mss'),
@@ -1108,6 +1142,105 @@ const tests = [
       /annotazione/,
     )
   }],
+  ['capsule: R-T7-06 / Opzione B — --verify patcha assertions[] Output (non riscrive final)', () => {
+    // Chiude il limite strutturale documentato in SK4-ASSERT: N2 copriva solo
+    // annotation.verification.*; sull'asse Output serve anche assertions[0].
+    const bersaglio = validBundle()
+    const targetO = bersaglio.find((r) => r.record_id === IDS.recO)
+    const targetS = bersaglio.find((r) => r.record_id === IDS.recS)
+    assert.equal(targetO.annotation.axis, 'output')
+    assert.equal(targetO.annotation.assertions[0].verification_status, 'unverified')
+
+    const records = buildCapsuleBundle(goldenCapsuleOptions({
+      role: 'independent_reviewer_RT706',
+      verifications: [parseVerifySpec(
+        `${IDS.recO}|independently_verified|source-contract|rieseguito gate Output R-T7-06`,
+      )],
+      lookupRecord: (id) => (id === IDS.recO ? { record: targetO, path: FIXED_PATH } : null),
+      amendmentIds: [{
+        record: '0198b000-0001-7000-8000-0000000000b1',
+        amendment: '0198b000-0001-7000-8000-0000000000b2',
+      }],
+    }))
+
+    const amd = records.find((r) => r.record_type === 'amendment')
+    assert.ok(amd, 'deve emettere amendment append-only')
+    assert.equal(amd.finalization, 'final')
+    assert.equal(amd.amendment.target_record_id, IDS.recO)
+    assert.equal(targetO.finalization, 'final', 'il bersaglio resta final — non riscritto')
+    assert.equal(
+      targetO.annotation.assertions[0].verification_status,
+      'unverified',
+      'il record final bersaglio non deve essere mutato in-place',
+    )
+
+    const statusAnn = amd.amendment.changes.find((c) => c.field_path === 'annotation.verification.status')
+    const statusAssert = amd.amendment.changes.find((c) => c.field_path === 'annotation.assertions[0].verification_status')
+    const evidenceAssert = amd.amendment.changes.find((c) => c.field_path === 'annotation.assertions[0].verification_or_use_evidence')
+    assert.equal(statusAnn.corrected_value, 'independently_verified')
+    assert.equal(statusAssert.previous_value_or_hash, 'unverified')
+    assert.equal(statusAssert.corrected_value, 'independently_verified')
+    assert.equal(evidenceAssert.previous_value_or_hash, targetO.annotation.assertions[0].verification_or_use_evidence)
+    assert.equal(evidenceAssert.corrected_value, 'source-contract')
+
+    const data = queryData([...bersaglio, amd])
+    const vista = buildVistaEffettiva(data)
+    const payload = buildQueryPayload(data, vista)
+    assert.ok(
+      payload.verifica.vista_effettiva.applicati.some(
+        (a) => a.field_path === 'annotation.assertions[0].verification_status' && a.target_record_id === IDS.recO,
+      ),
+      'vista effettiva deve applicare verification_status su assertions[0]',
+    )
+
+    // Regressione N2: asse sistema NON riceve patch su assertions[].
+    const sistemaOnly = buildCapsuleBundle(goldenCapsuleOptions({
+      verifications: [parseVerifySpec(
+        `${IDS.recS}|independently_verified|source-contract|verifica sistema senza assertions Output`,
+      )],
+      lookupRecord: (id) => (id === IDS.recS ? { record: targetS, path: FIXED_PATH } : null),
+      amendmentIds: [{
+        record: '0198b000-0001-7000-8000-0000000000c1',
+        amendment: '0198b000-0001-7000-8000-0000000000c2',
+      }],
+    }))
+    const amdS = sistemaOnly.find((r) => r.record_type === 'amendment')
+    assert.ok(amdS)
+    assert.equal(
+      amdS.amendment.changes.some((c) => c.field_path.startsWith('annotation.assertions')),
+      false,
+      'persona/sistema non devono ricevere patch assertions[]',
+    )
+
+    // Guardrail: multi-assertion Output → stop esplicito (no half-broken index).
+    const multi = structuredClone(targetO)
+    multi.annotation.assertions = [
+      multi.annotation.assertions[0],
+      { ...multi.annotation.assertions[0], output_id: 'second' },
+    ]
+    assert.throws(
+      () => buildCapsuleBundle(goldenCapsuleOptions({
+        verifications: [parseVerifySpec(
+          `${IDS.recO}|independently_verified|source-contract|multi non supportato`,
+        )],
+        lookupRecord: () => ({ record: multi, path: FIXED_PATH }),
+      })),
+      /esattamente una asserzione/,
+    )
+
+    // Guardrail: Output senza assertions → stop.
+    const empty = structuredClone(targetO)
+    empty.annotation.assertions = []
+    assert.throws(
+      () => buildCapsuleBundle(goldenCapsuleOptions({
+        verifications: [parseVerifySpec(
+          `${IDS.recO}|independently_verified|source-contract|assertions vuote`,
+        )],
+        lookupRecord: () => ({ record: empty, path: FIXED_PATH }),
+      })),
+      /senza assertions/,
+    )
+  }],
   ['capsule: N5 — --verify e validator rifiutano un verificatore con stato incoerente', () => {
     assert.throws(
       () => parseVerifySpec(`${IDS.recS}|unverified|source-contract|motivo reale`),
@@ -1308,25 +1441,30 @@ const tests = [
     // Il test usa una repo minima: non basta vedere che il file reale e allineato oggi. Serve
     // provare entrambe le direzioni che rendono il generatore un antidoto alle viste stale.
     // Prende l'ULTIMO ciclo chiuso: un ciclo precedente non deve mascherare lo stato corrente.
-    assert.ok(runViews({ root: REPO_ROOT }).every((view) => !view.stale), 'il cruscotto reale non e allineato al suo owner')
+    // Tutte le viste registrate (cruscotto + ROADMAP + HANDOFF) devono essere presenti nel fixture.
+    assert.ok(runViews({ root: REPO_ROOT }).every((view) => !view.stale), 'una vista reale non e allineata al suo owner')
     const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-v1-'))
+    const planFixture = [
+      '# Piano',
+      '### Ciclo precedente — `M-G` eseguito e **CHIUSO**',
+      '### Ciclo di prova — `M-F` eseguito e **CHIUSO**',
+      '',
+      '**Prossima azione autorizzata: `M-E`** (attrezzi mancanti, `T1`).',
+      '`R1` resta **raccomandato ma non aperto**.',
+    ].join('\n')
+    const stubView = (title, id) => [
+      `# ${title}`,
+      'TESTO ESTERNO DA CONSERVARE',
+      `<!-- mss:generated ${id} inizio -->`,
+      'contenuto da sostituire',
+      `<!-- mss:generated ${id} fine -->`,
+      'CODA ESTERNA DA CONSERVARE',
+    ].join('\n')
     try {
-      writeRepoFile(root, 'docs/MetaSkillSystem/PLAN_V0.md', [
-        '# Piano',
-        '### Ciclo precedente — `M-G` eseguito e **CHIUSO**',
-        '### Ciclo di prova — `M-F` eseguito e **CHIUSO**',
-        '',
-        '**Prossima azione autorizzata: `M-E`** (attrezzi mancanti, `T1`).',
-        '`R1` resta **raccomandato ma non aperto**.',
-      ].join('\n'))
-      writeRepoFile(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md', [
-        '# Cruscotto MSS di Matteo',
-        'TESTO ESTERNO DA CONSERVARE',
-        '<!-- mss:generated cruscotto-matteo inizio -->',
-        'contenuto da sostituire',
-        '<!-- mss:generated cruscotto-matteo fine -->',
-        'CODA ESTERNA DA CONSERVARE',
-      ].join('\n'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/PLAN_V0.md', planFixture)
+      writeRepoFile(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md', stubView('Cruscotto', 'cruscotto-matteo'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md', stubView('Roadmap', 'roadmap-senior'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md', stubView('Handoff', 'handoff-senior'))
       assert.ok(runViews({ root, write: true }).every((view) => view.stale), 'la prima generazione doveva rilevare il blocco diverso')
       const afterGen = readFileSync(join(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md'), 'utf8')
       assert.ok(runViews({ root }).every((view) => !view.stale), 'subito dopo la generazione il gate deve essere verde')
@@ -1347,6 +1485,79 @@ const tests = [
       assert.ok(runViews({ root }).every((view) => !view.stale), 'la rigenerazione non ha riallineato la vista')
       assert.match(realigned, /PROVATO/, 'la vista deve riflettere l\'owner, non la correzione manuale')
       assert.doesNotMatch(realigned, /CHIUSISSIMO/)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  }],
+
+  ['D14/V1 — ROADMAP e HANDOFF generate: owner modificato = gate rosso, rigenerazione = verde', () => {
+    // Chiude il debito D14/R-T7-04: le due viste Senior-Eval non sono piu manuali.
+    // Stesso contratto del cruscotto: marcatori, anti-stale, nessun numero mobile inventato.
+    const live = runViews({ root: REPO_ROOT })
+    assert.ok(live.some((v) => v.id === 'roadmap-senior' && !v.stale), 'ROADMAP reale non allineata')
+    assert.ok(live.some((v) => v.id === 'handoff-senior' && !v.stale), 'HANDOFF reale non allineato')
+
+    const root = mkdtempSync(join(resolve(tmpdir()), 'calendarbackup-mss-d14-'))
+    const planFixture = [
+      '# Piano',
+      '### Ciclo A — `T9` eseguito e **CHIUSO**',
+      '### Ciclo B — `T10` eseguito e **CHIUSO**',
+      '',
+      '**Prossima azione autorizzata: `T11`** (P2 backlog D14).',
+      '**Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — fixture**',
+      '',
+      '## 4. Quadro corrente',
+      '| Ord | Pacchetto | Stato | Gate |',
+      '|---|---|---|---|',
+      '| 4 | `WP-1` — piloti | **NON INIZIATO — NO-GO** | no |',
+      '| 3.2 | `H-1.3` — amendment | **PASS** | ok |',
+    ].join('\n')
+    const stub = (id) => [
+      `# Vista ${id}`,
+      'PREAMBOLO UMANO',
+      `<!-- mss:generated ${id} inizio -->`,
+      'stale',
+      `<!-- mss:generated ${id} fine -->`,
+      'CODA UMANA',
+    ].join('\n')
+    try {
+      writeRepoFile(root, 'docs/MetaSkillSystem/PLAN_V0.md', planFixture)
+      writeRepoFile(root, 'docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md', stub('cruscotto-matteo'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md', stub('roadmap-senior'))
+      writeRepoFile(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md', stub('handoff-senior'))
+
+      const first = runViews({ root, write: true })
+      assert.ok(first.every((v) => v.stale))
+      const roadmap = readFileSync(join(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md'), 'utf8')
+      const handoff = readFileSync(join(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md'), 'utf8')
+      assert.ok(runViews({ root }).every((v) => !v.stale))
+      assert.match(roadmap, /`T10`.*\*\*CHIUSO\*\*/)
+      assert.match(roadmap, /`T11`/)
+      assert.match(roadmap, /PREAMBOLO UMANO/)
+      assert.doesNotMatch(roadmap, /\b\d{2,4}\s+test\b/i)
+      assert.match(handoff, /`T10`.*\*\*CHIUSO\*\*/)
+      assert.match(handoff, /Prossima azione autorizzata:\*\* `T11`/)
+      assert.match(handoff, /CODA UMANA/)
+      assert.match(deriveSeniorRoadmap(planFixture), /Lavagna pacchetti/)
+      assert.match(deriveSeniorHandoff(planFixture), /Istantanea attiva/)
+
+      writeFileSync(
+        join(root, 'docs/MetaSkillSystem/PLAN_V0.md'),
+        planFixture.replace('**Prossima azione autorizzata: `T11`** (P2 backlog D14).', '**Prossima azione autorizzata: `T12`** (dopo D14).'),
+        'utf8',
+      )
+      assert.ok(runViews({ root }).filter((v) => v.id === 'roadmap-senior' || v.id === 'handoff-senior').every((v) => v.stale), 'owner→T12 deve rendere ROADMAP/HANDOFF stale')
+
+      writeFileSync(join(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md'), roadmap.replaceAll('T11', 'T11-FAKE'), 'utf8')
+      assert.ok(runViews({ root }).some((v) => v.id === 'roadmap-senior' && v.stale), 'correzione manuale ROADMAP non basta')
+
+      runViews({ root, write: true })
+      const fixed = readFileSync(join(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md'), 'utf8')
+      const fixedH = readFileSync(join(root, 'docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md'), 'utf8')
+      assert.ok(runViews({ root }).every((v) => !v.stale))
+      assert.match(fixed, /`T12`/)
+      assert.match(fixedH, /`T12`/)
+      assert.doesNotMatch(fixed, /T11-FAKE/)
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
