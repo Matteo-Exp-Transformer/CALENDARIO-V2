@@ -8,13 +8,13 @@
 `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**: prova eseguibile, test nominato e controverifica Cursor/Composer sono registrati.
 
 ## Cosa devi fare tu
-R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T8` (pubblicazione commit T7+T9 con sì Matteo; preferibile chiudere prima i 3 fix Codex M12 T7; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati).
+R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T8` (pubblicazione commit T7+T9 con sì Matteo; preferibile fix Codex M12 T7 mirati prima del commit; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati).
 
 ## Lavagna
 
 | Fatte | Con riserva | Da fare |
 |---|---|---|
-| `T6` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T8`: pubblicazione commit T7+T9 con sì Matteo; preferibile chiudere prima i 3 fix Codex M12 T7; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati |
+| `T6` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T8`: pubblicazione commit T7+T9 con sì Matteo; preferibile fix Codex M12 T7 mirati prima del commit; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati |
 
 ## Prossimo passo
 

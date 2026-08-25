@@ -5,10 +5,11 @@
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
-> **Ultimo movimento:** **P2A in corso** — manuale operativo locale
-> [`MANUALE_OPERATIVO_MSS_V0.md`](MANUALE_OPERATIVO_MSS_V0.md) (`SK-10`, non chiuso; `R8` non
-> soddisfatto). Audit e P1 restano in [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md)
-> e report P1. `SK-7` gate A/B; `H-1.3` `PASS_CON_RISERVE`; `WP-1` **NO-GO**.
+> **Ultimo movimento:** **M-T8** — pubblicazione T7+T9+Opzione B; **`SK-10` CHIUSO** (firma Matteo
+> [`Report-chiusura-sk10-firma-matteo-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-sk10-firma-matteo-25-08-26.md));
+> prossimo lavoro **E2 / H-1.3** (famiglie `M-E2-*`, non `WP-1`). `H-1.3` resta **`PASS_CON_RISERVE`**
+> (bypass E2 intenzionali non sanati). Audit P1 in [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
+> `WP-1` **NO-GO** · `D27` chiusa finché Matteo non riapre in chat dedicata.
 >
 > **Rettifica 21-08-26 (append, non riscrittura):** l'intestazione precedente si era fermata al
 > movimento `H-1.1` del 10-08-26 e dichiarava «Checkpoint WP-0.1 locale `7632443`. Nessun commit/push»,
@@ -101,7 +102,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | S7 | `SK-7` — `mss:capsule` (generazione) | **`CHIUSO` 24-08-26 — decisione `M3` di Matteo dopo controverifica** | ✅ attrezzo e report SK-7 esistono · ✅ fix B: `parseCheckSpec` canonico `ID=>comando`, legacy un solo `:`, ambigui rifiutati; il comando può contenere ulteriori `=>` · ✅ `runChecks` non passa comandi vuoti · ✅ rettifica privacy append-only su report SK-7 · ✅ `source_refs` escludono untracked non pubblicabili · ✅ test/tools, H-1, docs, lint, validator capsule e validate globale rieseguiti verdi il 24-08-26 |
 | S8 | `SK-8` — radice robusta della suite | **`CHIUSO` 25-08-26 — firma Matteo post-revisione Cursor T6** | ✅ test nominato `SK-8 — test:mss esegue l’intera suite da cwd diversa…`: wrapper dalla root, una sola suite completa nel child da cwd temporanea esterna, root risolta da `import.meta.url`; prove negative su flag incompleto e cwd repo · revisione indipendente Cursor `PASS` · firma verbatim Matteo 25-08-26 |
 | S9 | `SK-9` — `mss:move` | **`CHIUSO` 24-08-26 (`M-E`, `M12`)** | ✅ `npm run mss:move -- <sorgente> <destinazione>` sposta un file e aggiorna i riferimenti vivi · ✅ `npm run test:mss:tools` include il caso nominato `T1/R6` (move, rifiuti, rollback, costo < baseline) · ✅ controverifica Codex/OpenAI, famiglia diversa da Cursor/Composer, con sandbox indipendente: move+ref aggiornato, rifiuto rosso, rollback su validate rosso |
-| S10 | `SK-10` — manuale utente + intervista di bootstrap | **`PROVATO` 24-08-26 (`M-D`); riserva `N6` chiusa da `M-G` CHIUSO (`M12`)** | ✅ `MANUALE_OPERATIVO_MSS_V0.md` + puntatori ingresso · ✅ **`P2B` fatto:** `mss:export` copia il motore e verifica la chiusura degli import; `mss:doctor` è la checklist di primo run; i path cablati sono parametrici via `scripts/mss/config.mjs` con **default identici a prima** · ✅ prova in repo vergine **rifatta dall'orchestratore in una terza cartella con nomi propri**: `npm run validate:mss:all` verde in repo ospite configurata · ✅ default invariato provato confrontando `REPORT_PATH_RE` col letterale di `git show HEAD:scripts/mss/adapter.mjs` · ✅ prima consegna **respinta** dalla controverifica (test `R8` ambientale non dichiarato come verifica di progetto → checklist rossa proprio in una repo ospite configurata), riparata nel completamento · ✅ **riserva `N6` rimossa:** passo `owner` di `mss:doctor` non accusa più Git — chiuso in `M-G` con controverifica famiglia diversa. Atti `M-D`: [`Report-md-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-md-portabilita-24-08-26.md) · [`Report-completamento-md-r8-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-completamento-md-r8-24-08-26.md) · [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) · atti `M-G`: vedi §15 |
+| S10 | `SK-10` — manuale utente + intervista di bootstrap | **`CHIUSO` 25-08-26 — firma Matteo post-M-T8 (`M12` atti M-D/M-G + R8 T9)** | ✅ `P2A`: [`MANUALE_OPERATIVO_MSS_V0.md`](MANUALE_OPERATIVO_MSS_V0.md) · ✅ `P2B`: `mss:export` + `mss:doctor` · ✅ `N6` chiuso `M-G` · ✅ `R8` rieseguito T9 · ✅ controverifica M12 T7 `PULITO` su Opzione B · Atti: [`Report-chiusura-sk10-firma-matteo-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-sk10-firma-matteo-25-08-26.md) |
 | S11 | `SK-11` — test automatici degli attrezzi MSS | **`CHIUSO` 24-08-26 — decisione Matteo (`T4`)** | ✅ `npm run test:mss:tools` e `npm run test:mss` verdi (conteggio mobile: eseguire i comandi) · ✅ hook Claude e guard PROD coperti dai casi nominati `A1`–`A4`; `M-C` copre `N1`/`N2`; `M-D` copre `R8`/`R2`; `M-G` copre `N3`–`N6` · ✅ `P4`: caso nominato `capsule: P4/SK-11 — template R1 privacy resta di mode e non classifica la chat`, con input contraddittorio e contratto privacy letterale · ✅ `T3` / M12: controverifica Cursor/Composer, famiglia diversa dall’esecutore OpenAI/gpt-5.6 · ✅ **`T4`:** Matteo ha firmato la chiusura formale dopo M12 — nessuna prova tecnica residua |
 
 ### 4-ter. Rettifica tecnica dell'audit 23-08-26 — questa sezione prevale sulle celle stale sopra
@@ -934,8 +935,8 @@ Report orchestratore: [`Report-orchestratore-t7-backlog-pilota-25-08-26.md`](../
 
 **Riserve ciclo T7 (non chiuse):**
 
-- **R-T7-01:** working tree non pubblicato su `origin/env/test` (commit/push solo con sì Matteo).
-- **R-T7-02:** M12 Codex controverifica famiglia diversa — attesa mandato Matteo post-ciclo.
+- **R-T7-01:** ✅ **CHIUSA** 25-08-26 — commit T7+T9+Opzione B pubblicati su `origin/env/test` (`0a86c81`–`764d862` + atti M-T8); push autorizzato Matteo «ok per tutti e due».
+- **R-T7-02:** ✅ **CHIUSA** 25-08-26 — controverifica M12 Codex **PULITO** su Opzione B F1–F3: [`Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md) · fix `0a86c81`.
 - **R-T7-03:** `H-1.3` resta `PASS_CON_RISERVE` (bypass `--no-verify`, unstaged, Cloud intenzionali).
 - **R-T7-04:** ROADMAP/HANDOFF Senior-Eval restano viste manuali (D14 parziale).
 - **R-T7-05:** R4 light vs deep — fail-open hook su light accettabile per target deep; pilota light debole.
@@ -968,17 +969,37 @@ Report orchestratore: [`Report-orchestratore-t9-blindatura-struttura-25-08-26.md
 
 **Riserve T9 / pre-T8 (Codex M12 T7, non chiuse in T9):**
 
-- **R-T9-01:** `parsePlanGate()` riconosce solo cicli `M-*` → «ultimo chiuso» mostra `M-F` invece di T6/T7.
-- **R-T9-02:** template kit `_skill-system-v0/hooks/fine-sessione-nudge.mjs` divergenza da Cursor prod (v5 / mente fredda).
-- **R-T9-03:** `PROTOCOLLO_PRIMO_PILOTA_V0_1.md` versione/schema legacy vs contratto vivo.
+- **R-T9-01:** ✅ **CHIUSA** 25-08-26 — `plan-parse.mjs` riconosce `M-*` e `T\d+`; fix Opzione B `0a86c81`; M12 Codex **PULITO** (F1: ultimo chiuso T6, prossimo T8).
+- **R-T9-02:** ✅ **CHIUSA** 25-08-26 — parità kit/produzione hook nudge; fix `0a86c81`; prove `complete` / `missing-qr` / `no-capsule` in `test:mss` (N3).
+- **R-T9-03:** ✅ **CHIUSA** 25-08-26 — protocollo `1.0.1`, coppia viva `0.1.1`/`freeze-2`; `--force-legacy` rifiutato; fix `0a86c81` + M12 F3.
 - Deliberati invariati: R4 light≠deep · D14 ROADMAP/HANDOFF · H-1.3 E2 · R-T7-06 Output `--verify`.
 
 #### Chiusura formale ciclo `T9` — 25-08-2026
 
-- **Ciclo `T9`:** **eseguito CON RISERVE** (4 famiglie + inventari + orchestratore; `validate:mss:all` verde).
-- **Commit/push:** non eseguiti — gate successivo `T8`.
+- **Ciclo `T9`:** **CHIUSO** (4 famiglie + inventari + orchestratore; riserve meccaniche R-T9-01/02/03 chiuse da Opzione B + M12).
+- **Commit:** fix `0a86c81`, atti `3c3677d`/`764d862` su `env/test`; push completato in M-T8.
 
-**Prossima azione autorizzata: `T8`** (pubblicazione commit T7+T9 con sì Matteo; preferibile chiudere prima i 3 fix Codex M12 T7; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati).
+### Sedicesimo ciclo del 25-08-2026 — `M-T8` pubblicazione + SK-10 (orchestratore senior)
+
+Mandato: [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md) · P0.2–P0.4.
+
+| Atto | Esito | Riferimento |
+|---|---|---|
+| Pubblicazione T7+T9+Opzione B | **CHIUSO** | `0a86c81` · `3c3677d` · `764d862` + atti M-T8 |
+| Owner allineato R-T9/R-T7 | **CHIUSO** | questo file §15 |
+| SK-10 firma Matteo | **CHIUSO** | [`Report-chiusura-sk10-firma-matteo-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-sk10-firma-matteo-25-08-26.md) |
+| Report orchestratore M-T8 | **CHIUSO** | [`Report-orchestratore-m-t8-pubblicazione-sk10-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-m-t8-pubblicazione-sk10-25-08-26.md) |
+
+**Firma Matteo SK-10 (verbatim):** «Firmo SK-10 come CHIUSO dopo seduta orchestratore del 25-08-26.»
+
+**Riserve residue post-M-T8 (deliberate, non bug):**
+
+- **R-T7-03 … R-T7-06:** invariati.
+- **H-1.3:** **`PASS_CON_RISERVE`** — **non** promosso a PASS pulito.
+
+**Prossima azione autorizzata:** famiglie **E2 / H-1.3** (`M-E2-A` … `M-E2-D`, poi `M-H13-PASS` solo dopo prove) — vedi [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md) §P1.
+
+**Esplicitamente fuori:** `WP-1`, riapertura `D27`, `H-1.3` PASS pulito, lavoro `src/`.
 
 ### Tredicesimo ciclo del 25-08-2026 — `T6` eseguito e **CHIUSO** (`M12` + firma Matteo)
 

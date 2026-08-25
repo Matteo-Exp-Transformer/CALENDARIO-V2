@@ -2,8 +2,8 @@
 
 > **Scopo:** far lavorare un agente sul MetaSkillSystem **senza rileggere l’intero corpus**.
 > **Non è owner di stato:** i conteggi mobili e i gate vivono nei comandi e in `PLAN_V0.md`.
-> **Pacchetto:** `SK-10` — **P2A** (discovery + manuale locale) e **P2B** (export + intervista +
-> checklist di primo run, §7). `R8` è **PROVATO** il 24-08-26, non `CHIUSO`: la chiusura è di Matteo.
+> **Pacchetto:** `SK-10` — **CHIUSO** 25-08-26 (firma Matteo post-M-T8). **P2A** (manuale locale) e
+> **P2B** (export + `mss:doctor`, §7). `R8` coperto da atti M-D/M-G/T9; owner in [`PLAN_V0.md`](PLAN_V0.md) §4-bis S10.
 
 ---
 

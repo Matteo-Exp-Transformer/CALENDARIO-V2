@@ -1,0 +1,57 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "M-T8-ORCH@PLAN_V0",
+        "trigger_event": "Mandato M-T8: push env/test + owner + SK-10 CHIUSO",
+        "decision_or_output_changed": "Ciclo M-T8 CHIUSO: R-T9-01/02/03 e R-T7-01/02 chiuse; validate:mss:all verde; CI mss osservata; H-1.3 non promosso; WP-1 NO-GO",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "orchestratore-m-t8-pubblicazione-sk10-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-orchestratore-m-t8-pubblicazione-sk10-25-08-26.md",
+        "recipient": "Matteo e orchestratore senior",
+        "problem_or_job": "chiudere ciclo M-T8: push, owner, SK-10, CI",
+        "intended_use": "handoff E2/H-1.3",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato M-T8 + «ok per tutti e due. procedi pure»",
+        "authored_by": "cursor-composer-m-t8-esecutore",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "validate:mss:all verde; push ok; CI mss osservata; SK-10 CHIUSO",
+        "verification_or_use_evidence": "controls MT8-*; gh run list",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/25-08-26/Report-chiusura-sk10-firma-matteo-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Sintesi M-T8; non sostituisce report SK-10"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
