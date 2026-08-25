@@ -49,8 +49,10 @@ Per Claude Code: registra gli hook in `.claude/settings.local.json` (`PreToolUse
 ## Limiti onesti
 
 - **Gira solo su IDE locale.** Gli hook `stop`/`beforeMCPExecution` NON girano sui Cloud/remote
-  Agents. Per quelli serve un fallback soft (checklist nel prompt + regola sicurezza PROD in
-  `comandi-base`).
+  Agents, né su Codex/Claude senza cablaggio locale. **Non esiste hook Cloud installabile** su quelle
+  piattaforme: non prometterlo. Fallback misurato (Opzione B / M-E2-C): checklist obbligatoria in
+  `comunicazione/CHIUSURA_SESSIONE.md` («Cloud / Codex / Claude…») + gate CI post-hoc
+  `validate:mss:changed` su push/PR (report standard/deep senza capsula → CI rossa).
 - **Verifica i file/payload, non la chat.** L'hook sa se una risposta *esiste ed è piena*, non se è
   *vera*: per questo il cold-check va eseguito come guardia separata al commit.
 - **guard-prod = `ask`, non `deny`.** Ferma e chiede conferma, non vieta del tutto (una scrittura prod

@@ -2044,6 +2044,99 @@ function testH13E2UnstagedReportEnforcement() {
   }
 }
 
+function testH13E2CloudCodexClaudeFallback() {
+  const chiusuraPath = join(repoRoot, 'docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md')
+  const hooksReadmePath = join(repoRoot, '_skill-system-v0/hooks/README.md')
+  const ciPath = join(repoRoot, '.github/workflows/ci.yml')
+  if (!existsSync(chiusuraPath)) return ['CHIUSURA_SESSIONE.md missing']
+  if (!existsSync(hooksReadmePath)) return ['hooks README missing']
+  if (!existsSync(ciPath)) return ['ci.yml missing']
+  if (!existsSync(matrixPath)) return ['COVERAGE_MATRIX_H1.json missing']
+
+  const chiusura = readFileSync(chiusuraPath, 'utf8')
+  if (!/Cloud\s*\/\s*Codex\s*\/\s*Claude/i.test(chiusura)) {
+    return ['CHIUSURA_SESSIONE must name Cloud/Codex/Claude fallback section (M-E2-C)']
+  }
+  if (!/checklist/i.test(chiusura) || !/validate:mss:changed/i.test(chiusura)) {
+    return ['CHIUSURA_SESSIONE Cloud fallback must require checklist + validate:mss:changed']
+  }
+  if (!/non promettere|non esiste hook Cloud|hook Cloud non/i.test(chiusura)) {
+    return ['CHIUSURA_SESSIONE must refuse promising Cloud stop hooks']
+  }
+
+  const hooksReadme = readFileSync(hooksReadmePath, 'utf8')
+  if (!/Cloud|Codex|Claude/i.test(hooksReadme)) {
+    return ['hooks README must document Cloud/Codex/Claude lack of stop hooks']
+  }
+  if (!/validate:mss:changed|checklist/i.test(hooksReadme)) {
+    return ['hooks README must point to checklist + CI validate:mss:changed fallback']
+  }
+
+  const ci = readFileSync(ciPath, 'utf8')
+  if (!ci.includes('validate:mss:changed')) {
+    return ['ci.yml must keep validate:mss:changed (Cloud post-hoc gate)']
+  }
+  if (!/Cloud\/Codex\/Claude|Cloud\/Codex/i.test(ci)) {
+    return ['ci.yml mss step must document Cloud/Codex/Claude post-hoc role']
+  }
+
+  const matrix = JSON.parse(readFileSync(matrixPath, 'utf8'))
+  if (!matrix.declarations?.stop_does_not_cover_cloud_codex_claude) {
+    return ['matrice must keep stop_does_not_cover_cloud_codex_claude: true (hook Cloud non installabile)']
+  }
+  if (!matrix.declarations?.cloud_codex_claude_fallback_checklist_plus_ci) {
+    return ['matrice must declare cloud_codex_claude_fallback_checklist_plus_ci (M-E2-C)']
+  }
+  if (!matrix.declarations?.ci_enforces_changed_mss_reports) {
+    return ['matrice must keep ci_enforces_changed_mss_reports']
+  }
+  const reportCapsule = matrix.controls?.find((c) => c.id === 'H1-REPORT-CAPSULE')
+  if (!/Cloud\/Codex\/Claude/i.test(String(reportCapsule?.known_bypass || ''))) {
+    return ['H1-REPORT-CAPSULE known_bypass must still name Cloud/Codex/Claude']
+  }
+  if (!/validate:mss:changed|checklist/i.test(String(reportCapsule?.known_bypass || ''))) {
+    return ['H1-REPORT-CAPSULE known_bypass must cite checklist/CI mitigation']
+  }
+
+  // Simula agente Cloud/Codex/Claude: repo senza Husky/stop → commit normale di report deep incompleto.
+  const root = createTempGitRepo()
+  try {
+    writeTemp(root, 'README.md', '# baseline\n')
+    runGit(root, ['add', 'README.md'])
+    const baseline = runGit(root, ['commit', '-m', 'baseline'])
+    if (baseline.status !== 0) return [`baseline commit failed: ${baseline.stderr}`]
+    const base = baseline.stdout?.trim() || runGit(root, ['rev-parse', 'HEAD']).stdout.trim()
+
+    const path = `${SESSIONI}/25-08-26/Report-h13-e2-cloud-probe.md`
+    writeTemp(root, path, `# Cloud probe\n\n**Modalità:** deep\n${reportQrs()}`)
+    runGit(root, ['add', path])
+    const commit = runGit(root, ['commit', '-m', 'simulate Cloud/Codex/Claude close without stop hook'])
+    if (commit.status !== 0) {
+      return [`commit without local stop/husky must succeed (Cloud sim): ${commit.stderr}`]
+    }
+    const head = runGit(root, ['rev-parse', 'HEAD']).stdout.trim()
+
+    const ciRun = spawnSync(
+      process.execPath,
+      [changedReportsCli, '--base', base, '--head', head, '--repo', root],
+      { cwd: repoRoot, encoding: 'utf8' },
+    )
+    const ciOutput = `${ciRun.stdout || ''}${ciRun.stderr || ''}`
+    if (ciRun.status !== 1) {
+      return [`validate-changed-reports must reject Cloud-sim incomplete report: status=${ciRun.status}; ${ciOutput}`]
+    }
+    if (!/MSS-REPORT-NO-CAPSULE|ROSSO:/.test(ciOutput)) {
+      return [`CI gate must surface MSS deny on Cloud-sim report without capsule: ${ciOutput}`]
+    }
+    if (!/Cloud\/Codex\/Claude/i.test(ciOutput)) {
+      return ['CI failure message must cite Cloud/Codex/Claude (post-hoc independent of stop)']
+    }
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
 function testMatrix() {
   if (!existsSync(matrixPath)) return ['COVERAGE_MATRIX_H1.json missing']
   const matrix = JSON.parse(readFileSync(matrixPath, 'utf8'))
@@ -2053,6 +2146,7 @@ function testMatrix() {
     'precommit_covers_unstaged_mss_reports',
     'ci_enforces_changed_mss_reports',
     'stop_does_not_cover_cloud_codex_claude',
+    'cloud_codex_claude_fallback_checklist_plus_ci',
     'bypass_no_verify_and_unstaged',
     'h1_does_not_prove_global_capture_continuity',
     'no_e3_for_close_or_commit_only',
@@ -2549,6 +2643,7 @@ function main() {
     ['H13-E2 / SK-5 — CI cablata, matrice senza bypass stale', testH13E2CiBypassClosed],
     ['H13-E2 / no-verify — pre-commit bypassabile, CI validate:mss:changed blocca report incompleto', testH13E2NoVerifyCiEnforcement],
     ['H13-E2 / unstaged — Report|Verbale non staged entrano nel gate e deny', testH13E2UnstagedReportEnforcement],
+    ['H13-E2 / Cloud-Codex-Claude — stop assente, CI validate:mss:changed deny report senza capsula', testH13E2CloudCodexClaudeFallback],
     ['coverage matrix', testMatrix],
     ['A1 — la guardia PROD di Claude è tracciata da git', testA1GuardProdTrackedByGit, 'guardie-e-hook-di-progetto'],
     ['A4 — il cablaggio dell\'hook Claude è tracciato e non trascina i file personali', testA4ClaudeSettingsTrackedNoPersonalFiles, 'guardie-e-hook-di-progetto'],

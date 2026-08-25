@@ -2,12 +2,13 @@
   "id": "COVERAGE_MATRIX_H1",
   "schema_version": "mss.session/0.1.1",
   "system_revision": "mss-v0.1-wp0.1-freeze-2",
-  "denominator_note": "Stop: soltanto il report più recente entro 20 minuti, con modalità standard/deep esplicita o sezione Capsula presente. Pre-commit: vista effettiva globale degli artefatti MSS controllati in HEAD con sostituzioni staged, più Report/Verbale MSS sporchi nel worktree ma non staged (M-E2-B / SK-4 B2/B3); inclusi delete e rename; il manifest staged è autorevole quando interessato e HEAD vale solo se untouched. CLI file: file richiesto confrontato con la storia HEAD delimitata. CI push/PR: validate:mss:changed su Report-*/Verbale-* aggiunti o modificati fra base e head — enforcement post-hoc indipendente da --no-verify locale (M-E2-A). Sessioni fuori perimetro, JSONL/fixture unstaged, e report light/legacy/undeclared senza capsula restano fuori denominatore e sono fail-open dichiarati, non pass.",
+  "denominator_note": "Stop: soltanto il report più recente entro 20 minuti, con modalità standard/deep esplicita o sezione Capsula presente. Pre-commit: vista effettiva globale degli artefatti MSS controllati in HEAD con sostituzioni staged, più Report/Verbale MSS sporchi nel worktree ma non staged (M-E2-B / SK-4 B2/B3); inclusi delete e rename; il manifest staged è autorevole quando interessato e HEAD vale solo se untouched. CLI file: file richiesto confrontato con la storia HEAD delimitata. CI push/PR: validate:mss:changed su Report-*/Verbale-* aggiunti o modificati fra base e head — enforcement post-hoc indipendente da --no-verify locale (M-E2-A) e dallo stop hook assente su Cloud/Codex/Claude (M-E2-C; checklist in CHIUSURA_SESSIONE). Sessioni fuori perimetro, JSONL/fixture unstaged, e report light/legacy/undeclared senza capsula restano fuori denominatore e sono fail-open dichiarati, non pass.",
   "declarations": {
     "precommit_blocks_staged_not_edit": true,
     "precommit_covers_unstaged_mss_reports": true,
     "ci_enforces_changed_mss_reports": true,
     "stop_does_not_cover_cloud_codex_claude": true,
+    "cloud_codex_claude_fallback_checklist_plus_ci": true,
     "bypass_no_verify_and_unstaged": true,
     "h1_does_not_prove_global_capture_continuity": true,
     "no_e3_for_close_or_commit_only": true,
@@ -39,7 +40,7 @@
       "visible_input": "bundle JSONL / capsula report / light link",
       "effect": "deny",
       "fallback": "fail-open se nessun artefatto MSS leggibile",
-      "known_bypass": "git commit --no-verify; JSONL/fixture unstaged; Cloud/Codex/Claude senza hook",
+      "known_bypass": "git commit --no-verify; JSONL/fixture unstaged; Cloud/Codex/Claude senza stop (mitigato post-hoc da CI validate:mss:changed + checklist CHIUSURA; hook Cloud non installabile)",
       "G": 2,
       "O": 1,
       "E": 2
@@ -171,7 +172,7 @@
       "visible_input": "report standard/deep staged, unstaged Report/Verbale, o recente",
       "effect": "deny",
       "fallback": "fail-open se il report non dichiara modalità standard/deep e non contiene la sezione Capsula",
-      "known_bypass": "Cloud/Codex/Claude; report light/legacy/undeclared; report non recente; --no-verify (solo pre-commit locale; CI validate:mss:changed su push/PR)",
+      "known_bypass": "Cloud/Codex/Claude senza stop (checklist + CI validate:mss:changed post-hoc; hook Cloud non installabile); report light/legacy/undeclared; report non recente; --no-verify (solo pre-commit locale; CI validate:mss:changed su push/PR)",
       "G": 2,
       "O": 1,
       "E": 2
@@ -279,7 +280,7 @@
       "visible_input": "sezione Domande di chiusura Q/R",
       "effect": "ask",
       "fallback": "silenzio se nessun report fresco/staged",
-      "known_bypass": "Cloud; --no-verify",
+      "known_bypass": "Cloud/Codex/Claude senza stop (nudge Q/R solo locale; CI non verifica Q/R); --no-verify",
       "G": 2,
       "O": 1,
       "E": 2

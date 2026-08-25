@@ -2,9 +2,10 @@
 /**
  * Coordina la validazione dei Report-*.md e Verbale-*.md aggiunti/modificati fra due commit Git.
  *
- * Ruolo CI (H13-E2 / M-E2-A): cancello post-hoc indipendente da Husky e da `--no-verify`.
+ * Ruolo CI (H13-E2 / M-E2-A + M-E2-C): cancello post-hoc indipendente da Husky, da `--no-verify`,
+ * e dallo hook `stop` (assente su Cloud / Codex / Claude senza cablaggio locale).
  * Su push/PR il workflow GitHub Actions `mss` invoca questo script con base/head del range;
- * un report standard/deep incompleto committato saltando il pre-commit locale esce rosso qui.
+ * un report standard/deep incompleto merged senza passare dallo stop locale esce rosso qui.
  */
 import { spawnSync } from 'node:child_process'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
@@ -121,7 +122,7 @@ function main() {
     }
     if (failures) {
       process.stderr.write(
-        `[mss-ci] ROSSO: ${failures}/${reports.length} report MSS non validi (gate CI; indipendente da --no-verify locale)\n`,
+        `[mss-ci] ROSSO: ${failures}/${reports.length} report MSS non validi (gate CI post-hoc; indipendente da --no-verify locale e da stop hook Cloud/Codex/Claude)\n`,
       )
       process.exit(1)
     }

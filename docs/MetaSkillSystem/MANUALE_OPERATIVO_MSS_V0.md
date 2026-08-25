@@ -191,7 +191,16 @@ cartella dei documenti copiati, perché i loro link parlano dell'albero di origi
 | **Uso sicuro** | `npm run generate:mss:views` dopo una modifica all'owner |
 
 La prima vista è il cruscotto di Matteo. Fuori dai marcatori resta testo umano; dentro non si
-corregge a mano. `npm run validate:mss:views` rigenera in memoria e confronta: se owner e vista
+corregge a mano. Il generatore deriva da `PLAN_V0.md`:
+
+- **Gate** (ultimo ciclo, prossima azione, R1) — come `mss:status`
+- **L'ultimo ciclo chiuso** — ultimo §15 con pattern «eseguito e **STATO**»
+- **Lavagna** — solo se §4/§4-bis hanno righe: tre colonne (Fatte / Con riserva / Da fare) con
+  conteggi; stato da M (§4-ter prevale); etichetta da §4-quater se presente, altrimenti etichetta tecnica
+- **Riserve aperte** — celle con ⚠️ in M; omessa se vuota
+- **Errore glossa orfana** — id in §4-quater assente da M
+
+`npm run validate:mss:views` rigenera in memoria e confronta: se owner e vista
 divergono esce rosso e indica il comando di rigenerazione. È un attrezzo **di questo progetto**,
 non una capacità esportata dal motore nelle repo ospiti.
 
@@ -295,6 +304,7 @@ Pre-commit (se committi): stesso perimetro `Report-*` / `Verbale-*` con `require
 | **H-1.3** | `PASS_CON_RISERVE` | Non dichiarare PASS pulito |
 | **Tag ripristino** | `mss/baseline-h13` posato 24-08-26 su HEAD pre-M-A/M-B e **pubblicato su origin** (decisione `M5`) | Ritorno: `git reset --hard mss/baseline-h13`; mai forzato su origin senza conferma di Matteo |
 | **Hook Claude** | `guard-prod.mjs` + `settings.json` tracciati da git (24-08-26); casi `A1`/`A2`/`A3`/`A4` nel nome, verificarli con `npm run test:mss` | `settings.local.json`/`mcp.json` restano personali per design — mai tracciarli (`test:mss` lo verifica) |
+| **Cloud / Codex / Claude senza stop** | Hook `stop` **non installabile** su Cloud/remote; fallback Opzione B (M-E2-C): checklist in `CHIUSURA_SESSIONE.md` + CI `validate:mss:changed` | Non promettere hook Cloud; matrice `stop_does_not_cover_cloud_codex_claude` + `cloud_codex_claude_fallback_checklist_plus_ci` |
 | **guard PROD** | Tracciato e coperto (Cursor+Claude+kit) da `npm run test:mss`; cancello CI = `npm run validate:mss:all`, **osservato verde su GitHub Actions reale il 24-08-26** | Prima di scritture Supabase verificare comunque l'ambiente a mano: il test copre la logica, non sostituisce la prudenza umana |
 | **SK-4 / SK-5 / SK-11** | APERTI post-audit | Chiusura formale solo Matteo; bypass residui in prosa |
 | **ROADMAP / HANDOFF generati** | `D14` non implementato | Allineamento manuale; controllare §4-ter |

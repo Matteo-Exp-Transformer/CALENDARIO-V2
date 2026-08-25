@@ -237,6 +237,23 @@ non aveva report (es. domanda veloce), l'hook tace.
 > che le risposte siano *vere*. Self-review §12 + pre-commit «mente fredda» coprono la qualità; lo
 > `stop` tace se §11 e capsula sono verdi (D24).
 
+### Cloud / Codex / Claude senza hook `stop` (fallback Opzione B — M-E2-C)
+
+L'hook `stop` **non gira** su Cursor Cloud Agents, né su Codex/Claude Code senza installazione locale
+degli hook. **Non promettere** un hook Cloud: la piattaforma non lo supporta. Enforcement misurato:
+
+1. **Checklist obbligatoria** (prima di dichiarare chiusa una sessione standard/deep su queste superfici):
+   - report con §11 Q/R piene + capsula §6-bis;
+   - `npm run validate:mss -- --mode file --file "<report>" --kind report --require-capsule` → exit 0;
+   - se tocchi MSS: `npm run test:mss` (e `test:mss:tools` se attrezzi).
+2. **Gate post-hoc CI:** su push/PR (`main` / `env/test`) il job `mss` esegue
+   `npm run validate:mss:changed` — un report standard/deep merged **senza capsula** esce rosso,
+   indipendente dallo stop hook locale.
+
+Residuo onesto: senza checklist rispettata e senza passare dalla CI, Cloud/Codex/Claude possono ancora
+chiudere in locale senza nudge. Il buco `stop` resta dichiarato in `COVERAGE_MATRIX_H1.json`
+(`stop_does_not_cover_cloud_codex_claude`).
+
 ---
 
 # PARTE B — Procedure operative di chiusura
