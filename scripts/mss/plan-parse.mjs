@@ -27,7 +27,9 @@ function required(text, re, label) {
  * }}
  */
 export function parsePlanGate(planText) {
-  const cycles = [...planText.matchAll(/### [^\n]* — `(M-[A-Z])` eseguito e \*\*(CHIUSO|PROVATO)\*\*/g)]
+  // Famiglie chiuse riconosciute: M-[A-Z] storici e T\d+ (es. T6). Criterio semantico
+  // invariato: solo «eseguito e CHIUSO|PROVATO» — CON RISERVE non chiude (es. T7).
+  const cycles = [...planText.matchAll(/### [^\n]* — `((?:M-[A-Z])|T\d+)` eseguito e \*\*(CHIUSO|PROVATO)\*\*/g)]
   if (!cycles.length) {
     throw new Error('MSS-PLAN-UNREADABLE: non trovo «ciclo concluso» nell\'owner.')
   }

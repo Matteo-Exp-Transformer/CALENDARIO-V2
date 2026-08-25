@@ -1,9 +1,15 @@
 # Protocollo congelato — primo pilota MetaSkillSystem v0.1
 
-> **Protocol ID:** `MSS-PILOT-001` · **Protocol version:** `1.0.0`
-> **Oggetto:** `mss.session/0.1.0` · **System revision:** `mss-v0.1-wp0.1-freeze-1`
-> **Stato:** congelato prima dell'istanza; nessun esito ancora prodotto.
+> **Protocol ID:** `MSS-PILOT-001` · **Protocol version:** `1.0.1`
+> **Oggetto:** `mss.session/0.1.1` · **System revision:** `mss-v0.1-wp0.1-freeze-2`
+> **Stato:** allineato alla coppia viva del contratto; nessun esito pilota ancora prodotto.
 > **Owner del protocollo e delle conseguenze:** Matteo. Il masterplan possiede lo stato del lavoro.
+
+> **Nota storica (non utilizzabile per nuovi record):** la revisione protocollo `1.0.0` dichiarava
+> la coppia legacy `mss.session/0.1.0` / `mss-v0.1-wp0.1-freeze-1`. Quella coppia resta leggibile
+> per la storia già acquisita; **nuovi** record devono usare la coppia viva sopra. Il rifiuto di
+> `--force-legacy` (`MSS-LEGACY-NEW-FORBIDDEN`) è intenzionale e non viene allentato da questa
+> revisione. I 20 target e i 14 ID congelati sotto non cambiano semantica.
 
 ## 1. Scopo e istanza eleggibile
 
@@ -18,8 +24,8 @@ La prima istanza è la **prima sessione Meta/deep sostanziale iniziata dopo la c
 - può consegnare i riferimenti necessari senza copiare dati privati fuori dal loro owner.
 
 Il ciclo del 09-08 che ha prodotto Report 001 e il masterplan resta fonte di calibrazione storica,
-non è l'istanza 1: criterio e schema `0.1.0` non erano congelati prima del suo esito. Non viene
-retro-adattato per farlo passare e non viene contato come mining normalizzato.
+non è l'istanza 1: criterio e schema legacy `0.1.0` non erano congelati prima del suo esito. Non
+viene retro-adattato per farlo passare e non viene contato come mining normalizzato.
 
 ## 2. Ruoli e materiale
 
@@ -29,9 +35,9 @@ retro-adattato per farlo passare e non viene contato come mining normalizzato.
 - **Cold reviewer:** agente diverso, non autore/esecutore, senza narrativa completa né verdetto atteso.
 - **Adjudicator:** Matteo per conflitti sostanziali; per soli errori meccanici vale il validator H-1.
 
-Il reviewer riceve: bundle finalizzato, questo protocollo, contratto `0.1.0` e soli owner refs
-necessari. Non riceve report narrativo, chat completa, chiave di test, risultato atteso o giudizio
-dell'esecutore oltre alle annotazioni esplicitamente marcate `self_report`.
+Il reviewer riceve: bundle finalizzato, questo protocollo, contratto vivo `0.1.1`/`freeze-2` e soli
+owner refs necessari. Non riceve report narrativo, chat completa, chiave di test, risultato atteso o
+giudizio dell'esecutore oltre alle annotazioni esplicitamente marcate `self_report`.
 
 ## 3. Denominatore congelato
 

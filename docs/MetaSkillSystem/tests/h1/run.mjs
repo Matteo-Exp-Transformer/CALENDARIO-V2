@@ -2256,6 +2256,16 @@ function runCursorStopHook(root, extra = {}) {
   })
 }
 
+const kitStopHookPath = join(repoRoot, '_skill-system-v0/hooks/fine-sessione-nudge.mjs')
+
+function runKitStopHook(root, extra = {}) {
+  return spawnSync(process.execPath, [kitStopHookPath], {
+    cwd: root,
+    encoding: 'utf8',
+    input: JSON.stringify({ workspace_root: root, loop_count: 0, ...extra }),
+  })
+}
+
 function cursorStopBlocked(result) {
   try {
     const payload = JSON.parse(result.stdout || '{}')
@@ -2327,17 +2337,33 @@ function testN3StopHookTwinParity() {
       writeTemp(root, rel, sc.build())
       const cursor = runCursorStopHook(root)
       const claude = runClaudeStopHook(root)
+      const kit = runKitStopHook(root)
       if (cursor.status !== 0) failures.push(`N3-${sc.id}-cursor-exit: ${cursor.status} ${cursor.stderr}`)
       if (claude.status !== 0) failures.push(`N3-${sc.id}-claude-exit: ${claude.status} ${claude.stderr}`)
+      if (kit.status !== 0) failures.push(`N3-${sc.id}-kit-exit: ${kit.status} ${kit.stderr}`)
       const cBlock = cursorStopBlocked(cursor)
       const sBlock = claudeStopBlocked(claude)
+      const kBlock = cursorStopBlocked(kit)
       if (cBlock !== sc.expectBlock) failures.push(`N3-${sc.id}-cursor: expected block=${sc.expectBlock}, got ${cBlock}`)
       if (sBlock !== sc.expectBlock) failures.push(`N3-${sc.id}-senior: expected block=${sc.expectBlock}, got ${sBlock}`)
+      if (kBlock !== sc.expectBlock) failures.push(`N3-${sc.id}-kit: expected block=${sc.expectBlock}, got ${kBlock}`)
+      if (kBlock !== cBlock) {
+        failures.push(`N3-${sc.id}-kit-parity: kit block=${kBlock} != cursor production block=${cBlock}`)
+      }
       if (sc.expectBlock && sc.reasonRe) {
         const cMsg = JSON.parse(cursor.stdout || '{}').followup_message || ''
         const sMsg = JSON.parse(claude.stdout || '{}').reason || ''
+        const kMsg = JSON.parse(kit.stdout || '{}').followup_message || ''
         if (!sc.reasonRe.test(cMsg)) failures.push(`N3-${sc.id}-cursor-msg: ${cMsg.slice(0, 100)}`)
         if (!sc.reasonRe.test(sMsg)) failures.push(`N3-${sc.id}-senior-msg: ${sMsg.slice(0, 100)}`)
+        if (!sc.reasonRe.test(kMsg)) failures.push(`N3-${sc.id}-kit-msg: ${kMsg.slice(0, 100)}`)
+      } else if (!sc.expectBlock) {
+        // complete: produzione e kit devono tacere entrambi ({})
+        const cOut = (cursor.stdout || '').trim() || '{}'
+        const kOut = (kit.stdout || '').trim() || '{}'
+        if (cOut !== '{}' || kOut !== '{}') {
+          failures.push(`N3-${sc.id}-silence: cursor=${cOut.slice(0, 80)} kit=${kOut.slice(0, 80)}`)
+        }
       }
     } finally {
       rmSync(root, { recursive: true, force: true })

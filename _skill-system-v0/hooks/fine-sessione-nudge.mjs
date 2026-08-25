@@ -1,71 +1,26 @@
 #!/usr/bin/env node
 /**
  * Hook `stop` di Cursor — Nudge fine-sessione per lo skill system comunicazione.
- * ─────────────────────────────────────────────────────────────────────────
- * TEMPLATE v.0 — versione GENERICA (v5). Funziona così com'è se segui la struttura
- * cartelle del template: report in `docs/Sessioni di lavoro/GG-MM-AA/Report-*.md`,
- * sezione 11 «Domande di chiusura» in `docs/comunicazione/CHIUSURA_SESSIONE.md`.
- * Se cambi quei percorsi, aggiorna le costanti in « CONFIG » sotto.
  *
- * SCOPO: i report di fine chat erano superficiali — sezioni presenti ma vuote, dati non allineati al
- * diff reale. Le versioni v1-v3 controllavano la PRESENZA DEL TITOLO di una sezione: un titolo con
- * sotto il vuoto passava. Debole.
+ * Controlla Q/R sul report più recente di oggi (ricorsivo in sotto-cartelle, N1). Se presente una capsula MSS, invoca lo stesso
+ * core H-1 usato dalla CLI (senza sostituire il comportamento Q/R).
  *
- * v4 — DA «titolo presente» A «risposta presente». Il report contiene la sezione 11 «Domande di
- * chiusura»: 6 domande marcate `❓ Q…` con una riga risposta `✅ R…`. L'hook estrae ogni coppia e
- * verifica che la risposta NON sia vuota/placeholder.
- *   - risposta mancante → rilancia un turno MIRATO (quali R sono vuote) e CHIEDE di compilarle.
- *     BLOCCA la chiusura finché non sono compilate (loop_limit in hooks.json è la rete dura).
- *   - tutte presenti → rilancio LEGGERO 1× : rileggi a mente fredda, verifica dati e file correlati.
- *   - nessun report fresco → silenzio.
+ * TEMPLATE kit — stessa semantica v6 del gemello di produzione `.cursor/hooks/fine-sessione-nudge.mjs`.
+ * Differenze ammesse: solo I/O di piattaforma; la decisione funzionale è condivisa
+ * (`auditQuestions`, `findRecentReportFiles`, `validateRecentReportFile`).
  *
- * PERCHÉ le domande-a-risposta invece del titolo: per rispondere a Q2 (dati=diff?) e Q3 (file
- * correlati) l'agente DEVE rileggere il diff e i file → la verifica intelligente la fa lui (l'hook
- * non vede il diff), l'hook controlla solo che abbia risposto. Meccanismo forte senza agente-revisore.
- *
- * GUARDIA ANTI-LOOP: `loop_count` (Cursor, parte da 0). Caso «tutte presenti»: 1 rilancio basta
- * (loop_count>=1 → tace). Caso «mancanti»: ricontrolla lo stato — se l'agente ha compilato si passa
- * al ramo leggero; se ignora, `loop_limit` in hooks.json impedisce il loop infinito.
- *
- * v5 — tre tarature per non insistere troppo e su troppi report:
- *   1. SOLO IL REPORT PIÙ RECENTE (`findRecentReports` ritorna 1 solo file): non blocca la chiusura
- *      di questa chat per una R vuota in un report di un'altra sessione toccato nella stessa finestra.
- *   2. TETTO DURO A 3 NUDGE (`if (loopCount >= 3) return`), su qualsiasi ramo.
- *   3. MENO FALSI «mancante»: `PLACEHOLDER_RE` non scarta le risposte brevi fra parentesi; una
- *      risposta vale se ha ≥3 alfanumerici (`isSubstantive`). La revisione del CONTENUTO la fa
- *      l'agente (self-review §12 di CHIUSURA_SESSIONE + sub-agente CONTROVERIFICA), non l'hook.
- *
- * LIMITE NOTO: gli hook `stop` NON girano sui Cloud Agents (solo IDE locale). Fallback Cloud =
- * checklist-di-chiusura nel prompt esecutore.
- *
- * INSTALLAZIONE: referenzialo in hooks.json sotto "stop" (con `loop_limit: 3`).
+ * LIMITE NOTO: gli hook `stop` NON girano sui Cloud Agents (solo IDE locale).
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join, sep, relative } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { sep, relative } from 'node:path'
 import { auditQuestions } from '../../scripts/mss/report-questions.mjs'
-
-// ╔══════════════════════════ CONFIG ══════════════════════════╗
-/** Cartella dei report di sessione (relativa alla root del repo). */
-const REPORTS_DIR = ['docs', 'Sessioni di lavoro']
-/** File che contiene le «Domande di chiusura» (citato nei messaggi). */
-const CHIUSURA_DOC = 'docs/comunicazione/CHIUSURA_SESSIONE.md'
-/** Finestra entro cui un report è «di questa sessione» (minuti). */
-const RECENT_MINUTES = 20
-// ╚═════════════════════════════════════════════════════════════╝
+import { validateRecentReportFile } from '../../scripts/mss/adapter.mjs'
+import { collectGitHeadHistory } from '../../scripts/mss/git-adapter.mjs'
+import { detectReportMode } from '../../scripts/mss/parse.mjs'
+import { findRecentReportFiles } from '../../scripts/mss/report-paths.mjs'
 
 const EXCLUDE_REPORT = null
-
-/** Data di OGGI in `DD-MM-YY` = il nome delle cartelle giorno. Secondo filtro accanto al mtime:
- *  un report conta solo se è di oggi E recente. Il mtime da solo non basta — un vecchio report
- *  ri-toccato dal filesystem rientrava nella finestra e murava l'AVVIO di una chat di un altro giorno. */
-function todayFolder() {
-  const d = new Date()
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const yy = String(d.getFullYear()).slice(-2)
-  return `${dd}-${mm}-${yy}`
-}
 
 function readStdin() {
   return new Promise((resolve) => {
@@ -99,45 +54,12 @@ function resolveLoopCount(stdinRaw) {
 }
 
 function findRecentReports(root) {
-  const base = join(root, ...REPORTS_DIR)
-  const cutoff = Date.now() - RECENT_MINUTES * 60_000
-  const today = todayFolder()
-  const out = []
-  let dayDirs
-  try {
-    dayDirs = readdirSync(base, { withFileTypes: true })
-  } catch {
-    return out
-  }
-  for (const day of dayDirs) {
-    if (!day.isDirectory()) continue
-    // Solo la cartella di OGGI: un report di un altro giorno non scatta all'avvio di una chat di
-    // oggi, anche se "fresco" per mtime. Primo dei due filtri (v5.1, 05-06-26).
-    if (day.name !== today) continue
-    const dayPath = join(base, day.name)
-    let files
-    try {
-      files = readdirSync(dayPath, { withFileTypes: true })
-    } catch {
-      continue
-    }
-    for (const f of files) {
-      if (!f.isFile() || !/^Report-.*\.md$/i.test(f.name)) continue
-      if (EXCLUDE_REPORT && EXCLUDE_REPORT.test(f.name)) continue
-      const full = join(dayPath, f.name)
-      try {
-        const mtimeMs = statSync(full).mtimeMs
-        if (mtimeMs >= cutoff) out.push({ full, mtimeMs })
-      } catch {
-        /* sparito */
-      }
-    }
-  }
-  // Solo il report PIÙ RECENTE = la chat che si sta chiudendo. Evita che una R vuota in un report di
-  // un'altra sessione (toccato nella stessa finestra di 20 min) blocchi la chiusura di questa.
-  if (out.length === 0) return []
-  out.sort((a, b) => b.mtimeMs - a.mtimeMs)
-  return [out[0].full]
+  const all = findRecentReportFiles(root)
+  if (all.length === 0 || !EXCLUDE_REPORT) return all
+  const path = all[0]
+  const name = path.split(/[/\\]/).pop() || ''
+  if (EXCLUDE_REPORT.test(name)) return []
+  return [path]
 }
 
 function send(obj) {
@@ -150,9 +72,6 @@ async function main() {
   const root = resolveRoot(stdinRaw)
   const loopCount = resolveLoopCount(stdinRaw)
 
-  // Tetto DURO: max 3 nudge in assoluto, su QUALSIASI ramo. Anche se restano risposte vuote, dopo
-  // 3 rilanci l'hook tace e non muri la chiusura all'infinito (rende vero il limite anche sul ramo
-  // «mancanti», che altrimenti dipenderebbe solo da loop_limit in hooks.json).
   if (loopCount >= 3) return send({})
 
   const recentReports = findRecentReports(root)
@@ -165,43 +84,77 @@ async function main() {
     } catch {
       /* vuoto */
     }
-    return { path, ...auditQuestions(content) }
+    return { path, content, mode: detectReportMode(content), ...auditQuestions(content) }
   })
 
-  const missing = reports.filter((r) => r.hasSection && r.unanswered.length)
-  const noSection = reports.filter((r) => !r.hasSection)
+  const closureReports = reports.filter((r) => r.mode.requiresCapsule || r.hasSection)
+  const missing = closureReports.filter((r) => r.hasSection && r.unanswered.length)
+  const noSection = closureReports.filter((r) => !r.hasSection)
 
-  // CASO A: risposte MANCANTI o sezione 11 ASSENTE → blocca/insiste.
   if (missing.length || noSection.length) {
-    const lines = ['⚠️ FINE-SESSIONE — la sezione «Domande di chiusura» (§11) non è completa:', '']
+    const lines = [
+      '⚠️ FINE-SESSIONE — la sezione «Domande di chiusura» (CHIUSURA_SESSIONE §11) non è completa:',
+      '',
+    ]
     for (const r of noSection) {
       lines.push(`  • ${relative(root, r.path).split(sep).join('/')}`)
-      lines.push('    manca l\'INTERA sezione 11 «Domande di chiusura» (le 6 domande ❓Q + ✅R). Aggiungila e rispondi.')
+      lines.push(
+        "    manca l'INTERA sezione 11 «Domande di chiusura» (le 6 domande ❓Q + ✅R). Aggiungila e rispondi.",
+      )
     }
     for (const r of missing) {
       lines.push(`  • ${relative(root, r.path).split(sep).join('/')}`)
-      lines.push(`    risposte vuote: ${r.unanswered.join(' · ')} — compilale (no «...», no «TODO», no risposta vuota).`)
+      lines.push(
+        `    risposte vuote: ${r.unanswered.join(' · ')} — compilale (no «...», no «TODO», no risposta vuota).`,
+      )
     }
     lines.push('')
-    lines.push(`Le domande sono in ${CHIUSURA_DOC} §11 — formato \`❓ Q… / ✅ R…\`.`)
-    lines.push('Per Q2 (dati=diff) e Q3 (file correlati) DEVI rileggere il diff e i file prima di rispondere: è il punto.')
+    lines.push(
+      'Le domande sono in docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md §11 — formato `❓ Q… / ✅ R…`.',
+    )
+    lines.push(
+      'Per Q2 (dati=diff) e Q3 (file correlati) DEVI rileggere il diff e i file prima di rispondere: è il punto.',
+    )
     lines.push('Compila TUTTE le risposte mancanti, poi conferma in 1 riga che le hai scritte.')
     return send({ followup_message: lines.join('\n') })
   }
 
-  // CASO B: tutte presenti. Rilancio LEGGERO una volta sola.
-  if (loopCount >= 1) return send({})
+  // Q/R ok → controllo MSS sullo stesso report. L'adapter richiede la capsula soltanto se la
+  // modalità standard/deep è dichiarata o se la sezione è presente; light/legacy restano fail-open.
+  const mssLines = []
+  let historicalSnapshots = []
+  try {
+    historicalSnapshots = collectGitHeadHistory(root)
+  } catch {
+    /* fail-open: Git history unavailable */
+  }
+  for (const r of reports) {
+    try {
+      const result = validateRecentReportFile(root, r.path, { historicalSnapshots })
+      const denies = result.diagnostics.filter((d) => d.severity === 'deny')
+      if (denies.length) {
+        mssLines.push(`  • ${relative(root, r.path).split(sep).join('/')}`)
+        for (const d of denies.slice(0, 8)) {
+          mssLines.push(`    [${d.rule}] ${d.fieldPath}`)
+        }
+      }
+    } catch {
+      /* fail-open: payload illeggibile */
+    }
+  }
+  if (mssLines.length) {
+    return send({
+      followup_message: [
+        '⚠️ FINE-SESSIONE — Capsula MetaSkillSystem non valida (stesso motore di `npm run validate:mss`):',
+        '',
+        ...mssLines,
+        '',
+        'Correggi i field path indicati senza inserire dati personali nei messaggi di errore.',
+      ].join('\n'),
+    })
+  }
 
-  const ok = [
-    `📄 FINE-SESSIONE — ${reports.length} report, domande di chiusura compilate. Ultimo controllo a mente fredda:`,
-    '',
-    '  • I DATI del report (numeri, file, valori) corrispondono al DIFF reale? (no copie a memoria)',
-    '  • I FILE CORRELATI (skill area, context, test, tipi) sono allineati alla modifica? (caso E-A)',
-    '  • Le risposte Q1-Q6 sono coerenti tra loro e col lavoro svolto?',
-    '',
-    'Se trovi un disallineamento → correggilo ora. Poi conferma in 2 righe cosa hai verificato/corretto e chiudi.',
-  ]
-  return send({ followup_message: ok.join('\n') })
+  return send({})
 }
 
 main()

@@ -40,9 +40,11 @@ Per Claude Code: registra gli hook in `.claude/settings.local.json` (`PreToolUse
 
 ## Da adattare negli script (segnati in « CONFIG » in testa a ogni file)
 
-- **nudge:** `REPORTS_DIR` (dove vanno i report), `CHIUSURA_DOC` (path citato nei messaggi).
+- **nudge (v6):** nessuna CONFIG locale — discovery e cartella report vivono in
+  `scripts/mss/report-paths.mjs`; Q/R in `scripts/mss/report-questions.mjs`; validazione in
+  `scripts/mss/adapter.mjs`. Richiede `scripts/mss/` nel repo (stesso requisito del senior).
 - **guard-prod:** `PROD_MCP_RE` / `TEST_MCP_RE` (nome server MCP), `SHELL_PROD_RE` (comandi CLI).
-- **senior:** come il nudge + `EVOLUZIONE_DOC`, `TEMPLATE_V0_DIR`.
+- **senior:** path citati nei messaggi (`EVOLUZIONE_DOC`, `TEMPLATE_V0_DIR`) se li rinomini.
 
 ## Limiti onesti
 

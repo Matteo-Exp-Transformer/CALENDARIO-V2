@@ -14,7 +14,7 @@ R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. I
 
 | Fatte | Con riserva | Da fare |
 |---|---|---|
-| `M-F` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T8`: pubblicazione commit T7+T9 con sì Matteo; preferibile chiudere prima i 3 fix Codex M12 T7; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati |
+| `T6` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T8`: pubblicazione commit T7+T9 con sì Matteo; preferibile chiudere prima i 3 fix Codex M12 T7; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati |
 
 ## Prossimo passo
 

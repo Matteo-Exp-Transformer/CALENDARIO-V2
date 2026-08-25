@@ -47,7 +47,7 @@ import { REPORT_PATH_RE } from '../../../../scripts/mss/adapter.mjs'
 import { collectExportPaths, findDanglingImports } from '../../../../scripts/mss/export-kit.mjs'
 import { runDoctor } from '../../../../scripts/mss/doctor.mjs'
 import { runViews } from '../../../../scripts/mss/views.mjs'
-import { REVISION_CURRENT } from '../../../../scripts/mss/rules.mjs'
+import { PROTOCOL_ID, PROTOCOL_VERSION, REVISION_CURRENT, REVISION_LEGACY, SCHEMA_CURRENT, SCHEMA_LEGACY } from '../../../../scripts/mss/rules.mjs'
 import {
   IDS,
   amendment,
@@ -551,14 +551,17 @@ const tests = [
     const historical = [
       '### Quinto ciclo — `M-F` eseguito e **CHIUSO**',
       '**Prossima azione autorizzata: `M-E`** (attrezzi mancanti, `T1`).',
+      '### Quattordicesimo ciclo — `T7` eseguito **CON RISERVE**',
       '### Tredicesimo ciclo — `T6` eseguito e **CHIUSO**',
-      '**Prossima azione autorizzata: `T7`** (backlog opzionale `SK-2`).',
+      '**Prossima azione autorizzata: `T8`** (pubblicazione commit).',
       '**Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — sintetico**',
     ].join('\n')
     const planText = `\n## 4. Quadro corrente\n| x | WP-1 | NON INIZIATO |\n${historical}\n\n### 4-bis.\n| S2 | SK-2 | IMPLEMENTATO | ✅ 163 file, 1346 test congelati |\n`
     const gate = parsePlanGate(planText)
-    assert.equal(gate.next, 'T7')
-    assert.equal(gate.closedId, 'M-F')
+    assert.equal(gate.next, 'T8')
+    assert.equal(gate.closedId, 'T6')
+    assert.notEqual(gate.closedId, 'T7', 'T7 CON RISERVE non è un ciclo chiuso')
+    assert.notEqual(gate.closedId, 'M-F', 'un ciclo T chiuso successivo a M-* governa l\'ultimo chiuso')
     const output = buildStatusReport({
       planText,
       packText: null,
@@ -570,7 +573,8 @@ const tests = [
       isTTY: false,
       planOwner: 'sintetico/PLAN.md',
     })
-    assert.match(output, /prossimo\s+`T7`/)
+    assert.match(output, /ultimo chiuso\s+`T6`/)
+    assert.match(output, /prossimo\s+`T8`/)
     assert.doesNotMatch(output, /prossimo\s+`M-E`/)
     assert.doesNotMatch(output, /163 file/)
     assert.doesNotMatch(output, /1346 test/)
@@ -579,6 +583,9 @@ const tests = [
     const live = runStatus({ root: REPO_ROOT, isTTY: false })
     assert.equal(live.exitCode, 0, live.stderr)
     const liveGate = parsePlanGate(readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md'), 'utf8'))
+    assert.equal(liveGate.closedId, 'T6')
+    assert.equal(liveGate.next, 'T8')
+    assert.match(live.stdout, /ultimo chiuso\s+`T6`/)
     assert.match(live.stdout, new RegExp(`prossimo\\s+\`${liveGate.next}\``))
     assert.doesNotMatch(live.stdout, /prossimo\s+`M-E`/)
     assert.doesNotMatch(live.stdout, /32 gruppi/)
@@ -1561,6 +1568,48 @@ const tests = [
     assert.match(validateApp, /\blint\b/)
     assert.match(validateApp, /\btypecheck\b/)
     assert.match(validateApp, /npm run test(?:\s|$|&&)/)
+  }],
+  ['F3 / protocollo pilota: versione e coppia viva allineate a PLAN, rules e contratto', () => {
+    const protocol = readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/PROTOCOLLO_PRIMO_PILOTA_V0_1.md'), 'utf8')
+    const plan = readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md'), 'utf8')
+    const contract = readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md'), 'utf8')
+
+    assert.match(protocol, new RegExp(`Protocol version:\\*\\* \`${PROTOCOL_VERSION}\``))
+    assert.match(protocol, new RegExp(`Oggetto:\\*\\* \`${SCHEMA_CURRENT}\``))
+    assert.match(protocol, new RegExp(`System revision:\\*\\* \`${REVISION_CURRENT}\``))
+    assert.match(protocol, /Nota storica[\s\S]*1\.0\.0/)
+    assert.match(protocol, new RegExp(SCHEMA_LEGACY.replace(/\./g, '\\.')))
+    assert.match(protocol, new RegExp(REVISION_LEGACY.replace(/\./g, '\\.')))
+    assert.doesNotMatch(
+      protocol.slice(0, protocol.indexOf('## 1.')),
+      new RegExp(`Protocol version:\\*\\* \`1\\.0\\.0\``),
+      'header vivo non deve dichiarare 1.0.0',
+    )
+
+    assert.match(plan, /protocollo vivo `1\.0\.1`|versione viva `1\.0\.1`/)
+    assert.equal(PROTOCOL_VERSION, '1.0.1')
+    assert.equal(PROTOCOL_ID, 'MSS-PILOT-001')
+
+    assert.match(contract, new RegExp(SCHEMA_CURRENT.replace(/\./g, '\\.')))
+    assert.match(contract, new RegExp(REVISION_CURRENT.replace(/\./g, '\\.')))
+
+    // 20 target + 14 ID congelati restano nel denominatore
+    assert.match(protocol, /20 target/)
+    assert.match(protocol, /\*\*14 casi minimi\*\*/)
+    for (const id of [
+      'FX-V01', 'FX-V02', 'FX-V03', 'FX-V04',
+      'FX-I01', 'FX-I02', 'FX-I03', 'FX-I04', 'FX-I05',
+      'FX-I06', 'FX-I07', 'FX-I08', 'FX-I09', 'FX-I10',
+    ]) {
+      assert.match(protocol, new RegExp(`\\| \`${id}\` \\|`))
+    }
+
+    const legacy = runCapsule([process.argv[0], 'capsule.mjs', '--force-legacy'])
+    assert.notEqual(legacy.exitCode, 0, '--force-legacy deve restare rifiutato')
+    assert.match(
+      `${legacy.stderr}${legacy.stdout}`,
+      /legacy mss\.session\/0\.1\.0|freeze-1|LEGACY/i,
+    )
   }],
 ]
 
