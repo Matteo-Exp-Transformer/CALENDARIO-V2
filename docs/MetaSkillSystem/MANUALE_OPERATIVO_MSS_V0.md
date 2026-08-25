@@ -196,13 +196,25 @@ corregge a mano. Il generatore deriva da `PLAN_V0.md`:
 - **Gate** (ultimo ciclo, prossima azione, R1) — come `mss:status`
 - **L'ultimo ciclo chiuso** — ultimo §15 con pattern «eseguito e **STATO**»
 - **Lavagna** — solo se §4/§4-bis hanno righe: tre colonne (Fatte / Con riserva / Da fare) con
-  conteggi; stato da M (§4-ter prevale); etichetta da §4-quater se presente, altrimenti etichetta tecnica
+  conteggi; stato da M (§4-ter prevale); etichetta da §4-quater se presente, altrimenti etichetta tecnica;
+  righe M non classificabili compaiono come **Non classificate** (conteggio in testa + elenco sotto)
 - **Riserve aperte** — celle con ⚠️ in M; omessa se vuota
 - **Errore glossa orfana** — id in §4-quater assente da M
 
 `npm run validate:mss:views` rigenera in memoria e confronta: se owner e vista
 divergono esce rosso e indica il comando di rigenerazione. È un attrezzo **di questo progetto**,
 non una capacità esportata dal motore nelle repo ospiti.
+
+### 2.4-quater-bis `npm run mss:views-html` — cruscotto HTML a mano (fuori cancelli)
+
+| | |
+|---|---|
+| **Legge** | `PLAN_V0.md` (stesso parser M+D di `generate:mss:views`) + `git log -1 --format=%cI` + roadmap privata §3 se leggibile |
+| **Scrive** | un `.html` **fuori** da `docs/` versionati (default: scratchpad Cursor); rifiuta `--out` sotto `docs/` |
+| **Uso sicuro** | `npm run mss:views-html` oppure `node scripts/mss/views-html.mjs [--out path] [--plan path] [--roadmap path]` |
+| **Cancelli** | **non** è in `validate:mss:all` / CI — solo invocazione manuale |
+
+Cantieri L6/privati restano solo nell'HTML locale; non entrano nel `.md` versionato.
 
 ### 2.4-quinquies `npm run mss:move -- <sorgente> <destinazione>` — sposta e aggiorna i link vivi
 
@@ -231,7 +243,7 @@ documentata: ≈ 1 741 righe (`R6` / `D15`); l'attrezzo stampa il delta righe 
 | `npm run test:mss:tools` | Attrezzi query/status/capsule | nulla | Dopo tocchi `scripts/mss/*.mjs` |
 | `npm run validate:docs` | Path citati nei `.md` vivi | nulla | Dopo tocchi docs o link |
 | `npm run validate:app` | `lint` + `typecheck` + `test` (codice `src/`) | nulla | Chi tocca `src/` |
-| `npm run validate:mss:all` | `test:mss` + `test:mss:tools` + `validate:mss:views` + `validate:docs` | nulla | Chi tocca `scripts/mss/`, `docs/` o gli hook |
+| `npm run validate:mss:all` | `test:mss` + `test:mss:tools` + `validate:mss:views` + `validate:docs` | nulla | Chi tocca `scripts/mss/`, `docs/` o gli hook — **non** include `mss:views-html` |
 | `npm run validate` | `validate:app` + `validate:mss:all` (i due composti, in sequenza) | nulla | Chi prepara una PR |
 
 ### 2.6 Comandi **non** implementati (non inventarli)

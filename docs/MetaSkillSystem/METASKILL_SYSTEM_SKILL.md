@@ -53,6 +53,8 @@ Prima di ricostruire lo stato a mano, usare soltanto gli attrezzi necessari (det
   `PLAN_V0.md`. Gate autorizzato e viste anti-stale derivano dallo stesso parser di
   `generate:mss:views`; §4-bis mostra solo stato (conteggi mobili sui comandi, non numeri congelati).
   Il cruscotto generato include lavagna M/D/P: stato da §4/§4-bis/§4-ter, glossa operativa da §4-quater.
+- `npm run mss:views-html` — HTML locale del cruscotto (M+D + data git + cantieri roadmap se
+  leggibili); scrive fuori da `docs/`; **non** è nei cancelli `validate:mss:all`.
 - `npm run mss:query -- --verifica|--regole|--modelli|--fail|--costo|--json` — lettore del corpus;
   il conteggio dinamico va chiesto qui, non copiato da un report.
 - `npm run mss:review -- [--base <ref>] [--report <path>] [--json]` — fatti della seduta (file

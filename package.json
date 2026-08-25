@@ -30,6 +30,7 @@
     "mss:review": "node scripts/mss/review.mjs",
     "generate:mss:views": "node scripts/mss/views.mjs --write",
     "validate:mss:views": "node scripts/mss/views.mjs --check",
+    "mss:views-html": "node scripts/mss/views-html.mjs",
     "test:mss": "node docs/MetaSkillSystem/tests/h1/run.mjs",
     "test:mss:tools": "node docs/MetaSkillSystem/tests/tools/run.mjs",
     "generate:mss-fixtures": "node docs/MetaSkillSystem/tests/h1/build-fixtures.mjs",
