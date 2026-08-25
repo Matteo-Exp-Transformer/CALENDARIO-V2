@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "M12-T7-OPZB@PLAN_V0",
+        "trigger_event": "Controverifica indipendente dei tre fix F1-F3 eseguiti da Cursor/Composer",
+        "decision_or_output_changed": "F1 parser T6/T8, F2 parità hook kit v6 e F3 protocollo 1.0.1/coppia viva sono confermati da diff, prove mirate e npm run validate; nessun blocker residuo alla pubblicazione; D27/WP-1 restano NO-GO",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "controverifica-indipendente-fix-m12-t7-codex-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "stabilire indipendentemente se i tre fix M12 T7 sono corretti prima di commit e push",
+        "intended_use": "evidenza di accettazione e pubblicazione del fix su env/test",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "messaggio chat del 25-08-2026",
+        "authored_by": "openai-codex-m12-t7-fix-reviewer",
+        "verified_by": "non_applicabile: questo atto è la controverifica indipendente",
+        "acceptance_criterion": "F1-F3 dimostrati, npm run validate verde, report e diff coerenti, nessuno scope creep, D27/WP-1 NO-GO",
+        "verification_or_use_evidence": "npm run test:mss; npm run test:mss:tools; npm run validate; validate:mss report esecutore; mss:status; diff review",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/25-08-26/Report-fix-m12-t7-codex-opzione-b-25-08-26.md",
+          "scripts/mss/plan-parse.mjs",
+          "_skill-system-v0/hooks/fine-sessione-nudge.mjs",
+          "docs/MetaSkillSystem/PROTOCOLLO_PRIMO_PILOTA_V0_1.md"
+        ],
+        "relations_no_double_count": [
+          "Verifica il fix esecutore; non chiude WP-1 e non costituisce un nuovo fix"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
