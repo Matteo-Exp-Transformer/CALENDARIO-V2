@@ -14,7 +14,7 @@ import {
   runQuery,
 } from '../../../../scripts/mss/query.mjs'
 import { buildStatusReport, runStatus } from '../../../../scripts/mss/status.mjs'
-import { parsePlanGate } from '../../../../scripts/mss/plan-parse.mjs'
+import { parsePlanGate, parsePlanBoard, parsePlanGlosses, validatePlanGlosses, classifyPlanState } from '../../../../scripts/mss/plan-parse.mjs'
 import {
   MANUAL_MOVE_BASELINE_LINES,
   runMove,
@@ -46,7 +46,7 @@ import { CONFIG, buildReportPathRe, normalizeConfig } from '../../../../scripts/
 import { REPORT_PATH_RE } from '../../../../scripts/mss/adapter.mjs'
 import { collectExportPaths, findDanglingImports } from '../../../../scripts/mss/export-kit.mjs'
 import { runDoctor } from '../../../../scripts/mss/doctor.mjs'
-import { runViews } from '../../../../scripts/mss/views.mjs'
+import { runViews, deriveMatteoDashboard } from '../../../../scripts/mss/views.mjs'
 import { PROTOCOL_ID, PROTOCOL_VERSION, REVISION_CURRENT, REVISION_LEGACY, SCHEMA_CURRENT, SCHEMA_LEGACY } from '../../../../scripts/mss/rules.mjs'
 import {
   IDS,
@@ -1350,6 +1350,68 @@ const tests = [
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
+  }],
+
+  ['V2 — lavagna: §4-ter prevale, glossa dichiarata, glossa orfana = rosso', () => {
+    const planPath = join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md')
+    const planText = readFileSync(planPath, 'utf8')
+
+    const synthetic = [
+      '## 4. Quadro corrente',
+      '| Ord | Pacchetto | Stato | Gate |',
+      '|---|---|---|---|',
+      '',
+      '### 4-bis. Scheletro',
+      '| Ord | Pacchetto | Stato | Prova |',
+      '|---|---|---|---|',
+      '| S4 | `SK-4` — bypass capsula | `PASS_CON_RISERVE` | stale §4-bis |',
+      '',
+      '### 4-ter. Rettifica audit',
+      '| Pacchetto | Stato operativo | Note |',
+      '|---|---|---|',
+      '| `SK-4` | **CHIUSO 25-08-26** | rettifica audit |',
+      '',
+      '## 15. Prossimo',
+      '### ciclo del 25-08-2026 — `T6` eseguito e **CHIUSO**',
+      '**Prossima azione autorizzata: `T8`** (test label)',
+      '**Stato R1 attuale:** `R1` è **CHIUSO**',
+    ].join('\n')
+    const withTer = parsePlanBoard(synthetic)
+    const withoutTer = parsePlanBoard(synthetic.replace(/\n### 4-ter\.[\s\S]*?(?=\n## 15)/, '\n'))
+    const sk4With = withTer.find((r) => r.id === 'SK-4')
+    const sk4Without = withoutTer.find((r) => r.id === 'SK-4')
+    assert.equal(classifyPlanState(sk4With.stato), 'fatta')
+    assert.equal(classifyPlanState(sk4Without.stato), 'con-riserva')
+    const countFatta = (b) => b.filter((r) => classifyPlanState(r.stato) === 'fatta').length
+    assert.notEqual(countFatta(withTer), countFatta(withoutTer))
+
+    const fakePlan = planText + [
+      '',
+      '### 4-quater. Glossa test',
+      '',
+      '| ID | Glossa |',
+      '|---|---|',
+      '| `SK-999-ORFANO` | Questo id non esiste in M |',
+    ].join('\n')
+    const board = parsePlanBoard(fakePlan)
+    const glosses = parsePlanGlosses(fakePlan)
+    const v = validatePlanGlosses(board, glosses)
+    assert.equal(v.ok, false)
+    assert.deepEqual(v.orphans, ['SK-999-ORFANO'])
+    const mdOrphan = deriveMatteoDashboard(fakePlan)
+    assert.match(mdOrphan, /MSS-VIEWS-GLOSSA-ORFANA/)
+
+    const noBis = planText
+      .replace(/\n## 4\. Quadro corrente[\s\S]*?(?=\n### 4-bis)/, '\n## 4. Quadro corrente\n\n_Sezione senza tabella._\n')
+      .replace(/\n### 4-bis\.[\s\S]*?(?=\n### 4-ter\.)/, '\n')
+      .replace(/\n### 4-quater\.[\s\S]*?(?=\nAnalisi, prove)/, '\n')
+    const mdNoBoard = deriveMatteoDashboard(noBis)
+    assert.doesNotMatch(mdNoBoard, /## Lavagna/)
+    assert.equal(parsePlanBoard(noBis).length, 0)
+
+    const mdLive = deriveMatteoDashboard(planText)
+    assert.match(mdLive, /`SK-0` Sbloccare i cancelli globali/)
+    assert.doesNotMatch(mdLive, /MSS-VIEWS-GLOSSA-ORFANA/)
   }],
 
   ['T1/R6 — mss:move sposta un file di prova, aggiorna i riferimenti vivi e resta atomico', () => {

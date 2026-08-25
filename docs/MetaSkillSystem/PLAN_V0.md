@@ -94,7 +94,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 |---|---|---|---|
 | S0 | `SK-0` — sbloccare i cancelli globali | **`CHIUSO E OSSERVATO` 21-08-26** | ✅ `npm run lint` **exit 0** (era 363 problemi / 17 errori) · ✅ `npm run test` **163 file, 1346 test, exit 0** · ✅ `npm run validate` **exit 0** · ✅ `validate:docs` **3 886 → 17** path rotti |
 | S1 | `SK-1` — punto di ripristino (tag annotato) | **ESEGUITO E PUBBLICATO** 24-08-26 | tag annotato `mss/baseline-h13` su `HEAD` pre-`M-A`/`M-B`, pubblicato su `origin` il 24-08-26 con decisione `M5` di Matteo: `git ls-remote --tags origin "mss/*"` lo conferma dal remoto, non solo in locale |
-| S2 | `SK-2` — `mss:status` (sola lettura) | **`ALLINEATO` 25-08-26 (`T7`)** | ✅ gate da parser PLAN condiviso con `generate:mss:views` (ultimo ciclo, non gate storici) · ✅ sezione viste anti-stale · ✅ §4-bis senza numeri congelati · ✅ test nominato `SK-2 / status: gate autorizzato…` in `test:mss:tools` · ⚠️ ROADMAP/HANDOFF restano viste manuali fino a estensione generatore |
+| S2 | `SK-2` — `mss:status` (sola lettura) | **`ALLINEATO` 25-08-26 (`T7`)** | ✅ gate da parser PLAN condiviso con `generate:mss:views` (ultimo ciclo, non gate storici) · ✅ sezione viste anti-stale · ✅ lavagna M/D/P nel cruscotto (§4-quater glossa, §4-ter prevale) · ✅ test nominato `SK-2 / status: gate autorizzato…` in `test:mss:tools` · ⚠️ ROADMAP/HANDOFF restano viste manuali fino a estensione dedicata |
 | S3 | `SK-3` — `mss:review` (sola lettura) | **`CHIUSO` 24-08-26 (`T2`, `M12`)** | ✅ `npm run mss:review` esiste ed è sola lettura (stato Git invariato) · ✅ test nominato `T2 / mss:review — …` in `test:mss:tools` (seduta sporca trova owner/L5/L6/capsula assente; seduta pulita `problems.length === 0`) · ✅ M12: gate rieseguiti verdi e controverifica OpenAI/gpt-5.6-sol, famiglia diversa dall’esecutore Cursor/Composer |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`CHIUSO` 25-08-26 — firma Matteo post-revisione Cursor T6** | ✅ B1: due record legacy nuovi staged insieme ricevono entrambi `MSS-LEGACY-NEW-FORBIDDEN`, mentre lo storico canonico già in `HEAD` resta leggibile · ✅ B2/B3: `Report-` e `Verbale-` ricorsivi entrano nei gate staged/worktree · ✅ D18: `mss:review` importa `REPORT_PATH_RE` da `adapter.mjs` · test nominati in `test:mss` e `test:mss:tools` · revisione indipendente Cursor `PASS_CON_RISERVE` · firma verbatim Matteo 25-08-26 |
 | S5 | `SK-5` — controlli MSS in CI su `env/test` | **`CHIUSO` 24-08-26 — decisione `M13` di Matteo.** Nessuna prova tecnica restava da produrre: era l'unico dei quattro pacchetti «in attesa di firma» davvero pronto | `npm run validate` è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. ✅ **24-08-26: primo push eseguito (decisione `M5`) e job `mss` osservato VERDE su GitHub Actions reale** con questa forma — non più una simulazione locale. Verifica: `gh run list --branch env/test` |
@@ -114,6 +114,39 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 | `SK-7` | **CHIUSO 24-08-26 (`M3`)**: fix B D2/D3 e privacy append-only controverificati; sintassi canonica e source refs pubblicabili coperti da test. | Revisione indipendente (`D17`) resta consigliata, non gate. |
 | `SK-8` | **CHIUSO 25-08-26**: suite da cwd esterna con test nominato; revisione Cursor T6 + firma Matteo. | Nulla. Chiuso. |
 | `SK-11` | **CHIUSO 24-08-26 (`T4`)**: suite verde; hook `A1`–`A4`; copertura `M-C`/`M-D`/`M-G`; `P4` con M12 (`T3`); firma formale di Matteo. | Nulla. Chiuso. |
+
+### 4-quater. Glossa operativa — non possiede lo stato
+
+> Frasi brevi in italiano semplice per la lavagna del cruscotto (asse D).
+> Lo **stato** resta sempre in M (§4 / §4-bis / §4-ter): questa tabella non governa bucket né gate.
+
+| ID | Glossa |
+|---|---|
+| `WP-0` | Parametri macro e prima capsula del sistema |
+| `MP-0` | Report osservazioni e masterplan unico |
+| `WP-0.1` | Hardening prima del primo pilota |
+| `H-1` | Validator e hook rapidi (prima tranche) |
+| `H-1.1` | Integrità append-only e semantica eventi |
+| `H-1.3` | Amendment, staged e parità tra superfici |
+| `WP-1` | Piloti reali in modalità ombra |
+| `WP-2` | Mining storico normalizzato |
+| `WP-3` | Kernel, manifest e pacchetti |
+| `WP-4` | Preflight, registro Output e viste |
+| `WP-5` | Nuova suite di validazione |
+| `WP-6` | Decisione di cutover |
+| `E-2` | Enforcement superiore (ancora da decidere) |
+| `SK-0` | Sbloccare i cancelli globali (lint, test, validate) |
+| `SK-1` | Punto di ripristino con tag annotato |
+| `SK-2` | Comando «dove siamo» in sola lettura |
+| `SK-3` | Revisione seduta in sola lettura |
+| `SK-4` | Chiusura bypass e contratto capsula |
+| `SK-5` | Controlli MSS in CI su env/test |
+| `SK-6` | Interrogazione capsule in sola lettura |
+| `SK-7` | Generazione capsule da checklist |
+| `SK-8` | Suite test eseguibile da cwd esterna |
+| `SK-9` | Spostamento file con aggiornamento riferimenti |
+| `SK-10` | Manuale operativo e bootstrap |
+| `SK-11` | Test automatici degli attrezzi MSS |
 
 Analisi, prove e motivazione dell'ordine:
 `docs/Sessioni di lavoro/21-08-26/STRATEGIA-scheletro-mss-21-08-26.md`.
