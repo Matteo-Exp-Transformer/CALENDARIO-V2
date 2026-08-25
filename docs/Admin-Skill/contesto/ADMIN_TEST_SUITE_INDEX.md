@@ -154,6 +154,8 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (
 - `src/config/__tests__/features.test.ts`
 - `src/hooks/__tests__/useFeatures.test.tsx`
 - `src/features/booking/hooks/__tests__/useServiceSlots.test.tsx`
+- `src/features/booking/hooks/__tests__/useRooms.softDelete.test.tsx` → soft-delete sala D50 + nota debito `FU-SERV-TURNO-SALA-1`
+- `src/features/booking/hooks/__tests__/useRooms.createUpdate.test.tsx` (5) → blindatura WP-1 istanza 1: create/update sala (trim nome, display_order, tenant guard, toast)
 - `src/features/booking/utils/__tests__/serviceSlotBookingFilter.test.ts`
 - `src/features/booking/utils/__tests__/unassignedBookingsFilter.test.ts`
 - `src/features/booking/utils/__tests__/tableCheckout.test.ts`

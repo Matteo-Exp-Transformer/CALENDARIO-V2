@@ -136,6 +136,11 @@ describe('useDeleteRoom — sala scarica: nessun assignment toccato (D50)', () =
 // ---------------------------------------------------------------------------
 // useDeleteRoom — sala VIVA (ha assignment attivi)
 // ---------------------------------------------------------------------------
+// FU-SERV-TURNO-SALA-1 (APERTO, decisione Matteo 06-08-26 ancora non eseguita):
+// oggi la sala viva fa UPDATE checked_out_at (consuma turno); il tavolo invece
+// fa DELETE fisico. Target prodotto: allineare la sala al tavolo. Questo test
+// pina il comportamento *corrente* finché P6 non gira — a quel punto va
+// riscritto come «DELETE assignments, mai checked_out_at».
 describe('useDeleteRoom — sala viva: timbra checked_out_at + archivia (D50)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
