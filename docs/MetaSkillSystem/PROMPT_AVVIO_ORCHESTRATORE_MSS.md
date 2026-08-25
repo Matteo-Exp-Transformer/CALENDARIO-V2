@@ -38,13 +38,13 @@ documento:** sono mobili, si citano come comando.
 
 Lo stato **vivo** non sta in questo file: esegui `npm run mss:status` e leggi `PLAN_V0.md` (owner).
 
-**Post-`T12`:** ciclo `T12` **CHIUSO** (sync prompt + indice report generate). `T11`/P2 restano chiusi.
-`H-1.3` è **PASS**; **`WP-1` resta NO-GO** (`H-1.3` PASS ≠ via libera pilota).
-Decisioni Q-A/Q-B/Q-C:
-[`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md).
+**Post-`T13`:** ciclo `T13` **CHIUSO e pubblicato** (`c361f2c` su `origin/env/test`). Residui
+lavagna / Q-B / Q-C chiusi per davvero. `H-1.3` è **PASS**; **`WP-1` resta NO-GO** finché Matteo
+non riapre `D27` in chat dedicata (`H-1.3` PASS ≠ via libera pilota).
 
-**Gate vivo: `T13`** — commit/pubblicazione solo con sì Matteo; debiti Q-B/Q-C solo con nuovo sì.
-`M-A`…`M-G` e `M-D` sono **storico**, non la prossima azione viva.
+**Gate vivo: `T14`** — solo riapertura verbatim `D27` → prima istanza `WP-1` in ombra. Niente
+nuova costruzione scheletro. Niente cutover. `M-A`…`T13` sono **storico**.
+Prompt decisione/pilota: [`Prompt-d27-riapertura-wp1-ombra-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Prompt-d27-riapertura-wp1-ombra-25-08-26.md).
 
 ---
 

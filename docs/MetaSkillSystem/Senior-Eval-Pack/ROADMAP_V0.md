@@ -54,7 +54,7 @@ legge, poi cio che scrive.**
 
 - **Ultimo ciclo chiuso:** `T13` **CHIUSO**
 - **Titolo ciclo:** Ventesimo ciclo del 25-08-2026
-- **Prossima azione:** `T14` (P3/D27/WP-1 solo con riapertura verbatim di Matteo — WP-1 NO-GO; eventuale commit/pubblicazione atti T13 solo con sì Matteo)
+- **Prossima azione:** `T14` (riapertura verbatim `D27` → prima istanza `WP-1` in ombra; nessuna costruzione scheletro residua; cutover vietato; lavoro `src/` solo se rientra nel task pilota scelto da Matteo)
 - **R1:** CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2
 
 ## Lavagna pacchetti (M)

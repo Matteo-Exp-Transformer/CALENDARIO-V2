@@ -10,6 +10,11 @@
 
 ---
 
+## 25-08-26 — comunicazione diretta + «tutto chiuso» (ciclo post-T12)
+
+- ✅ **Regola zero + formato fine-task** (elemento → intervento → risultato; Dove siamo / Ti consiglio / Pronto / Tua azione; no sigle in prima frase) → `COMUNICAZIONE_UTENTE_SKILL.md`, `PREPARA_PROMPT_SKILL.md`, AGENTS/CLAUDE/comandi-base, cruscotto HTML. Report: `Report-contratto-comunicazione-diretta-25-08-26.md`. Approvazione linguaggio cruscotto da Matteo.
+- ✅ **«max 1–3 problemi · parallelo sì/no · prompt solo a decisione chiusa · no debiti per sbloccare»** → stessa onda: rant Matteo + chiusura reale T13 (residui eseguiti, non parcheggiati). Codificato in `PREPARA_PROMPT_SKILL.md` §3 (stile verso Matteo) + OSSERVAZIONI 25-08-26. **Da osservare:** se gli agenti rispettano la regola nelle chat successive (E=1 finché non c’è enforcement automatico sul testo).
+
 ## 02-06-26 — sessione Meta senior (dossier revisore)
 
 - ✅ **Freno scope creep** → `PREPARA_PROMPT_SKILL.md` §2 + riga `Output attesi:` §1.A. 3 occorrenze; semi-enforcement (no hook: non verificabile da macchina che legge solo i file). Report: `Report-meta-senior-evoluzione-skill-system-02-06-26.md`.

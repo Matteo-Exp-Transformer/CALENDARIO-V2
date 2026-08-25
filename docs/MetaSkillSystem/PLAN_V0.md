@@ -6,9 +6,10 @@
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
 > **Ultimo movimento:** **T13** — chiusi i tre residui post-T12: lavagna WP-1 non più in «Fatte»;
-> denylist N4 estesa (Q-B); `--verify-assertion-index` multi-Output (Q-C). **T11**/**T12** già
-> pubblicati su `origin/env/test` (`6f3edf5` / `db17841`). Prossimo: P3/D27/WP-1 **solo** con
-> riapertura verbatim di Matteo — **non** `WP-1`. Audit P1 in
+> denylist N4 estesa (Q-B); `--verify-assertion-index` multi-Output (Q-C). **Pubblicato** su
+> `origin/env/test` (`c361f2c`; dopo anche `5f024d8` comunicazione). **T11**/**T12** già su origin
+> (`6f3edf5` / `db17841`). Prossimo gate: **`T14`** — riapertura verbatim `D27`/WP-1 **solo** con
+> sì Matteo in chat dedicata — **non** aprire `WP-1` senza frase. Audit P1 in
 > [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
 > `WP-1` **NO-GO** · `D27` chiusa finché Matteo non riapre in chat dedicata.
 >
@@ -1145,16 +1146,16 @@ Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decision
 | M-VERIFY-MULTI (ex Q-C) | **PROVATO** | `--verify-assertion-index`; test `T13 / Q-C`; MANUALE §2.4 |
 | Report + capsula T13 | — | [`Report-chiusura-residui-t13-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md) |
 
-**Verdetto:** **T13 completo**. Debiti Q-B/Q-C **chiusi dopo prove verdi**. Commit T11+T12 **già** su origin — prosa aggiornata. `WP-1` resta **NO-GO**. `D27` resta **chiusa**.
+**Verdetto:** **T13 completo**. Debiti Q-B/Q-C **chiusi dopo prove verdi**. Atti T13 **pubblicati** su origin (`c361f2c`). `WP-1` resta **NO-GO**. `D27` resta **chiusa**.
 
-**Prossima azione autorizzata: `T14`** (P3/D27/WP-1 solo con riapertura verbatim di Matteo — WP-1 NO-GO; eventuale commit/pubblicazione atti T13 solo con sì Matteo).
+**Prossima azione autorizzata: `T14`** (riapertura verbatim `D27` → prima istanza `WP-1` in ombra; nessuna costruzione scheletro residua; cutover vietato; lavoro `src/` solo se rientra nel task pilota scelto da Matteo).
 
 **Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**.
 
 #### Chiusura formale ciclo `T13` — 25-08-2026
 
 - **Ciclo `T13`:** **CHIUSO** (lavagna + denylist Q-B + verify multi Q-C + prosa PLAN/cruscotto).
-- **Commit/push:** **non** eseguiti in questa seduta — solo con sì Matteo.
+- **Commit/push:** **eseguiti** — `c361f2c` su `origin/env/test` (25-08-26). Rettifica owner 25-08-26 sera: gate «eventuale commit T13» rimosso; repo pronta per decisione `D27`.
 
 ### Decisioni di Matteo — 23-08-2026 (`D16`–`D24`, CHIUSE)
 

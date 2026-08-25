@@ -64,7 +64,7 @@ Non sostituisce:
 - **Atti del ciclo (puntatori owner):**
   - [`Decisioni-T12-QABC-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md)
   - [`Report-chiusura-residui-t13-25-08-26.md`](../../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md)
-- **Prossima azione autorizzata:** `T14` (P3/D27/WP-1 solo con riapertura verbatim di Matteo — WP-1 NO-GO; eventuale commit/pubblicazione atti T13 solo con sì Matteo)
+- **Prossima azione autorizzata:** `T14` (riapertura verbatim `D27` → prima istanza `WP-1` in ombra; nessuna costruzione scheletro residua; cutover vietato; lavoro `src/` solo se rientra nel task pilota scelto da Matteo)
 - **R1:** CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2
 - **`H-1.3` (M):** _PASS 25-08-26 — ✅ riserva H13-POST-L01 CHIUSA 24-08-26 (M13); ✅ T7 B-E2-CI chiuso (SK-5); ✅ Opzione B M-E2-A..D CHIUSE (CI post-hoc no-verify; Report/Verbale unstaged; Cloud checklist+CI; light deny MSS-LIGHT-NO-EVENT); residui umani misurati in COVERAGE_MATRIX_H1.json (--no-verify Git, hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) — non stale «bypass intenzionali accettati»_
 - **`WP-1` (M):** _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_

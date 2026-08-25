@@ -294,6 +294,14 @@ semplice; prompt per l'agente = strutturato.
 che Matteo legge per decidere. Tabelle solo se Matteo dice «ragioniamo» o se un confronto è davvero
 più chiaro di poche frasi. Spiegazioni lunghe solo se chieste. Il prompt esecutore resta tecnico.
 
+**Carico decisionale (25-08-26 — rant + chiusura T13):** verso Matteo al massimo **1–3 problemi**
+da decidere per messaggio, in italiano diretto. Domanda «possono andare in parallelo?» → **una
+riga** sì/no con la condizione. **Non** consegnare il prompt esecutore finché resta una decisione
+aperta che cambia il mandato. Se Matteo dice che vuole **tutto chiuso** prima del passo dopo
+(es. prima del pilota): i residui si **eseguono**, non si dichiarano «debiti» per sbloccare. Se
+resta qualcosa incompleto, il report deve già contenere il **prompt di proseguimento** pronto da
+incollare — senza fargli ripetere il contesto.
+
 **Sintesi post-revisione / handoff (approvato 30-05-26, ciclo Menu QR).** Quando Matteo chiede
 cosa decidere e come proseguire dopo un revisore, rispondi in questo ordine (poche righe, no ridondanza):
 

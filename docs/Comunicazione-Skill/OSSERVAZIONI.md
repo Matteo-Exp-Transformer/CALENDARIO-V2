@@ -48,6 +48,22 @@
 
 ## Sessioni registrate (append-only)
 
+### 25-08-26 — Meta MSS: overload decisioni/sigle; «tutto chiuso» prima del pilota
+- **Area:** comunicazione agenti ↔ Matteo (ciclo post-T12 / prep pilota).
+- **Verbatim (sintesi fedele):** stanco di leggere sigle e di dover prendere 4 decisioni a griglia
+  (A–Q / B–W) per chat; vuole max 1–3 problemi mirati per un cervello umano, non 40 paragrafi;
+  sulla domanda «possono andare in parallelo?» vuole sì/no con una condizione, punto; non vuole
+  ricevere prompt se ci sono ancora decisioni aperte; **vuole TUTTO chiuso prima di iniziare il
+  pilota** — non «procedi e dichiara debiti» (pattern ripetuto da ~4 agenti).
+- **Comportamento desiderato emerso:** (1) zero griglie multiple choice lunghe; (2) parallelo =
+  una riga sì/no; (3) prompt solo a decisioni chiuse; (4) residui tecnici = da chiudere davvero,
+  non parcheggiare come debito per sbloccare il passo dopo.
+- **Esito stesso giorno:** (a) contratto comunicazione diretta codificato + cruscotto in italiano
+  (`Report-contratto-comunicazione-diretta-25-08-26.md`, commit `5f024d8`); (b) residui T13 chiusi
+  per davvero (`Report-chiusura-residui-t13-25-08-26.md`, commit `c361f2c`) — revisione prepara:
+  lavagna WP-1 in «Da fare», gate T13→T14 senza debiti aperti, validate report OK.
+- **Codifica:** `COMUNICAZIONE_UTENTE_SKILL.md` Regola zero + formato fine-task; `PREPARA_PROMPT_SKILL.md` §3 carico decisionale; ARCHIVIO_DECISIONI 25-08-26.
+
 ### 03-08-26 — 7 fix UI Servizio + digest Home: subagente bloccato nello scrivere il proprio report
 - **Area:** Servizio — layout pagina (collapse fasce, header sale, piantina senza fascia) + digest
   Home (badge tavolo assegnato) + strip "Assegnate" (note/intolleranze). Codice + skill.
@@ -238,6 +254,7 @@
 | domande non bloccanti lasciate al revisore | 1 | Classic vs Pro, smoke Prenota pubblica — ok lasciare ? in QA |
 | «annota prompt ideale / come avrei dovuto dirlo» (prepara-prompt) | 1 | nel report prepara: sezione breve «Prompt ideale (retroattivo)» — 2–4 righe che catturano la regola di prodotto senza DOM path; candidato PROPOSTE per PREPARA_PROMPT §5 |
 | «annota errori altro agente» + «hook in questa sessione» | 1 | tracciamento in ERRORI_PROCESSO + OSSERVAZIONI (03-06 limiti testo) |
+| «basta sigle / griglie A-B / 40 paragrafi» + «tutto chiuso prima di proseguire» (no debiti) | 2 (25-08-26 rant + T13 chiuso davvero) | max 1–3 problemi; parallelo sì/no una riga; prompt solo dopo decisioni; vietato sbloccare dichiarando debiti — **accettato** → COMUNICAZIONE Regola zero + PREPARA §3 + ARCHIVIO 25-08-26 |
 
 ## Spiegazioni date e formato che ha funzionato
 

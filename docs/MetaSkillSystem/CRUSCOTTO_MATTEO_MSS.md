@@ -18,7 +18,7 @@ Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decision
 - [`Report-chiusura-residui-t13-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md)
 
 ## Cosa devi fare tu
-R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T14` (P3/D27/WP-1 solo con riapertura verbatim di Matteo — WP-1 NO-GO; eventuale commit/pubblicazione atti T13 solo con sì Matteo).
+R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T14` (riapertura verbatim `D27` → prima istanza `WP-1` in ombra; nessuna costruzione scheletro residua; cutover vietato; lavoro `src/` solo se rientra nel task pilota scelto da Matteo).
 
 ## Lavagna
 
