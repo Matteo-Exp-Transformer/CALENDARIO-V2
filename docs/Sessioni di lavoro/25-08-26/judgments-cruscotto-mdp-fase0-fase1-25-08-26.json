@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "CRUSCOTTO-MDP-FASE1@PLAN_V0§4-quater",
+        "trigger_event": "Mandato cruscotto: validare metodo M/D/P (lab) e portare lavagna nell'artefatto generato da PLAN",
+        "decision_or_output_changed": "FASE 1 in repo: plan-parse board/glosses/classify; deriveMatteoDashboard arricchito (T6, lavagna, riserve); §4-quater in PLAN; cruscotto rigenerato; test V2; gate verdi. parsePlanGate/runViews invariati. FASE 2 HTML e «L'ultima chat» fuori scope.",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "cruscotto-mdp-fase0-fase1-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-cruscotto-mdp-fase0-fase1-25-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "avvicinare il cruscotto al metodo M/D/P validato in lab senza toccare owner gate",
+        "intended_use": "handoff verso Fase 2 HTML e chiusura capitolo con «fai report finale»",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "piano cruscotto MSS M/D/P + «lavoro ok»",
+        "authored_by": "cursor-composer-chiusura-cruscotto-mdp",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "commit 2d159e6 presente; lavagna 16/1/6/2; test:mss:tools 66/66 con V2; validate:mss:views verde; report Q/R+capsula",
+        "verification_or_use_evidence": "controls CRUSCOTTO-*; git show 2d159e6; CRUSCOTTO_MATTEO_MSS.md",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md",
+          "scripts/mss/plan-parse.mjs",
+          "scripts/mss/views.mjs"
+        ],
+        "relations_no_double_count": [
+          "Lab Fase 0 fuori repo (scratchpad); non conta come commit",
+          "FASE 2 HTML non inclusa"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

@@ -8,6 +8,8 @@
 - **Cosa resta:** P2 (`T11`: D14, R-T7-06); residui umani in matrice; `WP-1` NO-GO.
 - **Serve una tua azione:** no — push autorizzato.
 
+> **Nota allineamento report finale (25-08-26):** H13 atterrato in **`bcb5dfb`** · CI post-H13 verde run [`32840507966`](https://github.com/Matteo-Exp-Transformer/CALENDARIO-V2/actions/runs/32840507966). SHA A–D sotto invariati. Capsula §6-bis invariata (snapshot pre-commit H13).
+
 ## 2. Passo 0 — stato
 
 | Controllo | Esito |
@@ -28,7 +30,7 @@ Fonte: [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](PLAN-CHIUSURA-RIMANENZE-MSS-2
 | P1.2 M-E2-B | ✅ CHIUSO · `972f894` |
 | P1.3 M-E2-C | ✅ CHIUSO · `a2ec2b9` |
 | P1.4 M-E2-D | ✅ CHIUSO · `80e46f1` |
-| P1.5 M-H13-PASS | ✅ **PASS** |
+| P1.5 M-H13-PASS | ✅ **PASS** · `bcb5dfb` |
 
 ## 4. Tabella famiglie A–D + H13
 

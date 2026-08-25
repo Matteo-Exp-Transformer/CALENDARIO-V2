@@ -3,6 +3,8 @@
 **Modalità:** deep · **Ruolo:** sub-agent M-H13-PASS · **Branch:** `env/test` · **HEAD partenza:** `80e46f1`
 **Esito in una riga:** `H-1.3` = **`PASS`**; R-T7-03/05 chiuse; residui umani misurati in matrice; `WP-1` NO-GO.
 
+> **Nota allineamento report finale (25-08-26):** atterraggio git **`bcb5dfb`** · CI job `mss` **verde** run [`32840507966`](https://github.com/Matteo-Exp-Transformer/CALENDARIO-V2/actions/runs/32840507966) (headSha = `bcb5dfb`). Capsula §6-bis invariata (snapshot a partenza `80e46f1`).
+
 ## 1. Cappello
 
 - **Cosa è cambiato:** owner promuove H-1.3 a PASS dopo E2-A..D; cruscotto deriva PASS in «fatte»; prossimo gate `T11` (P2).
