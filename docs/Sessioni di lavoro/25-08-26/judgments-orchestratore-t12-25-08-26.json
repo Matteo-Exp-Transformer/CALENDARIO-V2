@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "T12-ORCH@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Chiusura orchestratore ciclo T12 (M-SYNC-ORCH + M-D14-INDEX; Q-B/Q-C No)",
+        "decision_or_output_changed": "T12 CHIUSO: prompt allineati; indice report-index PROVATO; PLAN mark T12→T13; debiti Q-B/Q-C espliciti; WP-1 NO-GO; D27 chiusa",
+        "G": 2,
+        "O": 1,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-orchestratore-t12-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-orchestratore-t12-25-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "chiudere ciclo T12 residui documentali con gate §6 e handoff",
+        "intended_use": "sintesi post-T12; base per T13 commit o debiti Q-B/Q-C con sì",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo (Q-A vista; Q-B No; Q-C No)",
+        "directed_by": "Mandato orchestratore T12 inline parent",
+        "authored_by": "cursor-composer-orch-t12",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "report ≤200; due famiglie PROMUOVERE; validate:mss:all 0; PLAN T12 CHIUSO; no commit/push; WP-1 NO-GO",
+        "verification_or_use_evidence": "validate:mss:all; validate:mss famiglie+orch; mss:status T12→T13; git diff --check; HEAD 6f3edf5",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/25-08-26/Report-sync-prompt-orchestrator-n4-t12-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-d14-indice-report-t12-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md",
+          "docs/MetaSkillSystem/PLAN_V0.md"
+        ],
+        "relations_no_double_count": [
+          "Sintesi M-SYNC+M-D14-INDEX; non apre Q-B/Q-C/D27/WP-1; non tocca src/"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

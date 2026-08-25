@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "rule_id_version": "D14-INDEX@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato M-D14-INDEX / Q-A: generare vista anti-stale per MSS-REPORT-INDEX",
+        "decision_or_output_changed": "VIEWS include report-index con ownerKind sessions-dir; derive da scansione Report-*.md sotto docs/Sessioni di lavoro; validate:mss:views controlla anti-stale; test nominato D14 — indice report generato prova FS→rosso e regenerate→verde. ROADMAP/HANDOFF non rifatti. WP-1 non toccato.",
+        "G": 2,
+        "O": 2,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-d14-indice-report-t12-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-d14-indice-report-t12-25-08-26.md",
+        "recipient": "Matteo, orchestratore T12 e revisore",
+        "problem_or_job": "chiudere il residuo D14 indice report ancora manuale",
+        "intended_use": "prova eseguibile anti-stale FS; handoff orchestratore",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato M-D14-INDEX inline parent; Q-A genera vista",
+        "authored_by": "cursor-composer-m-d14-index",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "generate/validate:mss:views exit 0 con report-index; test D14 — indice report generato verde; validate:mss:all exit 0; no commit/push",
+        "verification_or_use_evidence": "npm run generate:mss:views; validate:mss:views; test:mss:tools; validate:mss:all",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Sessioni di lavoro",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/views.mjs",
+          "docs/MetaSkillSystem/archive/indices/MSS-REPORT-INDEX.md",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "docs/MetaSkillSystem/MANUALE_OPERATIVO_MSS_V0.md"
+        ],
+        "relations_no_double_count": [
+          "non aggiorna PLAN; non rifà ROADMAP/HANDOFF; non tocca capsule.mjs / WP-1"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

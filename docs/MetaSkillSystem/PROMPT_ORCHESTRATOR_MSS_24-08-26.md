@@ -47,23 +47,22 @@ Il target non è «tutti i pacchetti `SK-*` chiusi». È: **gli otto requisiti d
 
 | | Requisito | Oggi | Che cosa lo porta al 100% | Prova che lo dimostra |
 |---|---|---|---|---|
-| `R1` | la raccolta dati è un **sottoprodotto** del lavoro, non un compito in più | 50% | il generatore compone la capsula dai fatti già presenti (git, comandi eseguiti, esiti) e chiede all'agente **solo** i tre giudizi | chiudere una seduta reale con `mss:capsule` senza scrivere JSON a mano oltre ai tre assi |
-| `R2` | il sistema **non inventa** nulla | 85% | il generatore **valida ciò che scrive** prima di scriverlo; nessun campo derivato senza fonte | ✅ `mss:capsule` esce rosso **senza scrivere** su un giudizio invalido (`M-C`, due test che nominano `N1`) e `--verify` non deduce mai bersaglio o esito (`N2`). ⚠️ resta `N3`/`N4`: `--check` registra esiti che non provano ciò che sembrano provare |
-| `R3` | le automazioni fanno **risparmiare token** | 75% | un agente freddo si orienta con manuale + due comandi, e lancia **solo** il cancello che lo riguarda | ✅ `validate:app` e `validate:mss:all` esistono e sono distinti (§3), e il job CI `mss` lancia lo stesso comando |
-| `R4` | il sistema **stimola** in base al tipo di seduta | 25% | l'hook di chiusura chiede ciò che serve a *quel* tipo di seduta, e tace sul resto | una seduta `light` e una `deep` producono richieste diverse, provate da test |
-| `R5` | i dati sono **interrogabili** | 85% | ✅ sostanzialmente raggiunto | `npm run mss:query -- --regole/--modelli/--verifica/--fail/--costo` |
-| `R6` | **spostare o rinominare** costa un comando | 0% | esiste `mss:move` che sposta un file e aggiorna i riferimenti vivi | un move reale con suite verde e `validate:docs` a zero rotti |
-| `R7` | a fine lavoro la **macchina si autorevisiona** | 70% | il cancello è identico su tutti i canali (Cursor, Claude, CI) ed è **riproducibile su una repo clonata** | ✅ cablaggio degli hook tracciato e coperto da test (`A1`–`A4`) · ✅ il job CI `mss` **osservato verde su GitHub Actions reale** con la forma nuova · ✅ l'attrezzo per registrare una verifica **esiste** (`--verify`, `N2`). ⚠️ manca la prova sul campo: nessun `verified_by` nei record **grezzi** finché un revisore non usa `--verify` su una revisione vera — `npm run mss:query -- --verifica` |
-| `R8` | il **bootstrap in una repo nuova** è una procedura | 15% | il kit esportabile contiene il motore MSS, non solo i markdown | un agente freddo installa e chiude una seduta in una repo vergine, provato |
+| `R1` | la raccolta dati è un **sottoprodotto** del lavoro, non un compito in più | CHIUSO CON RISERVE | il generatore compone la capsula dai fatti già presenti e chiede **solo** i tre giudizi | chiudere una seduta reale con `mss:capsule` senza scrivere JSON a mano oltre ai tre assi · `npm run mss:status` |
+| `R2` | il sistema **non inventa** nulla | ✅ `N1`–`N4` PROVATI | il generatore **valida ciò che scrive** prima di scriverlo; nessun campo derivato senza fonte | ✅ `mss:capsule` esce rosso **senza scrivere** su giudizio invalido (`N1`); `--verify` non deduce bersaglio/esito (`N2`); `--check` non confonde malformato e fallito (`N3`) e **rifiuta** controlli infallibili in denylist senza `--check-expect` ≠ 0 (`N4`, test `capsule: N4 / SK-7 — controllo infallibile deny` in `test:mss:tools`). Residuo oltre denylist = debito esplicito (Q-B No), **non** «aperto nel mandato» |
+| `R3` | le automazioni fanno **risparmiare token** | prova a comando | agente freddo: manuale + due comandi; solo il cancello che lo riguarda | `npm run validate:app` · `npm run validate:mss:all` · job CI `mss` |
+| `R4` | il sistema **stimola** in base al tipo di seduta | in corso | hook di chiusura chiede ciò che serve a *quel* tipo | seduta `light` vs `deep` — test + `npm run mss:status` |
+| `R5` | i dati sono **interrogabili** | sostanzialmente raggiunto | lettore corpus | `npm run mss:query -- --regole/--modelli/--verifica/--fail/--costo` |
+| `R6` | **spostare o rinominare** costa un comando | ✅ `SK-9` CHIUSO | esiste `mss:move` | `npm run mss:move -- --help` · `npm run mss:status` |
+| `R7` | a fine lavoro la **macchina si autorevisiona** | prova sul campo | cancello identico su canali; `--verify` esiste (`N2`) | `npm run mss:query -- --verifica` · job CI `mss` |
+| `R8` | il **bootstrap in una repo nuova** è una procedura | ✅ `SK-10` CHIUSO | kit/portabilità chiusi post-M-T8 | `npm run mss:status` · `npm run mss:doctor` |
 
 **Definizione operativa di 100%:** ogni riga della colonna «Prova» esce verde eseguendo un comando,
 e nessuno stato dichiarato in un documento contraddice quel comando. Non serve altro; **non aggiungere
 requisiti tuoi** al target di Matteo.
 
-**Dove siamo:** ~62% complessivo dopo il secondo ciclo del 24-08-2026 (`M-C` + push + CI osservata).
-La stima non è un numero da difendere, è un ordine di grandezza per decidere le priorità. I due
-requisiti che restano bassi sono `R6` (a zero: `mss:move` non esiste) e `R8` (portabilità), ed è
-esattamente l'ordine dei prossimi mandati.
+**Dove siamo (vivo):** eseguire `npm run mss:status` e leggere `PLAN_V0.md` §15 — non congelare
+percentuali qui. Post-`T11`: `N3`/`N4` e D14 ROADMAP/HANDOFF sono **PROVATI** (MANUALE + test
+nominati); il gate vivo post-`T12` è `T13` (commit/debiti Q-B/Q-C). Non inventare percentuali `R*`.
 
 ---
 
@@ -106,44 +105,29 @@ ha la guardia PROD.
 > corrente: lo stato vive in `PLAN_V0.md` §15. `capsule.mjs` ora importa il validator ed esce rosso
 > **senza scrivere**; `--verify` emette un `amendment` di verifica senza mai dedurre bersaglio o esito.
 
-| `N3` | ⚠️ **RIDIAGNOSTICATO il 24-08-26 — la riga precedente diceva il falso.** Si affermava che `--check` «non trasporta» un path con spazi e che «le virgolette si perdono nel trasporto». **Falso, falsificato con misura diretta:** le virgolette arrivano intatte a `process.argv`; la rottura è a valle, in `spawnCheckCommand` (`spawnSync(cmd,{shell:true})`). **Virgolette doppie → funziona** · nessuna virgoletta → `fail` falso · **virgolette singole → fallisce su Windows**, perché `shell:true` usa `cmd.exe`. Quindi un path con spazi **si registra**, con virgolette doppie; la trappola sono le singole, che sono l'abitudine POSIX. Il difetto residuo è che l'attrezzo non distingue «comando malformato» da «comando fallito»: **stessa radice di `N4`**, e `M-G` li tratta insieme | [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) §6, con la tabella dei tre casi misurati; collaudato dal vivo nei `controls[]` di quello stesso report |
-| `N6` | **`mss:doctor`, passo `owner`: falso rosso.** Il passo cerca la stringa «non ricostruibile» in tutto l'output di `mss:status`, ma quella stringa la stampa la sezione **Git** di una repo senza commit — cioè in ogni repo appena `git init`ata, che è lo scenario di `R8`. Accusa l'owner, che è presente e leggibile. Stessa famiglia di `N3`: un controllo che riporta il fallimento **sul soggetto sbagliato**, nella checklist che un agente freddo incontra al primo minuto | [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) §5: un commit, senza toccare l'owner, rende il passo verde |
-| `N4` | **`--check` deduce l'esito dall'exit code**, quindi un comando che non può fallire (`git status --short`) registra un `pass` che non prova nulla. Un `controls[]` pieno di comandi infallibili sembra una prova e non lo è. Proposta dell'esecutore `M-C`: `--check-expect <exit>`, che chiude anche i controlli a segno invertito — **non** copre `N3`, che è un problema di trasporto dell'argomento | segnalato in `Report-mc-attrezzi-che-non-mentono-24-08-26.md`; il mandato `M-C` §2 lo aveva esplicitamente lasciato fuori perimetro |
-| `N5` | **La porta di `--verify` è più larga del mandato.** `VERIFY_STATUSES` esclude solo `self_report`, quindi ammette anche `unverified` e `not_applicable`. Si può così scrivere un amendment che dichiara `status: unverified` **mentre popola `verified_by`**: un record auto-contraddittorio — «nessuno ha verificato» con un verificatore nominato. `core.mjs::validateVerifier` esce presto se lo stato non è `independently_verified`, quindi non lo intercetta. Non finge un esito positivo (è meno grave di `N1`/`N2`), ma è dati sporchi che nessun cancello vede | `scripts/mss/capsule.mjs:345` · `scripts/mss/core.mjs:698`. Trovato dalla revisione indipendente di `M-C` (`M6`) e **riverificato dall'orchestratore**: il revisore aveva citato la riga 48, che è sbagliata |
+| `N3` | ⚠️ **RIDIAGNOSTICATO poi `PROVATO` (famiglia `M-G` / MANUALE):** la diagnosi «virgolette perse nel trasporto» era **falsa**; rottura a valle in `spawnCheckCommand` (`shell:true` / `cmd.exe`). Path con spazi: virgolette **doppie**. L'attrezzo ora distingue malformato vs fallito (stessa famiglia di `N4`) | MANUALE §2.4 · [`Report-controverifica-md-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-controverifica-md-24-08-26.md) §6 |
+| `N6` | **`mss:doctor`, passo `owner`: falso rosso** (cercava «non ricostruibile» in tutto `mss:status`). **`PROVATO`:** passo `owner` legge solo gli owner (MANUALE) | MANUALE §2.4 · atti `M-G` / doctor |
+| `N4` | **`--check` deduceva l'esito dall'exit code** senza confrontarlo a un atteso: un comando infallibile (`git status --short`) registrava un `pass` vacuo. **`PROVATO` 25-08-26 (`T11` / M-SK7-N4):** `--check-expect` confronta exit atteso; denylist chiusa rifiuta i controlli non falsificabili con atteso `0` (exit `2`, nessuna scrittura). Test: `capsule: N4 / SK-7 — controllo infallibile deny` in `test:mss:tools`. Estensione denylist = **No** (Q-B) — debito esplicito, non mandato aperto | MANUALE §2.4 · [`Report-sk7-n4-controlli-falsificabili-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-sk7-n4-controlli-falsificabili-25-08-26.md) |
+| `N5` | **La porta di `--verify` era più larga del mandato** (`unverified`/`not_applicable` con `verified_by` popolato). **`PROVATO` in `M-G`:** un verificatore nominato richiede stato coerente (MANUALE). La riga resta descrizione storica del difetto | MANUALE · atti `M-G` |
 
-Conseguenza: un agente chiude la seduta, vede verde, e lascia sul disco una capsula rotta. Se il file
-fosse già stato committato, la correzione richiederebbe un **`amendment`**, non una riscrittura.
-
-Fix richiesto, coerente con `D18`: `capsule.mjs` **importa** il validator del `core` e esce rosso
-**senza scrivere nulla** se il record non passa. La regola esiste già ed è esportata: non riscriverla.
-
-> Nota di metodo che vale come istruzione permanente: `N1` è emerso solo perché un report di
-> revisione è stato chiuso **con l'attrezzo** invece che a mano, e nessuno dei 37 test della suite
-> `tools` copriva quel percorso. **Gli attrezzi vanno usati per il lavoro vero, non solo testati.**
-
-Conseguenza di `N2`: `R7` («a fine lavoro la macchina si autorevisiona») oggi è **dichiarato, non dimostrabile**. Finché `verified_by` resta vuoto, la prova che una revisione
-indipendente sia avvenuta va cercata a mano nei report – che è esattamente il costo che il sistema esiste per evitare. Il campo esiste
-già nel contratto: manca l’attrezzo che lo chiede e lo scrive. Perciò `N2` **appartiene a `M-C`** – stesso file,
-stessa famiglia di `N1`, nessun mandato in più.
-
-### V — Viste (conseguenza: **ogni agente freddo parte da informazioni false**)
+### V — Viste (ROADMAP/HANDOFF/indice generate — D14 PROVATO)
 
 | ID | Problema | Riferimento verificato |
 |---|---|---|
-| `V1` (`D14`) | Il generatore di viste **non esiste**, e le viste vengono rettificate a mano: ogni rettifica **aggiunge uno strato** invece di sostituirlo | `PLAN_V0.md` §15, storico `D14` |
+| `V1` (`D14`) | **ROADMAP + HANDOFF + indice report generate: `PROVATO`** — ROADMAP/HANDOFF `T11`/`M-D14`; indice `T12`/`M-D14-INDEX` (vista `report-index`, owner FS). Prove: `npm run generate:mss:views` / `validate:mss:views`; test `D14/V1` e `D14 — indice report generato…`. Non riaprire D14 come se fosse aperto | MANUALE tabella viste · [`Report-d14-indice-report-t12-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-d14-indice-report-t12-25-08-26.md) |
 | `V2` | In `ROADMAP_V0.md` convivevano **tre** stati diversi di `SK-7` (tabella, rettifica, owner). Ripulito il 24-08 rimuovendo la vista stale invece di aggiungerne una quarta | `docs/MetaSkillSystem/Senior-Eval-Pack/ROADMAP_V0.md` |
 | `V3` | `HANDOFF_SENIOR_V0.md` riportava «`test:mss:tools` 9 test» quando il comando ne stampa 37. Ripulito il 24-08 sostituendo il numero con il comando | `docs/MetaSkillSystem/Senior-Eval-Pack/HANDOFF_SENIOR_V0.md` |
 
-`V2` e `V3` sono **tamponati, non risolti**: torneranno alla prima seduta produttiva finché `V1` è
-aperto. `V1` non è un debito, è una **fabbrica di debito**.
+`V2`/`V3` tamponati a mano; ROADMAP/HANDOFF/indice ora **rigenerati** (`mss:status` → viste allineate).
+D14 non è più debito documentale aperto: gate vivo = `T13` (vedi §8).
 
-### P — Portabilità e T — attrezzi mancanti
+### P — Portabilità e T — attrezzi (stato post-chiusure SK)
 
-| ID | Problema | Riferimento |
+| ID | Stato vivo | Riferimento |
 |---|---|---|
-| `P1` (`SK-10`/`R8`) | `P2B` non iniziato: il kit esportabile `_skill-system-v0/` contiene i markdown ma **non il motore MSS** | `_skill-system-v0/` |
-| `T1` (`SK-9`/`R6`) | `mss:move` non esiste. `R6` è a **zero**; costo misurato del move manuale: **1 741 righe** per un file | `PLAN_V0.md` §4-bis riga `S9` |
-| `T2` (`SK-3`) | `mss:review` non esiste: è l'ultimo attrezzo di sola lettura mancante | `PLAN_V0.md` §4-bis riga `S3` |
+| `P1` (`SK-10`/`R8`) | **CHIUSO** — firma Matteo post-M-T8; non riaprire come «kit senza motore» | `npm run mss:status` · `PLAN_V0.md` §4-bis |
+| `T1` (`SK-9`/`R6`) | **CHIUSO** — `mss:move` esiste (`M-E`) | `npm run mss:status` · MANUALE |
+| `T2` (`SK-3`) | **CHIUSO** — `mss:review` esiste (`T2`/`M12`) | `npm run mss:review -- --help` |
 
 ---
 
@@ -163,11 +147,15 @@ poi ciò che fa risparmiare token, poi ciò che dà agilità agli agenti, poi ci
 |---|---|---|---|---|
 | `M-A` | ~~**Protezioni**~~ **FATTO 24-08** | `A1` `A2` `A3` `A4` | piccolo, sicurezza | esecutore **Sonnet** (fix meccanici, perimetro chiuso) |
 | `M-B` | ~~**Cancelli**~~ **FATTO 24-08** | `B1` `B2` `B3` `B4` | piccolo, risparmio token | esecutore **Sonnet**; `B4` può andare a **Haiku** |
-| `M-C` | ~~**Attrezzi che non mentono**~~ **`N1`+`N2` PROVATO 24-08** · `V1` non fatto | `N1` `N2` (fatti) · `V1` (scorporato) | agilità + strutturale | esecutore **Opus** (tocca `core`/`capsule`, richiede giudizio su `D18`) |
-| `M-D` | **Portabilità** ← **prossimo** | `P1` | strutturale | esecutore **Opus**, revisore **Sonnet** |
-| `M-E` | **Attrezzi mancanti** | `T1` poi `T2` | strutturale | esecutore **Opus** per `T1` (move = scrittura), **Sonnet** per `T2` (sola lettura) |
-| `M-F` | **Viste generate** (nuovo, scorporato da `M-C`) | `V1` | strutturale | esecutore **Opus**: è un contratto documentale nuovo più un cancello anti-stale |
-| `M-G` | **Attrezzi che non sporcano** (nuovo) | `N3` + `N4` + `N5` | piccolo, ma sporca il corpus a ogni seduta | esecutore **Sonnet**: perimetro chiuso su `capsule.mjs` |
+| `M-C` | ~~**Attrezzi che non mentono**~~ **`N1`+`N2` PROVATO 24-08** | `N1` `N2` | agilità + strutturale | storico |
+| `M-D` | ~~**Portabilità**~~ **storico** (SK-10 / T9 — non è il prossimo vivo) | `P1`/`R8` | strutturale | storico — vedi atti M-D/SK-10 |
+| `M-E` | ~~**Attrezzi mancanti**~~ **storico** (`T1`/`T2` / SK-9 / SK-3) | `T1` `T2` | strutturale | storico |
+| `M-F` | ~~**Viste generate**~~ **D14 PROVATO** (`T11` ROADMAP/HANDOFF + `T12` indice) | `V1`/`D14` | strutturale | non riaprire M-F |
+| `M-G` | ~~**Attrezzi che non sporcano**~~ **`N3`+`N4`+`N5` PROVATI** (`N4` deny in `T11`) | `N3` `N4` `N5` | piccolo | storico — denylist non si estende qui (Q-B No) |
+
+⭐ **Gate vivo (post-`T12`):** **`T13`** — commit/pubblicazione solo con sì Matteo; debiti Q-B/Q-C solo
+con nuovo sì. Stato: `npm run mss:status` + `PLAN_V0.md` §15. **Non** affidare «prossima `M-D`» come
+azione viva. P3 / D27 / WP-1 solo con riapertura verbatim.
 
 **`M-A` e `M-B` possono essere affidati insieme a un unico esecutore**: sono otto fix piccoli, nessuno
 tocca `scripts/mss/core.mjs`, e insieme producono **un solo** report. Se lo fai, dichiaralo nel
@@ -233,9 +221,8 @@ Protocollo minimo, per ogni mandato:
 
 ## 7. STOP — cosa non puoi fare
 
-- **`WP-1` resta `NO-GO`.** `SEP-G5` **non** è PASS. `H-1.3` è `PASS_CON_RISERVE`, non PASS pulito.
-- **Nessun `move` di file** finché `T1` (`mss:move`) non esiste: è la decisione `D15`, e il costo è
-  misurato.
+- **`WP-1` resta `NO-GO`.** `SEP-G5` **non** è PASS. **`H-1.3` è `PASS` (25-08-26).** `H-1.3` PASS ≠ via libera pilota.
+- **Nessun `move` di file a mano:** usare `mss:move` (`T1`/`SK-9` CHIUSO; decisione `D15`).
 - **Nessuna riscrittura di record `final`.** La rettifica passa da un `amendment`, sempre.
 - **Nessun allentamento del validator** per far passare un test. Se un test non passa, o il codice è
   sbagliato o la regola è sbagliata: si decide quale, non si abbassa la soglia.
@@ -266,13 +253,12 @@ dato la smentita sarebbe stata plausibile e inverificabile. Quindi, da ora, **pa
 §6: registra `git rev-parse HEAD` e `git status --porcelain` prima di affidare qualunque cosa.** Non
 è burocrazia, è l'unica differenza fra un difetto dimostrabile e parola contro parola.
 
-**Prossima azione: `M-D`** (portabilità, `P1`/`R8`). Il mandato è già scritto, con il censimento fatto
-**e verificato** — tre affermazioni del censimento erano false e sono state corrette prima di entrarci:
-[`Prompt-mandato-MD-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Prompt-mandato-MD-portabilita-24-08-26.md).
-Va affidato a **Opus**, revisore **Sonnet**. Il fatto che lo governa: il motore ha **zero dipendenze
-npm esterne**, quindi l'export non è packaging — il costo è tutto nei path cablati.
+**Post-`T11` (25-08-2026):** D14 ROADMAP/HANDOFF **PROVATO**; N4 deny **PROVATO**; R-T7-06 Opzione B
+**PROVATO**. `H-1.3` **PASS**; `WP-1` **NO-GO**. Handoff orchestratore:
+[`Report-orchestratore-t11-p2-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t11-p2-25-08-26.md).
 
-Dopo `M-D` restano `M-E` (`T1` poi `T2`), `M-F` (`V1`, la fabbrica di debito) e `M-G` (`N3`+`N4`+`N5`, gli
-attrezzi che sporcano il corpus). L'ordine di §4 resta: prima ciò che è piccolo, poi ciò che fa risparmiare
-token, poi ciò che è strutturale — il che suggerisce `M-G` presto, perché sporca il corpus a ogni
-seduta e costa poco.
+**Post-`T12` (25-08-2026):** M-SYNC-ORCH + M-D14-INDEX **PROMUOVERE**; decisioni Q-A/Q-B/Q-C in
+[`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md).
+**Prossima azione viva: `T13`** — commit/pubblicazione solo con sì Matteo; debiti Q-B/Q-C solo con
+nuovo sì; P3/D27/WP-1 solo verbatim. Stato vivo: `npm run mss:status` + `PLAN_V0.md` §15 — niente
+percentuali inventate.

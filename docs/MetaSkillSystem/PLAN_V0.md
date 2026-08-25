@@ -5,10 +5,10 @@
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
-> **Ultimo movimento:** **T11 / P2** — D14 ROADMAP/HANDOFF **PROVATO**; N4 residuo deny **PROVATO**;
-> R-T7-06 **CHIUSA** Opzione B; report orchestratore. **T10** / `H-1.3` **PASS** restano chiusi.
-> Prossimo: commit P2 solo con sì Matteo; residui documentali (indice report; `PROMPT_ORCHESTRATOR`
-> N4 ancora stale); **non** `WP-1`. Audit P1 in
+> **Ultimo movimento:** **T12** — sync `PROMPT_ORCHESTRATOR`/`PROMPT_AVVIO` post-T11; D14 indice
+> report **PROVATO** (vista `report-index`); decisioni Q-A/Q-B/Q-C annotate. **T11** / P2 e
+> **T10** / `H-1.3` **PASS** restano chiusi. Prossimo: commit/pubblicazione solo con sì Matteo;
+> debiti espliciti Q-B/Q-C (denylist/multi-assertion) in handoff; **non** `WP-1`. Audit P1 in
 > [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
 > `WP-1` **NO-GO** · `D27` chiusa finché Matteo non riapre in chat dedicata.
 >
@@ -95,7 +95,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 |---|---|---|---|
 | S0 | `SK-0` — sbloccare i cancelli globali | **`CHIUSO E OSSERVATO` 21-08-26** | ✅ `npm run lint` **exit 0** (era 363 problemi / 17 errori) · ✅ `npm run test` **163 file, 1346 test, exit 0** · ✅ `npm run validate` **exit 0** · ✅ `validate:docs` **3 886 → 17** path rotti |
 | S1 | `SK-1` — punto di ripristino (tag annotato) | **ESEGUITO E PUBBLICATO** 24-08-26 | tag annotato `mss/baseline-h13` su `HEAD` pre-`M-A`/`M-B`, pubblicato su `origin` il 24-08-26 con decisione `M5` di Matteo: `git ls-remote --tags origin "mss/*"` lo conferma dal remoto, non solo in locale |
-| S2 | `SK-2` — `mss:status` (sola lettura) | **`ALLINEATO` 25-08-26 (`T7`)** | ✅ gate da parser PLAN condiviso con `generate:mss:views` (ultimo ciclo, non gate storici) · ✅ sezione viste anti-stale · ✅ lavagna M/D/P nel cruscotto (§4-quater glossa, §4-ter prevale) · ✅ test nominato `SK-2 / status: gate autorizzato…` in `test:mss:tools` · ✅ **D14 25-08-26:** ROADMAP/HANDOFF generate (`roadmap-senior` / `handoff-senior`) + test `D14/V1` · ⚠️ indice report ancora manuale |
+| S2 | `SK-2` — `mss:status` (sola lettura) | **`ALLINEATO` 25-08-26 (`T7`)** | ✅ gate da parser PLAN condiviso con `generate:mss:views` (ultimo ciclo, non gate storici) · ✅ sezione viste anti-stale · ✅ lavagna M/D/P nel cruscotto (§4-quater glossa, §4-ter prevale) · ✅ test nominato `SK-2 / status: gate autorizzato…` in `test:mss:tools` · ✅ **D14:** ROADMAP/HANDOFF (`T11`) + indice report (`T12` vista `report-index`) · test `D14/V1` e `D14 — indice report generato…` |
 | S3 | `SK-3` — `mss:review` (sola lettura) | **`CHIUSO` 24-08-26 (`T2`, `M12`)** | ✅ `npm run mss:review` esiste ed è sola lettura (stato Git invariato) · ✅ test nominato `T2 / mss:review — …` in `test:mss:tools` (seduta sporca trova owner/L5/L6/capsula assente; seduta pulita `problems.length === 0`) · ✅ M12: gate rieseguiti verdi e controverifica OpenAI/gpt-5.6-sol, famiglia diversa dall’esecutore Cursor/Composer |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`CHIUSO` 25-08-26 — firma Matteo post-revisione Cursor T6** | ✅ B1: due record legacy nuovi staged insieme ricevono entrambi `MSS-LEGACY-NEW-FORBIDDEN`, mentre lo storico canonico già in `HEAD` resta leggibile · ✅ B2/B3: `Report-` e `Verbale-` ricorsivi entrano nei gate staged/worktree · ✅ D18: `mss:review` importa `REPORT_PATH_RE` da `adapter.mjs` · test nominati in `test:mss` e `test:mss:tools` · revisione indipendente Cursor `PASS_CON_RISERVE` · firma verbatim Matteo 25-08-26 |
 | S5 | `SK-5` — controlli MSS in CI su `env/test` | **`CHIUSO` 24-08-26 — decisione `M13` di Matteo.** Nessuna prova tecnica restava da produrre: era l'unico dei quattro pacchetti «in attesa di firma» davvero pronto | `npm run validate` è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. ✅ **24-08-26: primo push eseguito (decisione `M5`) e job `mss` osservato VERDE su GitHub Actions reale** con questa forma — non più una simulazione locale. Verifica: `gh run list --branch env/test` |
@@ -1107,6 +1107,31 @@ Mandato: P2 backlog post-T10 @ HEAD `892f6e4`. Fonte: [`PLAN-CHIUSURA-RIMANENZE-
 - **Ciclo `T11`:** **CHIUSO** (M-D14 + M-SK7-N4 + M-R-T7-06 Opzione B + orchestratore).
 - **Commit/push:** **non** eseguiti — Matteo non ha chiesto commit; pronti al commit se dice sì.
 
+### Diciannovesimo ciclo del 25-08-2026 — `T12` eseguito e **CHIUSO**.
+
+Mandato: residui documentali post-P2 @ HEAD `6f3edf5`. Decisioni annotate:
+[`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md)
+(Q-A genera vista · Q-B No · Q-C No).
+
+| Famiglia | Controverifica | Atti |
+|---|---|---|
+| M-SYNC-ORCH | **PROMUOVERE** | [`Report-sync-prompt-orchestrator-n4-t12-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-sync-prompt-orchestrator-n4-t12-25-08-26.md) |
+| M-D14-INDEX | **PROMUOVERE** | [`Report-d14-indice-report-t12-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-d14-indice-report-t12-25-08-26.md) · test `D14 — indice report generato…` |
+| M-N4-EXTEND | **non eseguito** (Q-B No) | debito esplicito handoff |
+| M-VERIFY-MULTI | **non eseguito** (Q-C No) | debito esplicito handoff |
+| Orchestratore T12 | — | [`Report-orchestratore-t12-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t12-25-08-26.md) |
+
+**Verdetto:** **T12 completo** (obbligatori + orchestratore). Opzionali saltati per decisione Matteo, non «chiusi a parole». `WP-1` resta **NO-GO**. `D27` resta **chiusa**.
+
+**Prossima azione autorizzata: `T13`** (commit/pubblicazione T11+P2+T12 solo con sì Matteo; debiti Q-B denylist / Q-C multi-assertion solo con sì; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO).
+
+**Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**.
+
+#### Chiusura formale ciclo `T12` — 25-08-2026
+
+- **Ciclo `T12`:** **CHIUSO** (M-SYNC-ORCH + M-D14-INDEX + orchestratore; Q-B/Q-C No → debiti handoff).
+- **Commit/push:** **non** eseguiti — solo con sì Matteo.
+
 ### Decisioni di Matteo — 23-08-2026 (`D16`–`D24`, CHIUSE)
 
 | ID | Decisione | Scelta | Conseguenza operativa |
@@ -1220,7 +1245,7 @@ può diventare stale: o è corretto, o non gira.
 | `D11` | Da dove si parte | **`SK-0` subito** | eseguito e chiuso in giornata: tre righe di configurazione; `npm run validate` verde per la prima volta |
 | `D12` | Primo attrezzo dopo `SK-0` | **`mss:query`** | si costruisce prima il *lettore* dei dati, e gira sulle **41 capsule già esistenti**. Se da quelle non esce nulla di utile, lo si scopre spendendo un comando, prima di automatizzare la raccolta |
 | `D13` | Regola sull'indipendenza del revisore | **sì, ma come avviso — non bloccante** | il validator **segnala** quando writer e revisore condividono la famiglia di modello, e non blocca. `E = 1/2`, non `E = 3`. Scelta consapevole: non sempre è disponibile una seconda famiglia. La riserva `R1` resta **aperta** e va citata come tale |
-| `D14` | Viste che si aggiornano a mano | **`ROADMAP` e `HANDOFF` generate** (25-08-26 `M-D14`); **indice report ancora manuale** | un documento generato non può diventare stale: o è corretto o non gira. Chiude `SEP-D06`/`SEP-D07` sulle due viste; residuo indice = debito aperto |
+| `D14` | Viste che si aggiornano a mano | **`ROADMAP`/`HANDOFF` generate** (`T11`/`M-D14`); **indice report generate** (`T12`/`M-D14-INDEX`, vista `report-index`, owner FS) | un documento generato non può diventare stale: o è corretto o non gira. Chiude `SEP-D06`/`SEP-D07` + residuo indice |
 | `D15` | `D6`, `D7`, `D8`, `D10` del plan directory | **congelate** su raccomandazione del consulente | riordinare l'albero prima di avere gli attrezzi ripeterebbe il costo misurato del primo move |
 
 **Nota di onestà su `D13`.** La scelta «avviso» lascia l'indipendenza a enforcement debole. È una

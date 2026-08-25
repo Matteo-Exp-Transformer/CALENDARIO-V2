@@ -36,19 +36,15 @@ documento:** sono mobili, si citano come comando.
 
 ## Dove siamo
 
-`M-A` (protezioni), `M-B` (cancelli) e `M-C` (`N1`+`N2`) sono **fatti, controverificati e pushati**.
-Con quel push il job CI `mss` è stato **osservato verde su GitHub Actions reale**: è la prova che
-mancava a `SK-5`.
+Lo stato **vivo** non sta in questo file: esegui `npm run mss:status` e leggi `PLAN_V0.md` (owner).
 
-La prossima azione è **`M-D`** (portabilità, `R8`), il cui mandato è già scritto, con il censimento
-fatto **e verificato**:
-[`Prompt-mandato-MD-portabilita-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Prompt-mandato-MD-portabilita-24-08-26.md).
-Va affidato a **Opus**, revisore **Sonnet**. Il fatto che lo governa: il motore ha **zero dipendenze
-npm esterne** — l'export non è packaging, il costo è tutto nei path cablati.
+**Post-`T12`:** ciclo `T12` **CHIUSO** (sync prompt + indice report generate). `T11`/P2 restano chiusi.
+`H-1.3` è **PASS**; **`WP-1` resta NO-GO** (`H-1.3` PASS ≠ via libera pilota).
+Decisioni Q-A/Q-B/Q-C:
+[`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md).
 
-Dopo `M-D` restano `M-E` (`mss:move`, poi `mss:review`), `M-F` (`V1`, il generatore di viste,
-scorporato da `M-C`) e `M-G` (`N3`+`N4`, il `--check` che mente). `M-G` è piccolo e sporca il corpus
-a ogni seduta: valutalo presto.
+**Gate vivo: `T13`** — commit/pubblicazione solo con sì Matteo; debiti Q-B/Q-C solo con nuovo sì.
+`M-A`…`M-G` e `M-D` sono **storico**, non la prossima azione viva.
 
 ---
 
@@ -96,8 +92,8 @@ Ricontrolla contro `git ls-files` e il file vero prima di passarlo a un esecutor
 
 - **Nessun commit o push senza sì esplicito di Matteo.**
 - **Nessuna chiusura di pacchetto senza Matteo.** Tu puoi dichiarare `PROVATO`; `CHIUSO` è solo suo.
-- **`WP-1` resta `NO-GO`.** `SEP-G5` non è PASS. `H-1.3` è `PASS_CON_RISERVE`, non PASS pulito.
-- **Nessun `move` di file** finché `mss:move` non esiste (decisione `D15`, costo misurato).
+- **`WP-1` resta `NO-GO`.** `SEP-G5` non è PASS. **`H-1.3` è `PASS`.** `H-1.3` PASS ≠ via libera pilota.
+- **Nessun `move` di file a mano:** usare `mss:move` (`SK-9` CHIUSO; `D15`).
 - **Nessuna riscrittura di record `final`**: la rettifica passa da un `amendment`, sempre.
 - **Nessun allentamento del validator** per far passare un test. Se un test non passa, o il codice è
   sbagliato o la regola è sbagliata: si decide quale, non si abbassa la soglia.
@@ -114,6 +110,7 @@ Ricontrolla contro `git ls-files` e il file vero prima di passarlo a un esecutor
 
 ## Prima azione
 
-Registra `HEAD` e `git status`. Leggi i tre file della tabella, esegui i due comandi, poi apri **`M-D`**
-con un esecutore Opus e revisore Sonnet. Alla consegna, controverifica tu con il protocollo del
-mandato vivo §6.
+Registra `HEAD` e `git status`. Leggi i tre file della tabella, esegui `npm run mss:status` e
+`npm run mss:query`. Poi opera sul gate vivo **`T13`** secondo
+`PROMPT_ORCHESTRATOR_MSS_24-08-26.md` §8 e `PLAN_V0.md` §15 — **non** aprire «prossima `M-D`».
+Alla consegna di ogni famiglia, controverifica con il protocollo del mandato vivo §6.

@@ -52,9 +52,9 @@ legge, poi cio che scrive.**
 
 ## Gate vivo (da owner)
 
-- **Ultimo ciclo chiuso:** `T11` **CHIUSO**
-- **Titolo ciclo:** Diciottesimo ciclo del 25-08-2026
-- **Prossima azione:** `T12` (commit/pubblicazione T11+P2 solo con sì Matteo; residui documentali indice report + allineo PROMPT_ORCHESTRATOR N4; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO)
+- **Ultimo ciclo chiuso:** `T12` **CHIUSO**
+- **Titolo ciclo:** Diciannovesimo ciclo del 25-08-2026
+- **Prossima azione:** `T13` (commit/pubblicazione T11+P2+T12 solo con sì Matteo; debiti Q-B denylist / Q-C multi-assertion solo con sì; P3/D27/WP-1 solo con riapertura verbatim — WP-1 NO-GO)
 - **R1:** CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2
 
 ## Lavagna pacchetti (M)
@@ -88,12 +88,11 @@ legge, poi cio che scrive.**
 
 ## Riserve aperte
 
-- `SK-2` (Comando «dove siamo» in sola lettura): ⚠️ indice report ancora manuale
 - `SK-6` (Interrogazione capsule in sola lettura): ⚠️ copertura test del lettore parziale (suite tools, non H-1 intero) · rettificato 22-08-26: capsula `SK-6` corretta con `amendment`; criterio revisori su `recorded_by.role` · ✅ **23-08-26 vista effettiva:** `query.mjs` delega `core.mjs::applyAmendmentsView()` · ✅ **23-08-26 P1:** `--fail` usa denominatori calcolati, non literal storici · revisioni/controlli: numero mobile → `npm run mss:query -- --verifica` · **Matteo ha dichiarato `SK-6` CHIUSO (`D16`)**
 
 ## Prossimo passo
 
-Completare `T12`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
+Completare `T13`. `WP-1` resta _NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)_ (`H-1.3` PASS ≠ via libera pilota).
 
 ## Dati mobili
 

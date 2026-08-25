@@ -193,8 +193,11 @@ cartella dei documenti copiati, perché i loro link parlano dell'albero di origi
 | **Uso sicuro** | `npm run generate:mss:views` dopo una modifica all'owner |
 
 La prima vista e il cruscotto di Matteo; dal mandato D14 anche ROADMAP e HANDOFF del Senior-Eval-Pack
-sono generate dallo stesso owner. Fuori dai marcatori resta testo umano; dentro non si corregge a
-mano. Il generatore deriva da `PLAN_V0.md`:
+sono generate dallo stesso owner `PLAN_V0.md`. L'indice report (`report-index`) ha invece owner =
+directory `docs/Sessioni di lavoro` (scansione `Report-*.md` sul disco). Fuori dai marcatori resta
+testo umano; dentro non si corregge a mano.
+
+Dal PLAN il generatore deriva (cruscotto / ROADMAP / HANDOFF):
 
 - **Gate** (ultimo ciclo, prossima azione, R1) — come `mss:status`
 - **L'ultimo ciclo chiuso** — ultimo §15 con pattern «eseguito e **STATO**» (cruscotto)
@@ -205,6 +208,10 @@ mano. Il generatore deriva da `PLAN_V0.md`:
 - **Errore glossa orfana** — id in §4-quater assente da M
 - **ROADMAP / HANDOFF** — stessa lavagna/gate; niente HEAD ne conteggi di test congelati (solo
   rimandi ai comandi)
+
+Dal filesystem (indice report):
+
+- **Elenco** `Report-*.md` per cartella giorno; nessun metadato inventato; path-prova `_…` esclusi
 
 `npm run validate:mss:views` rigenera in memoria e confronta: se owner e vista
 divergono esce rosso e indica il comando di rigenerazione. È un attrezzo **di questo progetto**,
@@ -318,13 +325,13 @@ Pre-commit (se committi): stesso perimetro `Report-*` / `Verbale-*` con `require
 |---|---|---|
 | **SK-7 D2/D3** | APERTO — prove false possibili in `mss:capsule` | Gate Matteo: (A) patch recuperabile o (B) autorità reimplementazione |
 | **WP-1** | **NO-GO** | Non aprire piloti reali |
-| **H-1.3** | `PASS_CON_RISERVE` | Non dichiarare PASS pulito |
+| **H-1.3** | **`PASS` 25-08-26** | PASS ≠ via libera pilota; `WP-1` resta NO-GO |
 | **Tag ripristino** | `mss/baseline-h13` posato 24-08-26 su HEAD pre-M-A/M-B e **pubblicato su origin** (decisione `M5`) | Ritorno: `git reset --hard mss/baseline-h13`; mai forzato su origin senza conferma di Matteo |
 | **Hook Claude** | `guard-prod.mjs` + `settings.json` tracciati da git (24-08-26); casi `A1`/`A2`/`A3`/`A4` nel nome, verificarli con `npm run test:mss` | `settings.local.json`/`mcp.json` restano personali per design — mai tracciarli (`test:mss` lo verifica) |
 | **Cloud / Codex / Claude senza stop** | Hook `stop` **non installabile** su Cloud/remote; fallback Opzione B (M-E2-C): checklist in `CHIUSURA_SESSIONE.md` + CI `validate:mss:changed` | Non promettere hook Cloud; matrice `stop_does_not_cover_cloud_codex_claude` + `cloud_codex_claude_fallback_checklist_plus_ci` |
 | **guard PROD** | Tracciato e coperto (Cursor+Claude+kit) da `npm run test:mss`; cancello CI = `npm run validate:mss:all`, **osservato verde su GitHub Actions reale il 24-08-26** | Prima di scritture Supabase verificare comunque l'ambiente a mano: il test copre la logica, non sostituisce la prudenza umana |
 | **SK-4 / SK-5 / SK-11** | APERTI post-audit | Chiusura formale solo Matteo; bypass residui in prosa |
-| **ROADMAP / HANDOFF generati** | `D14` ROADMAP+HANDOFF **PROVATO** (indice report ancora manuale) | `npm run generate:mss:views` / `validate:mss:views`; test `D14/V1` |
+| **ROADMAP / HANDOFF / indice report** | `D14` **PROVATO** (tre viste PLAN + `report-index` da FS) | `npm run generate:mss:views` / `validate:mss:views`; test `D14/V1` e `D14 — indice report generato…` |
 
 ---
 
@@ -333,7 +340,7 @@ Pre-commit (se committi): stesso perimetro `Report-*` / `Verbale-*` con `require
 | Tipo | Esempi | Regola |
 |---|---|---|
 | **Owner** | `PLAN_V0.md`, contratto capsula, `PARAMETRI_MACRO_V0.md` | Fonte autoritativa; si legge per gate e sequenza |
-| **Viste** | ROADMAP, HANDOFF, AUDIT, questo manuale, report | Rimandano all’owner; aggiornare dopo mutazioni provate |
+| **Viste** | ROADMAP, HANDOFF, cruscotto, indice report, AUDIT, questo manuale | Rimandano all’owner (PLAN o FS sessioni); aggiornare dopo mutazioni provate |
 | **Dati mobili** | N° sedute, controlli, revisori, esiti `--fail` | **Solo da comando** (`mss:query`, `test:mss`, …) al momento del run |
 
 Se un report e `mss:query` divergono, vince il corpus letto dal comando + spiegazione dell’origine (HEAD vs working tree).
