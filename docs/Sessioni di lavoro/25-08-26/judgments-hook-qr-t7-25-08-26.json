@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "D18@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "T7 Famiglia 2 — backlog N2-N5 hook Q/R chiusura (23-08)",
+        "decision_or_output_changed": "Tutti gli hook stop/pre-commit importano auditQuestions da report-questions.mjs; template v0 nudge allineato; test N2 statico + N3 parità gemelli Cursor/Claude; CHIUSURA §4 triade MSS e §12 mente fredda unificata",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "hook-qr-chiusura-t7-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-hook-qr-chiusura-t7-25-08-26.md",
+        "recipient": "orchestratore T7 e Matteo",
+        "problem_or_job": "chiudere backlog N2-N5 su hook Q/R e skill CHIUSURA senza duplicare regex né mente fredda",
+        "intended_use": "gate Famiglia 2 T7 e handoff controverifica Codex",
+        "conceived_by": "Prompt-orchestratore-cursor-t7-backlog-pilota-25-08-26.md",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/23-08-26/Report-revisione-skill-chiusura-e-hook-23-08-26.md §9",
+        "authored_by": "cursor-auto-t7-f2-hook-qr",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "N2-N5 PASS con test nominati N2/N3 verdi e validate:mss sul report",
+        "verification_or_use_evidence": "controls[] capsula + prove §3",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/report-questions.mjs",
+          ".cursor/hooks/fine-sessione-nudge.mjs",
+          ".claude/hooks/fine-sessione-senior.mjs",
+          "docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md",
+          "docs/MetaSkillSystem/tests/h1/run.mjs"
+        ],
+        "relations_no_double_count": [
+          "Famiglia 2 T7; non duplica N1 chiuso 23-08"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

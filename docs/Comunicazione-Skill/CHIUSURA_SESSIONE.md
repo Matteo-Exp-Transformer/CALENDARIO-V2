@@ -41,9 +41,11 @@ In ordine cronologico, in **linguaggio utente** (non «ho modificato X» ma «or
 Tabella o elenco: file + perché. Compresi i file dello skill system se li hai toccati.
 
 ### 4. Test eseguiti e risultato
-Comandi lanciati + esito. Minimo sessioni standard/deep con capsula:
-`npm run validate:mss -- --mode file --file "<questo report>" --kind report --require-capsule` (exit 0);
-se tocca codice anche `npm run test:mss` e/o `npm run validate`. Registra ogni gate in `controls[]` della capsula §6-bis.
+Comandi lanciati + esito. Minimo sessioni standard/deep con capsula — **triade MSS**:
+1. `npm run validate:mss -- --mode file --file "<questo report>" --kind report --require-capsule` (exit 0);
+2. `npm run test:mss` (exit 0 — suite H-1; **non** sostituibile da `npm run validate`);
+3. se tocchi codice app anche `npm run validate`; se tocchi attrezzi MSS anche `npm run test:mss:tools`.
+Registra ogni gate in `controls[]` della capsula §6-bis.
 
 ### 5. «File di skill aggiornati» (tabella obbligatoria, anche «nessuno»)
 Colonne: **file · modifica · perché**. Elenca TUTTI i file skill toccati (skill area, COMUNICAZIONE,
@@ -159,19 +161,16 @@ esplicitamente perché il lavoro è terminale.
 
 ### 12. Self-review del report ⭐ (la fai TU, prima che scatti l'hook)
 
-> **L'hook controlla solo che tu abbia risposto; la qualità la garantisci tu qui.** Prima di dire
-> «report pronto», rileggi il tuo report **a mente fredda** e passa questa checklist. Non è un
-> doppione delle domande Q1-Q6: lì *rispondi*, qui *ti correggi*. L'obiettivo è arrivare all'hook
-> con il report già pulito, così il suo rilancio (max 2) trova poco o niente da segnalare.
+> **L'hook controlla solo che tu abbia risposto in §11; la qualità la garantisci tu qui.** Non
+> ripetere Q2/Q3 in prosa: diff e file correlati vivono **solo** nelle risposte §11. Il controllo
+> **a mente fredda** operativo (rileggere diff/stage prima del commit) scatta **al pre-commit** —
+> vedi «Cos'è l'hook» sotto — non nell'hook `stop` (D24: Q/R+capsula verdi → silenzio).
 
-Checklist (5 punti, veloce):
-1. **`npm run validate:mss` verde** sul report (capsula coerente col diff).
+Checklist (3 punti, veloce):
+1. **Triade MSS verde:** `validate:mss` sul report + `test:mss` (+ `test:mss:tools` se attrezzi).
 2. **§5 tabella skill** allineata (non rimandata).
-3. **Q1-Q6 coerenti.** Le risposte non si contraddicono tra loro né col lavoro svolto; ognuna ha
-   sostanza (non «ok» a vuoto). Per Q2 e Q3 hai davvero riaperto i file.
-4. **Tono utente.** Le parti rivolte a Matteo parlano per flussi/schermate, non nomi-file isolati.
-5. **Handoff ricostruibile.** Un agente freddo sa cosa è vero, cosa non deve riaprire, cosa può
-   scrivere e qual è il prossimo gate senza dover inferire dai passaggi storici.
+3. **§11 coerente:** le sei R hanno sostanza, non si contraddicono col lavoro; tono utente
+   (flussi/schermate); handoff ricostruibile se deep/Meta.
 
 Se un punto fallisce → **correggi ora** e annota in 1 riga cosa hai sistemato. Solo dopo dichiari il
 report pronto.
@@ -234,9 +233,9 @@ A fine chat un hook Cursor (`stop`) legge **il `Report-*.md` più recente** che 
 **È normale e voluto: assecondalo, completa ciò che segnala, non è un errore del sistema.** Se la chat
 non aveva report (es. domanda veloce), l'hook tace.
 
-> **L'hook è il guardiano meccanico, non il revisore.** Controlla che tu abbia *risposto*, non che le
-> risposte siano *vere*. La revisione del CONTENUTO la fai TU, con la self-review qui sotto (§12),
-> prima che l'hook scatti.
+> **L'hook è il guardiano meccanico, non il revisore.** Controlla che tu abbia *risposto* in §11, non
+> che le risposte siano *vere*. Self-review §12 + pre-commit «mente fredda» coprono la qualità; lo
+> `stop` tace se §11 e capsula sono verdi (D24).
 
 ---
 

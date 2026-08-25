@@ -8,15 +8,15 @@
 `R1` è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**: prova eseguibile, test nominato e controverifica Cursor/Composer sono registrati.
 
 ## Cosa devi fare tu
-R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T7` (attesa Matteo: push remoto o riapertura esplicita `D27`/`WP-1`; backlog opzionale `SK-2`, hook Q/R, `H13-E2`; nessun pacchetto SK-* si apre automaticamente).
+R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T8` (pubblicazione commit T7+T9 con sì Matteo; preferibile chiudere prima i 3 fix Codex M12 T7; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati).
 
 ## Lavagna
 
 | Fatte | Con riserva | Da fare |
 |---|---|---|
-| `M-F` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T7`: attesa Matteo: push remoto o riapertura esplicita `D27`/`WP-1`; backlog opzionale `SK-2`, hook Q/R, `H13-E2`; nessun pacchetto SK-* si apre automaticamente |
+| `M-F` chiuso · `R1` chiuso | `R1`: CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2 | `T8`: pubblicazione commit T7+T9 con sì Matteo; preferibile chiudere prima i 3 fix Codex M12 T7; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati |
 
 ## Prossimo passo
 
-Completare `T7`. Non riaprire `WP-1` e non dichiarare `H-1.3` PASS pulito.
+Completare `T8`. Non riaprire `WP-1` e non dichiarare `H-1.3` PASS pulito.
 <!-- mss:generated cruscotto-matteo fine -->

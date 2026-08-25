@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "H13-E2/B-E2-CI@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T7 Famiglia 3: inventario bypass E2 H-1.3 e chiusura meccanica dove SK-5 già cablato",
+        "decision_or_output_changed": "Il bypass stale «CI non cablata» è rimosso da H1-FIXTURE-PROTOCOL; la matrice resta la fonte dei bypass intenzionali (--no-verify, unstaged, Cloud senza hook); H-1.3 resta PASS_CON_RISERVE",
+        "G": 2,
+        "O": 1,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-h13-e2-bypass-t7-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-h13-e2-bypass-t7-25-08-26.md",
+        "recipient": "Matteo, orchestratore T7 e revisore Codex post-ciclo",
+        "problem_or_job": "documentare ogni bypass E2 per controllo H1-* con evidenza comando e chiudere solo ciò che SK-5 rende meccanicamente obsoleto",
+        "intended_use": "controverificare H13-E2 senza dichiarare H-1.3 PASS pulito né aprire WP-1",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/25-08-26/Prompt-orchestratore-cursor-t7-backlog-pilota-25-08-26.md § Famiglia 3",
+        "authored_by": "cursor-composer-t7-h13-e2",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "tabella bypass per classe/controllo; un bypass chiuso con test nominato; owner §3.2 aggiornato senza PASS pulito; validate:mss sul report verde",
+        "verification_or_use_evidence": "npm run test:mss (gruppo H13-E2), validate:mss sul report, validate:mss:all",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/COVERAGE_MATRIX_H1.json",
+          "docs/MetaSkillSystem/tests/h1/run.mjs",
+          ".github/workflows/ci.yml"
+        ],
+        "relations_no_double_count": [
+          "inventario bypass; non sostituisce revisione M12 del ciclo T7"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

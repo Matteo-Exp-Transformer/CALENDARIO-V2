@@ -1901,6 +1901,31 @@ function testH13StagedCliParity() {
   }
 }
 
+function testH13E2CiBypassClosed() {
+  const ciPath = join(repoRoot, '.github/workflows/ci.yml')
+  if (!existsSync(ciPath)) return ['ci.yml missing']
+  const ci = readFileSync(ciPath, 'utf8')
+  if (!ci.includes('validate:mss:all')) {
+    return ['ci.yml missing validate:mss:all step (SK-5 regression)']
+  }
+  if (!/branches:\s*\[main,\s*env\/test\]/m.test(ci)) {
+    return ['ci.yml must trigger on main and env/test (SK-5 regression)']
+  }
+  if (!existsSync(matrixPath)) return ['COVERAGE_MATRIX_H1.json missing']
+  const matrix = JSON.parse(readFileSync(matrixPath, 'utf8'))
+  for (const control of matrix.controls || []) {
+    if (/CI non cablata/i.test(String(control.known_bypass || ''))) {
+      return [`control ${control.id} still declares stale CI bypass after SK-5/H13-E2`]
+    }
+  }
+  const fixtureControl = matrix.controls?.find((c) => c.id === 'H1-FIXTURE-PROTOCOL')
+  if (!fixtureControl) return ['H1-FIXTURE-PROTOCOL missing from matrix']
+  if (!/--no-verify/.test(fixtureControl.known_bypass || '')) {
+    return ['H1-FIXTURE-PROTOCOL must still declare --no-verify bypass']
+  }
+  return []
+}
+
 function testMatrix() {
   if (!existsSync(matrixPath)) return ['COVERAGE_MATRIX_H1.json missing']
   const matrix = JSON.parse(readFileSync(matrixPath, 'utf8'))
@@ -2198,6 +2223,129 @@ function testA3ClaudeStopHookAntiLoop() {
   }
 }
 
+// --- N2/N3 (25-08-26) — D18 Q/R owner unico + parità gemelli stop Cursor/Claude ---
+const STOP_HOOK_QR_PATHS = [
+  '.cursor/hooks/fine-sessione-nudge.mjs',
+  '.claude/hooks/fine-sessione-senior.mjs',
+  '.cursor/hooks/fine-sessione-commit-check.mjs',
+  '_skill-system-v0/hooks/fine-sessione-senior.mjs',
+  '_skill-system-v0/hooks/fine-sessione-nudge.mjs',
+]
+
+function testN2StopHooksImportReportQuestionsOnly() {
+  const failures = []
+  for (const rel of STOP_HOOK_QR_PATHS) {
+    const full = join(repoRoot, rel)
+    if (!existsSync(full)) {
+      failures.push(`N2-missing-hook: ${rel}`)
+      continue
+    }
+    const src = readFileSync(full, 'utf8')
+    if (/\bconst\s+QUESTION_RE\s*=/.test(src)) failures.push(`N2-inline-regex: ${rel} defines QUESTION_RE`)
+    if (/\bfunction\s+auditQuestions\s*\(/.test(src)) failures.push(`N2-local-audit: ${rel} defines auditQuestions()`)
+    if (!/report-questions\.mjs/.test(src)) failures.push(`N2-no-import: ${rel} missing report-questions.mjs import`)
+  }
+  return failures
+}
+
+function runCursorStopHook(root, extra = {}) {
+  return spawnSync(process.execPath, [stopHookPath], {
+    cwd: root,
+    encoding: 'utf8',
+    input: JSON.stringify({ workspace_root: root, loop_count: 0, ...extra }),
+  })
+}
+
+function cursorStopBlocked(result) {
+  try {
+    const payload = JSON.parse(result.stdout || '{}')
+    return Boolean(payload.followup_message)
+  } catch {
+    return false
+  }
+}
+
+function claudeStopBlocked(result) {
+  try {
+    const payload = JSON.parse(result.stdout || '{}')
+    return payload.decision === 'block'
+  } catch {
+    return false
+  }
+}
+
+/** R4 — light resta fail-open intenzionale (non unificare light≠deep; BACKLOG R-T7-05). */
+function testR4LightRemainsIntentionalFailOpen() {
+  const root = createTempGitRepo()
+  try {
+    writeFixtureReferenceOwner(root)
+    const day = todaySessionFolder(new Date())
+    const rel = `${SESSIONI}/${day}/sub/Report-r4-light-no-capsule.md`
+    writeTemp(root, rel, `# R4 light\n\n**Modalità:** light\n${reportQrs()}`)
+    const light = runCursorStopHook(root)
+    if (light.status !== 0) return [`R4-light-exit: ${light.status} ${light.stderr}`]
+    if (cursorStopBlocked(light)) return ['R4-light: expected fail-open silence without capsule']
+    writeTemp(root, rel, `# R4 standard\n\n**Modalità:** standard\n${reportQrs()}`)
+    const std = runCursorStopHook(root)
+    if (!cursorStopBlocked(std)) return ['R4-standard: expected REPORT_NO_CAPSULE deny']
+    return []
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+}
+
+function testN3StopHookTwinParity() {
+  const failures = []
+  const scenarios = [
+    {
+      id: 'complete',
+      build: () => reportWithBundle(validBundle()),
+      expectBlock: false,
+    },
+    {
+      id: 'missing-qr',
+      build: () =>
+        `# N3 missing qr\n\n**Modalità:** standard\n\n## Domande di chiusura\n\n❓ Q1 — Prompt?\n✅ R1:\n\n❓ Q2 — Dati?\n✅ R2: ok verificato.\n`,
+      expectBlock: true,
+      reasonRe: /risposte vuote|incompleta/i,
+    },
+    {
+      id: 'no-capsule',
+      build: () => `# N3 no capsule\n\n**Modalità:** standard\n${reportQrs()}`,
+      expectBlock: true,
+      reasonRe: new RegExp(RULE.REPORT_NO_CAPSULE),
+    },
+  ]
+
+  for (const sc of scenarios) {
+    const root = createTempGitRepo()
+    try {
+      writeFixtureReferenceOwner(root)
+      const now = Date.now()
+      const day = todaySessionFolder(new Date(now))
+      const rel = `${SESSIONI}/${day}/sub/Report-n3-${sc.id}.md`
+      writeTemp(root, rel, sc.build())
+      const cursor = runCursorStopHook(root)
+      const claude = runClaudeStopHook(root)
+      if (cursor.status !== 0) failures.push(`N3-${sc.id}-cursor-exit: ${cursor.status} ${cursor.stderr}`)
+      if (claude.status !== 0) failures.push(`N3-${sc.id}-claude-exit: ${claude.status} ${claude.stderr}`)
+      const cBlock = cursorStopBlocked(cursor)
+      const sBlock = claudeStopBlocked(claude)
+      if (cBlock !== sc.expectBlock) failures.push(`N3-${sc.id}-cursor: expected block=${sc.expectBlock}, got ${cBlock}`)
+      if (sBlock !== sc.expectBlock) failures.push(`N3-${sc.id}-senior: expected block=${sc.expectBlock}, got ${sBlock}`)
+      if (sc.expectBlock && sc.reasonRe) {
+        const cMsg = JSON.parse(cursor.stdout || '{}').followup_message || ''
+        const sMsg = JSON.parse(claude.stdout || '{}').reason || ''
+        if (!sc.reasonRe.test(cMsg)) failures.push(`N3-${sc.id}-cursor-msg: ${cMsg.slice(0, 100)}`)
+        if (!sc.reasonRe.test(sMsg)) failures.push(`N3-${sc.id}-senior-msg: ${sMsg.slice(0, 100)}`)
+      }
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  }
+  return failures
+}
+
 function main() {
   const statusBefore = gitStatus()
   const manifest = loadManifest()
@@ -2252,6 +2400,7 @@ function main() {
     ['H-1.3 historical mode scope + architecture', testH13HistoricalModeScopeAndArchitecture, 'sedute-storiche'],
     ['H-1.3 historical records + frozen immutability', testH13HistoricalRecordAndFixtureImmutability, 'sedute-storiche'],
     ['H-1.2 scoped report whitespace', testH12ScopedReportWhitespace, 'sedute-storiche'],
+    ['H13-E2 / SK-5 — CI cablata, matrice senza bypass stale', testH13E2CiBypassClosed],
     ['coverage matrix', testMatrix],
     ['A1 — la guardia PROD di Claude è tracciata da git', testA1GuardProdTrackedByGit, 'guardie-e-hook-di-progetto'],
     ['A4 — il cablaggio dell\'hook Claude è tracciato e non trascina i file personali', testA4ClaudeSettingsTrackedNoPersonalFiles, 'guardie-e-hook-di-progetto'],
@@ -2261,6 +2410,9 @@ function main() {
     ['A3 — Claude stop hook blocks missing Q/R answer', testA3ClaudeStopHookBlocksMissingAnswer, 'guardie-e-hook-di-progetto'],
     ['A3 — Claude stop hook blocks red capsule', testA3ClaudeStopHookBlocksRedCapsule, 'guardie-e-hook-di-progetto'],
     ['A3 — Claude stop hook anti-loop guard', testA3ClaudeStopHookAntiLoop, 'guardie-e-hook-di-progetto'],
+    ['N2 — stop hooks import report-questions only (D18)', testN2StopHooksImportReportQuestionsOnly, 'guardie-e-hook-di-progetto'],
+    ['N3 — Cursor nudge vs Claude senior stop hook twin parity', testN3StopHookTwinParity, 'guardie-e-hook-di-progetto'],
+    ['R4 — light resta fail-open intenzionale', testR4LightRemainsIntentionalFailOpen, 'hook-stop-cursor'],
   ]
   const nonApplicabili = []
   let eseguiti = 0

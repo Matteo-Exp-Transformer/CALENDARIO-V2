@@ -74,7 +74,7 @@ lavoro del masterplan.
 | 2 | `WP-0.1` — hardening pre-pilota | `CHIUSO NEL DISEGNO` 09-08-26 | efficacia da osservare nel primo pilota |
 | 3 | `H-1` — validator + hook rapidi | **chiusura invalidata dalla revisione H-1.1** | resta storia del primo hardening |
 | 3.1 | `H-1.1` — integrità append-only e semantica | **`CHIUSO NEL DISEGNO` 10-08-26** | revisione completa esterna prima di WP-1 |
-| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS_CON_RISERVE` 10-08-26** — ✅ **riserva `H13-POST-L01` CHIUSA il 24-08-26** (`M13`): il contratto §6 dichiara che `previous_value_or_hash` porta il **valore**, confrontato in forma canonica, e che nessun digest è supportato; test nelle due direzioni `H13-POST-L01 — previous_value_or_hash è il valore, mai un digest` in `npm run test:mss`, verificato non vacuo (sostituendo il digest col valore il gruppo diventa rosso). ⚠️ restano i **bypass E2 dichiarati**: `PASS` pulito non è dichiarato | bypass E2; **non** apre WP-1; G5 non PASS |
+| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS_CON_RISERVE` 10-08-26** — ✅ **riserva `H13-POST-L01` CHIUSA il 24-08-26** (`M13`): il contratto §6 dichiara che `previous_value_or_hash` porta il **valore**, confrontato in forma canonica, e che nessun digest è supportato; test nelle due direzioni `H13-POST-L01 — previous_value_or_hash è il valore, mai un digest` in `npm run test:mss`, verificato non vacuo (sostituendo il digest col valore il gruppo diventa rosso). ✅ **25-08-26 T7 `H13-E2`:** inventario bypass in `COVERAGE_MATRIX_H1.json` + report `Report-h13-e2-bypass-t7-25-08-26.md`; bypass **`B-E2-CI`** (matrice «CI non cablata» su `H1-FIXTURE-PROTOCOL`) **chiuso** — `SK-5` cabla `validate:mss:all` in `.github/workflows/ci.yml` su `main`/`env/test`; test nominato `H13-E2 / SK-5 — CI cablata, matrice senza bypass stale`. ⚠️ restano i **bypass E2 intenzionali** (`--no-verify`, unstaged, Cloud/Codex/Claude senza hook, …): **`PASS` pulito non è dichiarato** | bypass E2 residui; **non** apre WP-1; G5 non PASS |
 | 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NO-GO** (H-1.3 con riserve ≠ via libera) | ricostruzione fredda senza perdita/invenzione |
 | 5 | `WP-2` — mining storico normalizzato | `BLOCCATO DA PRIMO PILOTA` | eventi citano fonti e schema/versione |
 | 6 | `WP-3` — kernel, manifest, pacchetti e chiavi | `NON INIZIATO` | autorità e precedenze formalizzate |
@@ -93,7 +93,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 |---|---|---|---|
 | S0 | `SK-0` — sbloccare i cancelli globali | **`CHIUSO E OSSERVATO` 21-08-26** | ✅ `npm run lint` **exit 0** (era 363 problemi / 17 errori) · ✅ `npm run test` **163 file, 1346 test, exit 0** · ✅ `npm run validate` **exit 0** · ✅ `validate:docs` **3 886 → 17** path rotti |
 | S1 | `SK-1` — punto di ripristino (tag annotato) | **ESEGUITO E PUBBLICATO** 24-08-26 | tag annotato `mss/baseline-h13` su `HEAD` pre-`M-A`/`M-B`, pubblicato su `origin` il 24-08-26 con decisione `M5` di Matteo: `git ls-remote --tags origin "mss/*"` lo conferma dal remoto, non solo in locale |
-| S2 | `SK-2` — `mss:status` (sola lettura) | `IMPLEMENTATO, non allineato` | il comando esiste e gira; il suo output ripete numeri/stati stale e non controlla roadmap/handoff |
+| S2 | `SK-2` — `mss:status` (sola lettura) | **`ALLINEATO` 25-08-26 (`T7`)** | ✅ gate da parser PLAN condiviso con `generate:mss:views` (ultimo ciclo, non gate storici) · ✅ sezione viste anti-stale · ✅ §4-bis senza numeri congelati · ✅ test nominato `SK-2 / status: gate autorizzato…` in `test:mss:tools` · ⚠️ ROADMAP/HANDOFF restano viste manuali fino a estensione generatore |
 | S3 | `SK-3` — `mss:review` (sola lettura) | **`CHIUSO` 24-08-26 (`T2`, `M12`)** | ✅ `npm run mss:review` esiste ed è sola lettura (stato Git invariato) · ✅ test nominato `T2 / mss:review — …` in `test:mss:tools` (seduta sporca trova owner/L5/L6/capsula assente; seduta pulita `problems.length === 0`) · ✅ M12: gate rieseguiti verdi e controverifica OpenAI/gpt-5.6-sol, famiglia diversa dall’esecutore Cursor/Composer |
 | S4 | `SK-4` — chiusura dei bypass + allineo contratto capsula | **`CHIUSO` 25-08-26 — firma Matteo post-revisione Cursor T6** | ✅ B1: due record legacy nuovi staged insieme ricevono entrambi `MSS-LEGACY-NEW-FORBIDDEN`, mentre lo storico canonico già in `HEAD` resta leggibile · ✅ B2/B3: `Report-` e `Verbale-` ricorsivi entrano nei gate staged/worktree · ✅ D18: `mss:review` importa `REPORT_PATH_RE` da `adapter.mjs` · test nominati in `test:mss` e `test:mss:tools` · revisione indipendente Cursor `PASS_CON_RISERVE` · firma verbatim Matteo 25-08-26 |
 | S5 | `SK-5` — controlli MSS in CI su `env/test` | **`CHIUSO` 24-08-26 — decisione `M13` di Matteo.** Nessuna prova tecnica restava da produrre: era l'unico dei quattro pacchetti «in attesa di firma» davvero pronto | `npm run validate` è `validate:app` (`lint`+`typecheck`+`test`) seguito da `validate:mss:all` (`test:mss`+`test:mss:tools`+`validate:docs`); in `.github/workflows/ci.yml` il job `mss` esegue un unico step `npm run validate:mss:all`. ✅ **24-08-26: primo push eseguito (decisione `M5`) e job `mss` osservato VERDE su GitHub Actions reale** con questa forma — non più una simulazione locale. Verifica: `gh run list --branch env/test` |
@@ -108,7 +108,7 @@ che è gratis e sblocca, poi ciò che legge soltanto, poi ciò che scrive.**
 
 | Pacchetto | Stato operativo dopo audit | Cosa deve accadere prima di una nuova chiusura |
 |---|---|---|
-| `SK-4` | **CHIUSO 25-08-26**: B1 staged chiuso; B2/B3 e D18 con test nominati; revisione Cursor T6 + firma Matteo. | Nulla. Chiuso. Eventuale rettifica semantica SK4-ASSERT (Output axis) resta backlog opzionale post `--verify`. |
+| `SK-4` | **CHIUSO 25-08-26**: B1 staged chiuso; B2/B3 e D18 con test nominati; revisione Cursor T6 + firma Matteo. | Nulla. Chiuso. Rettifica SK4-ASSERT (Output axis) **CHIUSA T7** — [`Report-sk4-assert-t7-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-sk4-assert-t7-25-08-26.md). |
 | `SK-5` | **CHIUSO 24-08-26 (`M13`)**: `npm run validate` è `validate:app`+`validate:mss:all`; il job CI `mss` esegue un unico step `npm run validate:mss:all`, ed è stato **osservato verde su GitHub Actions reale** dopo il primo push (decisione `M5`). | Nulla. Chiuso. |
 | `SK-7` | **CHIUSO 24-08-26 (`M3`)**: fix B D2/D3 e privacy append-only controverificati; sintassi canonica e source refs pubblicabili coperti da test. | Revisione indipendente (`D17`) resta consigliata, non gate. |
 | `SK-8` | **CHIUSO 25-08-26**: suite da cwd esterna con test nominato; revisione Cursor T6 + firma Matteo. | Nulla. Chiuso. |
@@ -244,7 +244,10 @@ H-1 è **chiuso nel disegno** (non ancora osservato su piloti reali) perché:
 - la normale suite non riscrive le fixture e segnala drift rispetto al generatore;
 - stop e pre-commit sono provati in integrazione; Cloud/Codex/Claude senza hook, `--no-verify`,
   unstaged, report non recenti o senza modalità restano bypass dichiarati nella matrice;
-- nessuna CI è dichiarata perché nessun workflow esegue H-1;
+- ~~nessuna CI è dichiarata perché nessun workflow esegue H-1;~~ **RETTIFICATO 25-08-26 (`H13-E2`/`SK-5`):**
+  il job `mss` in `.github/workflows/ci.yml` esegue `validate:mss:all` su `main` e `env/test`; la matrice
+  **non** dichiara più «CI non cablata» su `H1-FIXTURE-PROTOCOL`; i controlli restano E2 locali (hook/stop),
+  non E3 — la CI è enforcement indipendente dalla superficie, non sostituto degli hook;
 - nessun hook è classificato E3: blocco solo a stop/pre-commit sulla pubblicazione staged.
 
 Numero e significato delle fixture minime restano congelati da `0.1-G`: **14 casi**
@@ -895,9 +898,11 @@ Atti esecutore/revisore:
 append-only è autorizzato; esito registrato in
 [`Report-batch-verify-t6-post-commit-25-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-batch-verify-t6-post-commit-25-08-26.md).
 
-**Riserva SK4-ASSERT (backlog opzionale):** nel report controverifica SK-4 l'asserzione Output cita
-`independently_verified` su un amendment non emesso; la narrativa §7 è corretta. Rettifica semantica
-append-only solo se un mandato futuro la richiede — `--verify` non tocca i campi Output.
+**Riserva SK4-ASSERT — CHIUSA T7 (25-08-26):** nel report controverifica SK-4 l'asserzione Output
+citing `independently_verified` era disallineata da §7. Rettifica append-only emessa in
+[`Report-sk4-assert-t7-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-sk4-assert-t7-25-08-26.md)
+(amendment su `annotation.assertions[0]` del record `mss-rec-01a03596-e401-706e-bdee-f45d90ccf380`).
+`--verify` (N2) non copre i campi Output — limite strutturale, non allentato.
 
 **Revisione famiglia diversa:** [`Report-revisione-indipendente-ciclo-t6-codex-24-08-26.md`](../Sessioni%20di%20lavoro/24-08-26/Report-revisione-indipendente-ciclo-t6-codex-24-08-26.md)
 (Cursor/Composer 25-08-26) — verdetto `PASS_CON_RISERVE` sul ciclo intero.
@@ -908,7 +913,72 @@ append-only solo se un mandato futuro la richiede — `--verify` non tocca i cam
 - **Commit unico** del working tree T6 su `env/test` (no push finché Matteo non autorizza).
 - **Ciclo `T6`:** **CHIUSO**.
 
-**Prossima azione autorizzata: `T7`** (attesa Matteo: push remoto o riapertura esplicita `D27`/`WP-1`; backlog opzionale `SK-2`, hook Q/R, `H13-E2`; nessun pacchetto SK-* si apre automaticamente). `SK-10`, prodotto/`src/` e `H-1.3` PASS pulito restano fuori perimetro.
+**Prossima azione autorizzata: `T8`** (pubblicazione commit T7+T9 con sì Matteo; preferibile fix Codex M12 T7 mirati prima del commit; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati). `SK-10`, prodotto/`src/` e `H-1.3` PASS pulito restano fuori perimetro. Ciclo `T9` (blindatura struttura) eseguito CON RISERVE — vedi sotto.
+
+### Quattordicesimo ciclo del 25-08-2026 — `T7` eseguito **CON RISERVE** (orchestratore Cursor)
+
+Mandato: [`Prompt-orchestratore-cursor-t7-backlog-pilota-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Prompt-orchestratore-cursor-t7-backlog-pilota-25-08-26.md).
+HEAD partenza `fafe81f`; working tree T7 non committato a chiusura orchestratore.
+
+#### Esito operativo del ciclo `T7`
+
+| Famiglia | Esito | Atti |
+|---|---|---|
+| 1 — SK-2 + viste | **CHIUSA** | [`Report-sk2-status-allineamento-t7-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-sk2-status-allineamento-t7-25-08-26.md) — `plan-parse.mjs`; gate da ultimo ciclo; anti-stale cruscotto; SK-2 **ALLINEATO** |
+| 2 — Hook Q/R N2–N5 | **CHIUSA** | [`Report-hook-qr-chiusura-t7-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-hook-qr-chiusura-t7-25-08-26.md) — test N2/N3; CHIUSURA §4 triade + §12 |
+| 3 — H13-E2 | **CHIUSA CON RISERVE** | [`Report-h13-e2-bypass-t7-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-h13-e2-bypass-t7-25-08-26.md) — bypass B-E2-CI chiuso; E2 intenzionali restano |
+| 4 — SK4-ASSERT | **CHIUSA** | [`Report-sk4-assert-t7-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-sk4-assert-t7-25-08-26.md) — amendment append-only Output |
+| 5 — Readiness pilota | **CHIUSA CON RISERVE** | [`Report-readiness-pilota-t7-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-readiness-pilota-t7-25-08-26.md) — D27 **condizionata**; WP-1 NO-GO |
+
+Report orchestratore: [`Report-orchestratore-t7-backlog-pilota-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t7-backlog-pilota-25-08-26.md).
+
+**Riserve ciclo T7 (non chiuse):**
+
+- **R-T7-01:** working tree non pubblicato su `origin/env/test` (commit/push solo con sì Matteo).
+- **R-T7-02:** M12 Codex controverifica famiglia diversa — attesa mandato Matteo post-ciclo.
+- **R-T7-03:** `H-1.3` resta `PASS_CON_RISERVE` (bypass `--no-verify`, unstaged, Cloud intenzionali).
+- **R-T7-04:** ROADMAP/HANDOFF Senior-Eval restano viste manuali (D14 parziale).
+- **R-T7-05:** R4 light vs deep — fail-open hook su light accettabile per target deep; pilota light debole.
+- **R-T7-06:** limite strutturale `--verify` su campi Output (`assertions[]`) — documentato, non allentato.
+
+**Invariati:** `WP-1` = NO-GO; `D27` chiusa finché Matteo non riapre in chat dedicata; nessun lavoro `src/`.
+
+#### Chiusura formale ciclo `T7` — 25-08-2026
+
+- **Ciclo `T7`:** **eseguito CON RISERVE** (5 famiglie + orchestratore; suite verde locale).
+- **Commit/push:** non eseguiti — attesa «lavoro ok» / «fai report finale» di Matteo.
+
+### Quindicesimo ciclo del 25-08-2026 — `T9` blindatura struttura **CON RISERVE** (orchestratore Cursor)
+
+Mandato: chat Matteo 25-08 «Prompt orchestratore Cursor — ciclo T9» @ HEAD `fafe81f`.
+Codex in parallelo su M12 T7: [`Report-revisione-indipendente-ciclo-t7-codex-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-revisione-indipendente-ciclo-t7-codex-25-08-26.md) — **FAIL mirato pre-commit** (3 fix meccanici).
+
+#### Esito operativo del ciclo `T9`
+
+| Famiglia | Esito | Atti |
+|---|---|---|
+| F1 R1–R3 | **CHIUSA** | [`Report-t9-f1-r1-r3-agente-freddo-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-t9-f1-r1-r3-agente-freddo-25-08-26.md) — test nominato `R3 — validate:app e validate:mss:all…` |
+| F2 R4–R7 | **CHIUSA** | [`Report-t9-f2-r4-r7-automazioni-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-t9-f2-r4-r7-automazioni-25-08-26.md) — R4 **BACKLOG** + test `R4 — light resta fail-open…`; R7 **PROVATO** |
+| F3 R5–R6 | **CHIUSA** | [`Report-t9-f3-r5-r6-dati-move-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-t9-f3-r5-r6-dati-move-25-08-26.md) — R5/R6 **CHIUSO** confermati |
+| F4 R8+D14 | **CHIUSA** | [`Report-t9-f4-r8-d14-portabilita-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-t9-f4-r8-d14-portabilita-25-08-26.md) — R8 **PROVATO**; D14 **BACKLOG** |
+
+Report orchestratore: [`Report-orchestratore-t9-blindatura-struttura-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t9-blindatura-struttura-25-08-26.md).
+
+**Verdetto struttura (distinto da D27/WP-1):** `STRUTTURA_PRONTA_CON_RISERVE` — sedute deep affidabili sì, con riserve; **WP-1 resta NO-GO**; **nessun** H-1.3 PASS pulito.
+
+**Riserve T9 / pre-T8 (Codex M12 T7, non chiuse in T9):**
+
+- **R-T9-01:** `parsePlanGate()` riconosce solo cicli `M-*` → «ultimo chiuso» mostra `M-F` invece di T6/T7.
+- **R-T9-02:** template kit `_skill-system-v0/hooks/fine-sessione-nudge.mjs` divergenza da Cursor prod (v5 / mente fredda).
+- **R-T9-03:** `PROTOCOLLO_PRIMO_PILOTA_V0_1.md` versione/schema legacy vs contratto vivo.
+- Deliberati invariati: R4 light≠deep · D14 ROADMAP/HANDOFF · H-1.3 E2 · R-T7-06 Output `--verify`.
+
+#### Chiusura formale ciclo `T9` — 25-08-2026
+
+- **Ciclo `T9`:** **eseguito CON RISERVE** (4 famiglie + inventari + orchestratore; `validate:mss:all` verde).
+- **Commit/push:** non eseguiti — gate successivo `T8`.
+
+**Prossima azione autorizzata: `T8`** (pubblicazione commit T7+T9 con sì Matteo; preferibile chiudere prima i 3 fix Codex M12 T7; riapertura `D27`/`WP-1` solo in chat dedicata dopo atti pubblicati).
 
 ### Tredicesimo ciclo del 25-08-2026 — `T6` eseguito e **CHIUSO** (`M12` + firma Matteo)
 

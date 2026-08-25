@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "SK4-ASSERT/T7@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T7 Famiglia 4: disallineamento Output controverifica SK-4 T6",
+        "decision_or_output_changed": "Emesso amendment append-only su annotation.assertions[0] del record Output controverifica: verification_status self_report e evidenza allineata a §7; --verify (N2) non copre assertions[] Output",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-sk4-assert-t7-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-sk4-assert-t7-25-08-26.md",
+        "recipient": "Matteo, orchestratore T7 e revisore Codex",
+        "problem_or_job": "allineare capsula Output controverifica SK-4 T6 con narrativa §7 senza riscrivere record final",
+        "intended_use": "chiudere backlog SK4-ASSERT opzionale; registrare amendment su assertions[] Output",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/25-08-26/Prompt-orchestratore-cursor-t7-backlog-pilota-25-08-26.md § Famiglia 4",
+        "authored_by": "cursor-composer-t7-sk4-assert",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "amendment append-only validato su target in HEAD; owner PLAN aggiornato; validate:mss sul report verde",
+        "verification_or_use_evidence": "validate:mss sul report; amendment record in capsula; target mss-rec-01a03596-e401-706e-bdee-f45d90ccf380 risolto da HEAD",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/24-08-26/Report-controverifica-sk4-t6-24-08-26.md",
+          "docs/Sessioni di lavoro/24-08-26/Report-batch-verify-t6-post-commit-25-08-26.md",
+          "scripts/mss/capsule.mjs"
+        ],
+        "relations_no_double_count": [
+          "rettifica semantica SK4-ASSERT; non riapre SK-4 né modifica validator N2"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "T9-ORCH@PLAN_V0",
+        "trigger_event": "Mandato blindatura struttura MSS R1–R8 oltre backlog SK-*",
+        "decision_or_output_changed": "Ciclo T9: 4 famiglie + inventari; R3 e R4 con test nominati; verdetto STRUTTURA_PRONTA_CON_RISERVE distinto da D27/WP-1; Codex M12 T7 FAIL mirato assorbito come riserva pre-T8",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "orchestratore-t9-blindatura-struttura-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-orchestratore-t9-blindatura-struttura-25-08-26.md",
+        "recipient": "Matteo e eventuale seconda controverifica",
+        "problem_or_job": "blindare e convalidare struttura MSS R1–R8 nel complessivo",
+        "intended_use": "decidere se la struttura è affidabile per sedute deep; handoff T8 senza aprire WP-1",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "chat Matteo 25-08 Prompt orchestratore Cursor ciclo T9",
+        "authored_by": "cursor-composer-orchestratore-t9",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "due matrici misurate; validate:mss:all verde; verdetto struttura esplicito distinto da D27; nessun H-1.3 PASS pulito",
+        "verification_or_use_evidence": "controls ORCH-* in capsula; §6 famiglie",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/25-08-26/Report-t9-f1-r1-r3-agente-freddo-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-t9-f2-r4-r7-automazioni-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-t9-f3-r5-r6-dati-move-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-t9-f4-r8-d14-portabilita-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-revisione-indipendente-ciclo-t7-codex-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Non sostituisce report famiglia né revisione Codex T7; sintesi T9"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

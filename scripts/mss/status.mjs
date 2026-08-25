@@ -15,7 +15,9 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CONFIG } from './config.mjs'
+import { parsePlanGate } from './plan-parse.mjs'
 import { isMainModule, repoRootFromModule } from './runtime.mjs'
+import { runViews } from './views.mjs'
 
 const ROOT = repoRootFromModule(import.meta.url)
 /** Gli owner sono un dato di INSTALLAZIONE (R8): il nome del piano cambia da repo a repo. */
@@ -171,6 +173,7 @@ const colors = (isTTY) => isTTY
  */
 export function buildStatusReport({
   planText, packText, gitState, isTTY = false, planOwner = OWNER_PLAN, packOwner = OWNER_PACK,
+  viewResults = null,
 } = {}) {
 const C = colors(isTTY)
 const g = gitState || {
@@ -203,6 +206,38 @@ L.push(`  stash           ${g.stash} ${C.d}(non toccare senza si esplicito)${C.x
 L.push(`  worktree        ${g.worktrees}`)
 L.push('')
 
+// GATE — stesso parser del cruscotto; l'ultimo ciclo vince sulle sezioni storiche
+L.push(`${C.b}Gate autorizzato${C.x} ${C.d}parser PLAN condiviso con le viste generate${C.x}`)
+if (!planText) {
+  L.push(`  ${C.r}${UNKNOWN(planOwner)}${C.x}`)
+} else {
+  try {
+    const gate = parsePlanGate(planText)
+    L.push(`  ultimo chiuso   \`${gate.closedId}\` ${gate.closedState}`)
+    L.push(`  R1              ${gate.r1}`)
+    L.push(`  prossimo        \`${gate.next}\` (${gate.nextLabel})`)
+  } catch {
+    L.push(`  ${C.y}gate non interpretabile — apri ${planOwner} §15${C.x}`)
+  }
+}
+L.push('')
+
+// VISTE
+L.push(`${C.b}Viste generate${C.x} ${C.d}anti-stale: deriva dall'owner, non si correggono a mano${C.x}`)
+if (viewResults === null) {
+  L.push(`  ${C.d}controllo non eseguito in questa istanza${C.x}`)
+} else if (!viewResults.length) {
+  L.push(`  ${C.y}nessuna vista registrata${C.x}`)
+} else {
+  for (const view of viewResults) {
+    const label = view.stale
+      ? `${C.r}STALE${C.x} — npm run generate:mss:views`
+      : `${C.g}allineata${C.x}`
+    L.push(`  ${view.id.padEnd(20)}${label}  ${C.d}${view.target}${C.x}`)
+  }
+}
+L.push('')
+
 // SYS-1
 L.push(`${C.b}Cantiere SYS-1${C.x} ${C.d}owner: ${planOwner}${C.x}`)
 if (!planText) {
@@ -216,8 +251,8 @@ if (!planText) {
   }
   if (sk.length) {
     L.push('')
-    L.push(`  ${C.b}Scheletro (§4-bis)${C.x}`)
-    for (const s of sk) L.push(`  ${s.id.padEnd(8)}${s.stato}  ${C.d}prova: ${s.prova}${C.x}`)
+    L.push(`  ${C.b}Scheletro (§4-bis)${C.x} ${C.d}solo stato — prove mobili: comandi, non numeri congelati${C.x}`)
+    for (const s of sk) L.push(`  ${s.id.padEnd(8)}${s.stato}`)
   }
 }
 L.push('')
@@ -269,6 +304,12 @@ return L.join('\n') + '\n'
 }
 
 export function runStatus({ root = ROOT, isTTY = false } = {}) {
+  let viewResults = []
+  try {
+    viewResults = runViews({ root, write: false })
+  } catch {
+    viewResults = []
+  }
   return {
     exitCode: 0,
     stdout: buildStatusReport({
@@ -277,6 +318,7 @@ export function runStatus({ root = ROOT, isTTY = false } = {}) {
       planOwner: OWNER_PLAN,
       packOwner: OWNER_PACK,
       gitState: gitBlock(root),
+      viewResults,
       isTTY,
     }),
     stderr: '',

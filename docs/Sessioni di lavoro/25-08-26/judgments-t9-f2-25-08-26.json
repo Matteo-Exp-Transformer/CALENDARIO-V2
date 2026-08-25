@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "R4-R7/T9-F2@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T9 Famiglia 2 — R4–R7 automazioni (light fail-open + --verify N2)",
+        "decision_or_output_changed": "R4 classificato BACKLOG deliberato (light≠deep non unificato; test nominato «R4 — light resta fail-open intenzionale» inchioda il fail-open esistente senza cambiare hook). R7 classificato PROVATO (--verify N2 verde in test:mss:tools; limite assertions[] Output = R-T7-06 deliberato, già documentato SK4-ASSERT T7). Nessuna dichiarazione H-1.3 PASS pulito.",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-t9-f2-r4-r7-automazioni-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-t9-f2-r4-r7-automazioni-25-08-26.md",
+        "recipient": "orchestratore T9 e Matteo",
+        "problem_or_job": "chiudere matrice R4/R7 automazioni senza unificare light/deep né allentare --verify",
+        "intended_use": "gate Famiglia 2 T9; handoff controverifica",
+        "conceived_by": "Matteo / orchestratore T9",
+        "decided_by": "Matteo",
+        "directed_by": "mandato T9 Famiglia 2 R4–R7 automazioni",
+        "authored_by": "cursor-composer-t9-f2-r4-r7",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "matrice R4=BACKLOG e R7=PROVATO; validate:mss:all verde; CI job mss → validate:mss:all; capsula R1; nessun H-1.3 PASS pulito",
+        "verification_or_use_evidence": "controls[] capsula + prove §3 (test R4 nominato; capsule N2 --verify; ci.yml step mss)",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/METASKILL_SYSTEM_SKILL.md",
+        "privacy_release": "internal",
+        "support_files": [
+          ".cursor/hooks/fine-sessione-nudge.mjs",
+          "docs/MetaSkillSystem/tests/h1/run.mjs",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          ".github/workflows/ci.yml",
+          "docs/Sessioni di lavoro/25-08-26/Report-sk4-assert-t7-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "T9 F2 R4–R7; non riscrive report T7; non unifica light/deep"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

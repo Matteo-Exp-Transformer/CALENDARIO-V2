@@ -8,6 +8,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { parsePlanGate } from './plan-parse.mjs'
 import { isMainModule, repoRootFromModule } from './runtime.mjs'
 
 const ROOT = repoRootFromModule(import.meta.url)
@@ -25,36 +26,19 @@ const markers = (id) => ({
   end: `<!-- mss:generated ${id} fine -->`,
 })
 
-function required(text, re, label) {
-  const value = text.match(re)?.[1]?.trim()
-  if (!value) throw new Error(`MSS-VIEWS-OWNER-UNREADABLE: non trovo «${label}» nell'owner. Non genero una vista per plausibilita.`)
-  return value
-}
-
 /**
  * Il parser e volutamente stretto: prende l'ultimo ciclo «eseguito e CHIUSO/PROVATO» e la
  * prossima azione con etichetta tra parentesi. Se il piano cambia forma, il comando diventa
  * rosso invece di pubblicare un riassunto inventato.
  */
 export function deriveMatteoDashboard(planText) {
-  const cycles = [...planText.matchAll(/### [^\n]* — `(M-[A-Z])` eseguito e \*\*(CHIUSO|PROVATO)\*\*/g)]
-  if (!cycles.length) {
-    throw new Error('MSS-VIEWS-OWNER-UNREADABLE: non trovo «ciclo concluso» nell\'owner. Non genero una vista per plausibilita.')
+  let gate
+  try {
+    gate = parsePlanGate(planText)
+  } catch (error) {
+    throw new Error(error.message.replace(/^MSS-PLAN-UNREADABLE:/, 'MSS-VIEWS-OWNER-UNREADABLE:'))
   }
-  const [, closedId, closedState] = cycles[cycles.length - 1]
-  const nextMatches = [...planText.matchAll(/\*\*Prossima azione autorizzata: `((?:M-[A-Z])|[RT]\d+)`\*\* \(([^)]+)\)/g)]
-  if (!nextMatches.length) {
-    throw new Error('MSS-VIEWS-OWNER-UNREADABLE: non trovo «prossima azione autorizzata» nell\'owner. Non genero una vista per plausibilita.')
-  }
-  const nextMatch = nextMatches[nextMatches.length - 1]
-  const next = nextMatch[1]
-  const nextLabel = nextMatch[2].replace(/\s+/g, ' ').trim()
-  const r1Current = [...planText.matchAll(/\*\*Stato R1 attuale:\*\* `R1` è \*\*([^*]+)\*\*/g)].at(-1)?.[1]
-  const r1 = r1Current || required(
-    planText,
-    /`R1` resta \*\*(raccomandato ma non\s+aperto)\*\*/,
-    'stato R1',
-  )
+  const { closedId, closedState, next, nextLabel, r1, r1FromExplicitLine: r1Current } = gate
   const r1Closed = /^CHIUSO\b/.test(r1.trim())
 
   return [

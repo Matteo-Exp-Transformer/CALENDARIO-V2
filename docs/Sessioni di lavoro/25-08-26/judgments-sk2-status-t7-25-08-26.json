@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "SK-2/T7@PLAN_V0",
+        "trigger_event": "mss:status ripeteva celle §4-bis con numeri congelati e non derivava il gate dall'ultimo ciclo PLAN",
+        "decision_or_output_changed": "Parser PLAN condiviso (plan-parse.mjs) alimenta gate autorizzato e cruscotto; status controlla viste anti-stale e omette colonne prova stale",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "sk2-status-allineamento-t7-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-sk2-status-allineamento-t7-25-08-26.md",
+        "recipient": "Matteo e orchestratore T7",
+        "problem_or_job": "allineare mss:status al parser PLAN e al cancello viste senza riscrivere ROADMAP/HANDOFF a mano",
+        "intended_use": "orientamento agente freddo coerente con cruscotto e gate T7 corrente",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato T7 Famiglia 1 (orchestratore Cursor)",
+        "authored_by": "cursor-composer-sk2-t7",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "test nominato SK-2 verde; mss:status mostra T7 non M-E; validate:mss:all verde",
+        "verification_or_use_evidence": "controls[] in capsula e test SK-2 in test:mss:tools",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "scripts/mss/plan-parse.mjs",
+          "scripts/mss/status.mjs",
+          "scripts/mss/views.mjs",
+          "docs/MetaSkillSystem/tests/tools/run.mjs"
+        ],
+        "relations_no_double_count": [
+          "Famiglia 1 T7; ROADMAP/HANDOFF generati restano backlog D14"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

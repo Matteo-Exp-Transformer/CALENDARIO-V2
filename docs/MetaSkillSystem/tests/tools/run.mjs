@@ -14,6 +14,7 @@ import {
   runQuery,
 } from '../../../../scripts/mss/query.mjs'
 import { buildStatusReport, runStatus } from '../../../../scripts/mss/status.mjs'
+import { parsePlanGate } from '../../../../scripts/mss/plan-parse.mjs'
 import {
   MANUAL_MOVE_BASELINE_LINES,
   runMove,
@@ -543,8 +544,45 @@ const tests = [
     })
     assert.match(output, /branch\s+non ricostruibile/)
     assert.match(output, /HEAD\s+non ricostruibile/)
-    assert.equal((output.match(/non ricostruibile — apri/g) || []).length, 2)
+    assert.equal((output.match(/non ricostruibile — apri/g) || []).length, 3)
     assert.doesNotMatch(output, /env\/test|eee6cf7|SK-6\s+CHIUSO/)
+  }],
+  ['SK-2 / status: gate autorizzato deriva dall\'ultimo ciclo PLAN, non da gate storici', () => {
+    const historical = [
+      '### Quinto ciclo — `M-F` eseguito e **CHIUSO**',
+      '**Prossima azione autorizzata: `M-E`** (attrezzi mancanti, `T1`).',
+      '### Tredicesimo ciclo — `T6` eseguito e **CHIUSO**',
+      '**Prossima azione autorizzata: `T7`** (backlog opzionale `SK-2`).',
+      '**Stato R1 attuale:** `R1` è **CHIUSO CON RISERVE — sintetico**',
+    ].join('\n')
+    const planText = `\n## 4. Quadro corrente\n| x | WP-1 | NON INIZIATO |\n${historical}\n\n### 4-bis.\n| S2 | SK-2 | IMPLEMENTATO | ✅ 163 file, 1346 test congelati |\n`
+    const gate = parsePlanGate(planText)
+    assert.equal(gate.next, 'T7')
+    assert.equal(gate.closedId, 'M-F')
+    const output = buildStatusReport({
+      planText,
+      packText: null,
+      gitState: {
+        branch: 'env/synthetic', head: 'abc1234', upstream: null,
+        ahead: null, dirty: [], tags: [], stash: 0, worktrees: 1,
+      },
+      viewResults: [{ id: 'cruscotto-matteo', target: 'sintetico/CRUSCOTTO.md', stale: false }],
+      isTTY: false,
+      planOwner: 'sintetico/PLAN.md',
+    })
+    assert.match(output, /prossimo\s+`T7`/)
+    assert.doesNotMatch(output, /prossimo\s+`M-E`/)
+    assert.doesNotMatch(output, /163 file/)
+    assert.doesNotMatch(output, /1346 test/)
+    assert.match(output, /cruscotto-matteo\s+allineata/)
+
+    const live = runStatus({ root: REPO_ROOT, isTTY: false })
+    assert.equal(live.exitCode, 0, live.stderr)
+    const liveGate = parsePlanGate(readFileSync(join(REPO_ROOT, 'docs/MetaSkillSystem/PLAN_V0.md'), 'utf8'))
+    assert.match(live.stdout, new RegExp(`prossimo\\s+\`${liveGate.next}\``))
+    assert.doesNotMatch(live.stdout, /prossimo\s+`M-E`/)
+    assert.doesNotMatch(live.stdout, /32 gruppi/)
+    assert.doesNotMatch(live.stdout, /9\/9/)
   }],
   ['capsule: golden — input fisso produce bundle identico', () => {
     const first = recordsToJsonl(buildCapsuleBundle(goldenCapsuleOptions()))
@@ -1499,6 +1537,30 @@ const tests = [
     assert.ok(selected.has(paths[0]), 'B2: Report- in sotto-cartella deve essere selezionato')
     assert.ok(selected.has(paths[1]), 'B3: Verbale- in sotto-cartella deve essere selezionato')
     assert.equal(selected.has(paths[2]), false, 'manca la cartella-data: deve restare fuori perimetro')
+  }],
+
+  ['R3 — validate:app e validate:mss:all sono script distinti e validate li concatena', () => {
+    const pkg = JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'))
+    const scripts = pkg.scripts || {}
+    const validateApp = scripts['validate:app']
+    const validateMssAll = scripts['validate:mss:all']
+    const validate = scripts['validate']
+    assert.equal(typeof validateApp, 'string', 'manca scripts.validate:app')
+    assert.equal(typeof validateMssAll, 'string', 'manca scripts.validate:mss:all')
+    assert.equal(typeof validate, 'string', 'manca scripts.validate')
+    assert.notEqual(validateApp, validateMssAll, 'validate:app e validate:mss:all devono restare stringhe diverse')
+    assert.notEqual(validate, validateApp, 'validate non deve collassare su validate:app')
+    assert.notEqual(validate, validateMssAll, 'validate non deve collassare su validate:mss:all')
+    assert.match(validate, /npm run validate:app\s*&&\s*npm run validate:mss:all/,
+      'validate deve concatenare validate:app poi validate:mss:all')
+    assert.doesNotMatch(validateMssAll, /\blint\b/, 'validate:mss:all non deve includere lint app')
+    assert.doesNotMatch(validateMssAll, /\btypecheck\b/, 'validate:mss:all non deve includere typecheck app')
+    // "npm run test" da solo (senza :mss) sarebbe il test app; i mss sono ammessi.
+    assert.doesNotMatch(validateMssAll, /npm run test(?:\s|$|&&)/,
+      'validate:mss:all non deve includere npm run test (suite app)')
+    assert.match(validateApp, /\blint\b/)
+    assert.match(validateApp, /\btypecheck\b/)
+    assert.match(validateApp, /npm run test(?:\s|$|&&)/)
   }],
 ]
 

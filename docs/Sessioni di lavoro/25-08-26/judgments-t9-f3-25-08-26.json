@@ -1,0 +1,66 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "nessuno",
+    "assertions": [
+      {
+        "rule_id_version": "R5/SK-6@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T9 Famiglia 3: riesecuzione mss:query --verifica/--fail e classificazione R5",
+        "decision_or_output_changed": "Confermato R5 CHIUSO (owner SK-6/D16): query risponde; suite tools include i casi query:; gap copertura H-1 del lettore registrato in BACKLOG senza nuova implementazione",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      },
+      {
+        "rule_id_version": "R6/SK-9@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T9 Famiglia 3: conferma T1/R6 in test:mss:tools senza move su corpus reale",
+        "decision_or_output_changed": "Confermato R6 CHIUSO (owner SK-9/M12): caso nominato T1/R6 verde; mss:move --help ok; nessun mss:move su file reali; gap opzionale move vivi → BACKLOG",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-t9-f3-r5-r6-dati-move-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-t9-f3-r5-r6-dati-move-25-08-26.md",
+        "recipient": "Matteo, orchestratore T9 e revisore famiglia diversa",
+        "problem_or_job": "classificare R5/R6 CHIUSO o PROVATO con prove rieseguite, senza move sul corpus e senza toccare PLAN/src",
+        "intended_use": "capsula unica Famiglia 3 T9; backlog copertura senza nuove feature",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato T9 Famiglia 3 R5–R6 dati e move (inline parent)",
+        "authored_by": "cursor-composer-t9-f3-r5-r6",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "mss:query --verifica e --fail exit 0; T1/R6 e query: verdi in test:mss:tools; report classifica CHIUSO/PROVATO; validate:mss --require-capsule exit 0; nessun mss:move su atti vivi",
+        "verification_or_use_evidence": "comandi rieseguiti in seduta; test:mss:tools exit 0; validate:mss sul report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "scripts/mss/query.mjs",
+          "scripts/mss/move.mjs"
+        ],
+        "relations_no_double_count": [
+          "classificazione R5/R6; non riapre SK-6/SK-9; non è report T7"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

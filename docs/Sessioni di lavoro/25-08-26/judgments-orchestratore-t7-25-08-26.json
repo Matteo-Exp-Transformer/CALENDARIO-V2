@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "T7-ORCH@PLAN_V0",
+        "trigger_event": "Backlog post-T6 (SK-2, hook N2-N5, H13-E2, SK4-ASSERT, readiness D27) sparso in atti T6",
+        "decision_or_output_changed": "Ciclo T7 orchestrato: 5 famiglie chiuse CON RISERVE; SK-2 ALLINEATO; H-1.3 PASS_CON_RISERVE e WP-1 NO-GO invariati; owner §15 promosso",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "orchestratore-t7-backlog-pilota-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-orchestratore-t7-backlog-pilota-25-08-26.md",
+        "recipient": "Matteo e Codex M12",
+        "problem_or_job": "accorpare backlog SK/H/hook/E e produrre readiness pilota senza aprire WP-1",
+        "intended_use": "handoff controverifica Codex e decisione commit/push T8",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "docs/Sessioni di lavoro/25-08-26/Prompt-orchestratore-cursor-t7-backlog-pilota-25-08-26.md",
+        "authored_by": "cursor-composer-orchestratore-t7",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "validate:mss:all verde; 6 report con capsula; atti §7 completi; nessun H-1.3 PASS pulito",
+        "verification_or_use_evidence": "controls ORCH-* in capsula; §6 rieseguito orchestratore",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/25-08-26/Report-sk2-status-allineamento-t7-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-hook-qr-chiusura-t7-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-h13-e2-bypass-t7-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-sk4-assert-t7-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-readiness-pilota-t7-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Non sostituisce report famiglia; sintesi orchestratore T7"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

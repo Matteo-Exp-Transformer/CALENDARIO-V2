@@ -253,7 +253,7 @@
       "visible_input": "manifest staged autorevole su add/modify/delete/rename; fallback HEAD solo se untouched; in unborn staged obbligatorio; protocollo, 14 frozen, file/support e ogni representation_of nell'effective snapshot",
       "effect": "deny",
       "fallback": "manifest mancante o illeggibile e deny quando una fixture e staged",
-      "known_bypass": "--no-verify; file non staged; CI non cablata",
+      "known_bypass": "--no-verify; file non staged",
       "G": 2,
       "O": 1,
       "E": 2

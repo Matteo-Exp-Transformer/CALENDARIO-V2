@@ -1,0 +1,61 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "M12-T7@PLAN_V0",
+        "trigger_event": "Controverifica Codex indipendente del ciclo T7 Cursor su diff, gate, hook esportabile e readiness pilota",
+        "decision_or_output_changed": "Gate globali confermati verdi; ciclo non approvato al commit per tre gap riprodotti: parser ultimo ciclo limitato a M-*, template nudge v5 non silenzioso e protocollo pilota legacy incompatibile col contratto vivo",
+        "G": 2,
+        "O": 2,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "revisione-indipendente-ciclo-t7-codex-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-revisione-indipendente-ciclo-t7-codex-25-08-26.md",
+        "recipient": "Matteo e prossimo esecutore remediation T7",
+        "problem_or_job": "controverificare con famiglia OpenAI diversa il ciclo T7 Cursor e classificare le riserve prima del commit",
+        "intended_use": "decisione Opzione B e handoff dei tre fix mirati pre-commit",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "C:/Users/matte.MIO/.codex/attachments/118e08bd-d764-4d93-8578-88a1707378c8/pasted-text.txt",
+        "authored_by": "openai-codex-m12-t7",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "gate globali rieseguiti; tabella M12 e riserve complete; controprove riproducibili; raccomandazione A/B/C; report validato con capsula",
+        "verification_or_use_evidence": "comandi e controprove elencati nel report; validate:mss sul report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/25-08-26/Report-orchestratore-t7-backlog-pilota-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-hook-qr-chiusura-t7-25-08-26.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-readiness-pilota-t7-25-08-26.md",
+          "scripts/mss/plan-parse.mjs",
+          "_skill-system-v0/hooks/fine-sessione-nudge.mjs",
+          "docs/MetaSkillSystem/PROTOCOLLO_PRIMO_PILOTA_V0_1.md"
+        ],
+        "relations_no_double_count": [
+          "Controverifica M12 esterna; non sostituisce i sei report Cursor e non chiude i fix futuri"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

@@ -15,7 +15,7 @@
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import { REPORT_PATH_RE } from './adapter.mjs'
 import { CONFIG } from './config.mjs'
 import { findCapsuleHeadings } from './parse.mjs'

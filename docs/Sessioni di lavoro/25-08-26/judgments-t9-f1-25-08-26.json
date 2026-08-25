@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "R3/T9-F1@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato T9 Famiglia 1: gap strutturale — assenza di test nominato che protegga la distinzione validate:app / validate:mss:all / validate",
+        "decision_or_output_changed": "Aggiunto in docs/MetaSkillSystem/tests/tools/run.mjs il caso nominato «R3 — validate:app e validate:mss:all sono script distinti e validate li concatena»: assert su stringhe diverse, sequenza in validate, e assenza di lint/typecheck/test app in validate:mss:all",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-t9-f1-r1-r3-agente-freddo-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-t9-f1-r1-r3-agente-freddo-25-08-26.md",
+        "recipient": "Matteo, orchestratore T9 e revisore",
+        "problem_or_job": "chiudere il gap R3 con test nominato verde e documentare smoke R1/R2 senza toccare PLAN né report T7",
+        "intended_use": "capsula famiglia 1 T9; prova che la distinzione degli script validate resta protetta da regressione",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato T9 Famiglia 1 — R1–R3 agente freddo (Cursor sub-agent)",
+        "authored_by": "cursor-composer-t9-f1-r1-r3",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "test R3 nominato verde in test:mss:tools; smoke status/query/scheda R1 documentati; validate:mss --require-capsule exit 0",
+        "verification_or_use_evidence": "npm run test:mss:tools exit 0 (caso R3 OK); mss:status exit 0 prossimo T8; mss:query --verifica exit 0; SCHEDA_CHIUSURA_META_R1.md presente",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "package.json",
+          "docs/MetaSkillSystem/SCHEDA_CHIUSURA_META_R1.md"
+        ],
+        "relations_no_double_count": [
+          "non riscrive report T7; non allenta validator; non tocca PLAN_V0.md né src/"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
