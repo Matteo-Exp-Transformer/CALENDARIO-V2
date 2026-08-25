@@ -164,7 +164,13 @@ export function deriveMatteoDashboard(planText) {
 
   lines.push('## Prossimo passo')
   lines.push('')
-  lines.push(`Completare \`${next}\`. Non riaprire \`WP-1\` e non dichiarare \`H-1.3\` PASS pulito.`)
+  const h13 = board.find((r) => r.id === 'H-1.3')
+  const h13Bucket = h13 ? classifyPlanState(h13.stato) : null
+  if (h13Bucket === 'fatta') {
+    lines.push(`Completare \`${next}\`. Non riaprire \`WP-1\` (\`H-1.3\` PASS ≠ via libera pilota).`)
+  } else {
+    lines.push(`Completare \`${next}\`. Non riaprire \`WP-1\` e non dichiarare \`H-1.3\` PASS pulito.`)
+  }
 
   return lines.join('\n') + '\n'
 }

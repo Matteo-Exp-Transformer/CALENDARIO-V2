@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "H-1.3/M-H13-PASS@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Mandato M-H13-PASS Opzione B: promuovere H-1.3 a PASS dopo E2-A..D con residui umani misurati",
+        "decision_or_output_changed": "H-1.3 = PASS in PLAN_V0 §4; R-T7-03 e R-T7-05 chiuse; matrice denominator aggiornato (residui --no-verify, Cloud hook, JSONL unstaged, legacy); cruscotto deriva PASS in fatte; prossimo gate T11 P2; WP-1 resta NO-GO",
+        "G": 2,
+        "O": 1,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-h13-pass-e2-opzione-b-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-h13-pass-e2-opzione-b-25-08-26.md",
+        "recipient": "Matteo, orchestratore MSS",
+        "problem_or_job": "chiudere P1.5 promuovendo H-1.3 a PASS con matrice onesta sui residui umani",
+        "intended_use": "owner allineato; handoff P2; prova per commit/push",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md §P1.5 M-H13-PASS",
+        "authored_by": "cursor-composer-m-h13-pass",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "H-1.3 PASS in owner; R-T7-03 chiusa; gate test:mss/validate verdi; residui espliciti non stale",
+        "verification_or_use_evidence": "npm run test:mss; validate:mss:all; validate:mss:views; mss:status",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/COVERAGE_MATRIX_H1.json",
+          "scripts/mss/plan-parse.mjs",
+          "scripts/mss/views.mjs"
+        ],
+        "relations_no_double_count": [
+          "Chiude blocco E2 Opzione B; non apre WP-1/D27"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

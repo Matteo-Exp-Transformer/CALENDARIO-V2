@@ -1,0 +1,57 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "E2-ORCH/T10@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Chiusura orchestratore blocco E2 Opzione B + M-H13-PASS",
+        "decision_or_output_changed": "Blocco E2 CHIUSO; H-1.3 PASS; famiglie A PULITO B PASS_CON_RISERVE C PULITO D PASS_CON_RISERVE; handoff T11 P2; WP-1 NO-GO",
+        "G": 2,
+        "O": 1,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-orchestratore-e2-opzione-b-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-orchestratore-e2-opzione-b-25-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "chiudere il blocco E2 Opzione B con cappello, gate §6 e handoff P2",
+        "intended_use": "sintesi orchestratore post E2+H13; base per prossima chat T11",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt-orchestratore-chiusura-rimanenze-mss-25-08-26.md § M-H13-PASS",
+        "authored_by": "cursor-composer-m-h13-pass",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "report ≤180; H-1.3 PASS; gate §6 verdi; handoff T11 esplicito",
+        "verification_or_use_evidence": "validate:mss:all; git push; gh run CI",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/25-08-26/Report-h13-pass-e2-opzione-b-25-08-26.md",
+          "docs/MetaSkillSystem/PLAN_V0.md"
+        ],
+        "relations_no_double_count": [
+          "Sintesi di A–D + H13; non riapre WP-1"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

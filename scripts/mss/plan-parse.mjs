@@ -266,8 +266,13 @@ export function classifyPlanState(stato) {
   if (/^CHIUSO/.test(upper) || upper.includes('ALLINEATO') || upper.includes('ESEGUITO E PUBBLICATO')) {
     return 'fatta'
   }
-  if (upper.includes('PASS_CON_RISERVE') || (upper.includes('PASS') && upper.includes('RISERV'))) {
+  // Solo «PASS_CON_RISERVE» / «PASS CON RISERVE» — non la parola «riserva» in prosa di chiusura
+  if (/PASS_CON_RISERVE|PASS\s+CON\s+RISERVE/i.test(s)) {
     return 'con-riserva'
+  }
+  // PASS pulito (senza «con riserve») — Opzione B H-1.3 dopo E2 misurato
+  if (/\bPASS\b/i.test(s) && !/NON\s+PASS/i.test(s)) {
+    return 'fatta'
   }
   if (/^NON INIZIATO/.test(upper) || /^BLOCCATO/.test(upper)) {
     return 'da-fare'

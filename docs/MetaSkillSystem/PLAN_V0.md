@@ -5,10 +5,10 @@
 > MetaSkillSystem v0. Roadmap, handoff e report rimandano qui senza ricopiare lo stato.  
 > **Nord del cantiere:** vedi **§16 — Target dello scheletro**, dettato da Matteo il 21-08-2026.
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
-> **Ultimo movimento:** **M-T8** — pubblicazione T7+T9+Opzione B; **`SK-10` CHIUSO** (firma Matteo
-> [`Report-chiusura-sk10-firma-matteo-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-sk10-firma-matteo-25-08-26.md));
-> prossimo lavoro **E2 / H-1.3** (famiglie `M-E2-*`, non `WP-1`). `H-1.3` resta **`PASS_CON_RISERVE`**
-> (bypass E2 intenzionali non sanati). Audit P1 in [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
+> **Ultimo movimento:** **T10 / M-H13-PASS** — `H-1.3` **PASS** (Opzione B: E2-A..D chiuse con
+> enforcement misurato; residui umani espliciti in matrice). **M-T8** e **SK-10** restano CHIUSI.
+> Prossimo lavoro **P2 backlog** (`T11`: D14 / R-T7-04 / R-T7-06 — non `WP-1`). Audit P1 in
+> [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
 > `WP-1` **NO-GO** · `D27` chiusa finché Matteo non riapre in chat dedicata.
 >
 > **Rettifica 21-08-26 (append, non riscrittura):** l'intestazione precedente si era fermata al
@@ -75,8 +75,8 @@ lavoro del masterplan.
 | 2 | `WP-0.1` — hardening pre-pilota | `CHIUSO NEL DISEGNO` 09-08-26 | efficacia da osservare nel primo pilota |
 | 3 | `H-1` — validator + hook rapidi | **chiusura invalidata dalla revisione H-1.1** | resta storia del primo hardening |
 | 3.1 | `H-1.1` — integrità append-only e semantica | **`CHIUSO NEL DISEGNO` 10-08-26** | revisione completa esterna prima di WP-1 |
-| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS_CON_RISERVE` 10-08-26** — ✅ **riserva `H13-POST-L01` CHIUSA il 24-08-26** (`M13`): il contratto §6 dichiara che `previous_value_or_hash` porta il **valore**, confrontato in forma canonica, e che nessun digest è supportato; test nelle due direzioni `H13-POST-L01 — previous_value_or_hash è il valore, mai un digest` in `npm run test:mss`, verificato non vacuo (sostituendo il digest col valore il gruppo diventa rosso). ✅ **25-08-26 T7 `H13-E2`:** inventario bypass in `COVERAGE_MATRIX_H1.json` + report `Report-h13-e2-bypass-t7-25-08-26.md`; bypass **`B-E2-CI`** (matrice «CI non cablata» su `H1-FIXTURE-PROTOCOL`) **chiuso** — `SK-5` cabla `validate:mss:all` in `.github/workflows/ci.yml` su `main`/`env/test`; test nominato `H13-E2 / SK-5 — CI cablata, matrice senza bypass stale`. ⚠️ restano i **bypass E2 intenzionali** (`--no-verify`, unstaged, Cloud/Codex/Claude senza hook, …): **`PASS` pulito non è dichiarato** | bypass E2 residui; **non** apre WP-1; G5 non PASS |
-| 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NO-GO** (H-1.3 con riserve ≠ via libera) | ricostruzione fredda senza perdita/invenzione |
+| 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS` 25-08-26** — ✅ riserva `H13-POST-L01` CHIUSA 24-08-26 (`M13`); ✅ T7 `B-E2-CI` chiuso (`SK-5`); ✅ Opzione B **M-E2-A..D CHIUSE** (CI post-hoc no-verify; Report/Verbale unstaged; Cloud checklist+CI; light deny `MSS-LIGHT-NO-EVENT`); residui umani misurati in `COVERAGE_MATRIX_H1.json` (`--no-verify` Git, hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) — **non** stale «bypass intenzionali accettati» | P2 backlog (`T11`); **non** apre WP-1; G5 non PASS |
+| 4 | `WP-1` — piloti reali in ombra | **`NON INIZIATO` — NO-GO** (`D27` chiusa; `H-1.3` PASS ≠ via libera pilota) | ricostruzione fredda senza perdita/invenzione |
 | 5 | `WP-2` — mining storico normalizzato | `BLOCCATO DA PRIMO PILOTA` | eventi citano fonti e schema/versione |
 | 6 | `WP-3` — kernel, manifest, pacchetti e chiavi | `NON INIZIATO` | autorità e precedenze formalizzate |
 | 7 | `WP-4` — preflight, registro Output e viste | `NON INIZIATO` | conflitti/owner/scope rilevati prima delle azioni coperte |
@@ -262,9 +262,11 @@ Per ogni controllo scrivere:
 > ⚠️ **Lettura obbligatoria prima del paragrafo che segue (nota aggiunta 21-08-26).** Questa
 > dichiarazione di chiusura è **storia, non stato**: è stata **invalidata** dalla revisione `H-1.1`,
 > come registra la tabella §4 riga `H-1`. Resta qui perché la provenienza non si cancella, ma
-> **non va citata come stato corrente**. Lo stato corrente della catena di hardening è `H-1.3` =
-> `PASS_CON_RISERVE`. Segnalata dal test a freddo della consulenza esterna come contraddizione
-> interna al file.
+> **non va citata come stato corrente**. ~~Lo stato corrente della catena di hardening è `H-1.3` =
+> `PASS_CON_RISERVE`.~~ **RETTIFICATO 25-08-26 (`T10` / M-H13-PASS Opzione B):** lo stato corrente
+> della catena di hardening è `H-1.3` = **`PASS`** (E2-A..D chiuse con enforcement misurato; residui
+> umani espliciti in matrice). Segnalata dal test a freddo della consulenza esterna come contraddizione
+> interna al file (storico 21-08).
 
 H-1 è **chiuso nel disegno** (non ancora osservato su piloti reali) perché:
 
@@ -276,8 +278,9 @@ H-1 è **chiuso nel disegno** (non ancora osservato su piloti reali) perché:
   completi; path assoluti/traversal/symlink escape e link light incoerenti sono respinti;
 - le fixture negative sono valutate dal manifest e non impediscono il commit degli artefatti di test;
 - la normale suite non riscrive le fixture e segnala drift rispetto al generatore;
-- stop e pre-commit sono provati in integrazione; Cloud/Codex/Claude senza hook, `--no-verify`,
-  unstaged, report non recenti o senza modalità restano bypass dichiarati nella matrice;
+- stop e pre-commit sono provati in integrazione; residui umani misurati (`--no-verify` Git,
+  hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) restano in matrice;
+  bypass E2 chiusi Opzione B: Report unstaged, Cloud checklist+CI, light Report deny;
 - ~~nessuna CI è dichiarata perché nessun workflow esegue H-1;~~ **RETTIFICATO 25-08-26 (`H13-E2`/`SK-5`):**
   il job `mss` in `.github/workflows/ci.yml` esegue `validate:mss:all` su `main` e `env/test`; la matrice
   **non** dichiara più «CI non cablata» su `H1-FIXTURE-PROTOCOL`; i controlli restano E2 locali (hook/stop),
@@ -529,6 +532,7 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 | 10-08-26 | Chiusura H-1 invalidata; aperto H-1.1 dopo 17 controprove rosse. Fix mirato verde su 41 fixture e 19 gruppi; gate finali in corso | sessione H-1.1 |
 | 10-08-26 | H-1.1 chiuso nel disegno: append-only HEAD/staged, assi/versioni/modalità, storia e frozen protetti; gate locali verdi, limiti globali registrati | `Report-hardening-h1-1-metaskillsystem-10-08-26.md` |
 | 10-08-26 | H-1.3 = **PASS_CON_RISERVE** (review post-remediation); WP-1 resta **NON INIZIATO / NO-GO**; track baseline L5+hook autorizzato (path invariati); G5 non PASS | `Report-revisione-indipendente-h13-post-remediation-10-08-26.md` · `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` |
+| 25-08-26 | H-1.3 = **PASS** (Opzione B T10 / M-H13-PASS): E2-A..D chiuse con enforcement misurato; residui umani in matrice; WP-1 resta NO-GO; G5 non PASS | `Report-h13-pass-e2-opzione-b-25-08-26.md` · `Report-orchestratore-e2-opzione-b-25-08-26.md` |
 | 21-08-26 | Plan directory/export/sandbox prodotto (zero move); D9 decisa ed eseguita; D6/D7/D8/D10 aperte | `Report-plan-directory-export-sandbox-mss-21-08-26.md` |
 | 21-08-26 | **Consulenza esterna indipendente** — prima famiglia di modello diversa da Cursor/Codex. Prove: test a freddo superato (stato ricostruito in 2 file); 5 contraddizioni vive fra owner; 3 bypass dell'enforcement riproducibili; 3 cancelli globali rossi per 3 righe di configurazione | `MAPPA-MSS-consulenza-esterna-21-08-26.md` · `Report-consulenza-esterna-fable-mss-21-08-26.md` |
 | 21-08-26 | **Target dello scheletro** acquisito da Matteo in §16; aperti `SK-0`…`SK-10` in §4-bis; intestazione di questo file rettificata (era ferma a `H-1.1`) | `STRATEGIA-scheletro-mss-21-08-26.md` · decisione Matteo in chat 21-08-26 |
@@ -542,7 +546,7 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 ## 15. Prossimo task atomico
 
 `WP-1` resta **NON INIZIATO** e **NO-GO** finché Matteo non lo apre in chat dedicata.
-H-1.3 è **PASS_CON_RISERVE** (non PASS pulito). `SEP-G5` **non** è PASS.
+H-1.3 è **`PASS`** (25-08-26 Opzione B / T10). `SEP-G5` **non** è PASS.
 
 **P0 (23-08-26) — CONCLUSO COME ASSENZA:** ricerca del fix `SK-7` dichiarato → **nessun** commit,
 branch, stash, PR o patch recuperabile; D2/D3 riprodotti su `46b8bca` (`parseCheckSpec` spezza al
@@ -970,9 +974,9 @@ Report orchestratore: [`Report-orchestratore-t7-backlog-pilota-25-08-26.md`](../
 
 - **R-T7-01:** ✅ **CHIUSA** 25-08-26 — commit T7+T9+Opzione B pubblicati su `origin/env/test` (`0a86c81`–`764d862` + atti M-T8); push autorizzato Matteo «ok per tutti e due».
 - **R-T7-02:** ✅ **CHIUSA** 25-08-26 — controverifica M12 Codex **PULITO** su Opzione B F1–F3: [`Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-controverifica-indipendente-fix-m12-t7-codex-25-08-26.md) · fix `0a86c81`.
-- **R-T7-03:** `H-1.3` resta `PASS_CON_RISERVE` (bypass `--no-verify`, unstaged, Cloud intenzionali).
+- **R-T7-03:** ✅ **CHIUSA** 25-08-26 (`T10` / M-H13-PASS) — `H-1.3` = **`PASS`**; E2-A..D chiuse; residui umani misurati in matrice (non stale).
 - **R-T7-04:** ROADMAP/HANDOFF Senior-Eval restano viste manuali (D14 parziale).
-- **R-T7-05:** R4 light vs deep — fail-open hook su light accettabile per target deep; pilota light debole.
+- **R-T7-05:** ✅ **CHIUSA** 25-08-26 (`M-E2-D`) — light fail-open chiuso; Report `Modalità: light` → deny `MSS-LIGHT-NO-EVENT`; FX-V02 invariato.
 - **R-T7-06:** limite strutturale `--verify` su campi Output (`assertions[]`) — documentato, non allentato.
 
 **Invariati:** `WP-1` = NO-GO; `D27` chiusa finché Matteo non riapre in chat dedicata; nessun lavoro `src/`.
@@ -1027,12 +1031,15 @@ Mandato: [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../Sessioni%20di%20lavoro/2
 
 **Riserve residue post-M-T8 (deliberate, non bug):**
 
-- **R-T7-03 … R-T7-06:** invariati.
-- **H-1.3:** **`PASS_CON_RISERVE`** — **non** promosso a PASS pulito.
+- **R-T7-03:** ✅ **CHIUSA** in `T10` / M-H13-PASS — vedi sotto.
+- **R-T7-04:** invariata (D14 backlog → `T11`).
+- **R-T7-05:** ✅ **CHIUSA** in `M-E2-D` — vedi sotto.
+- **R-T7-06:** invariata (P2).
+- **H-1.3:** promosso a **`PASS`** in `T10` (non più `PASS_CON_RISERVE`).
 
-**Prossima azione autorizzata:** famiglie **E2 / H-1.3** (`M-E2-A` … `M-E2-D`, poi `M-H13-PASS` solo dopo prove) — vedi [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md) §P1.
+**Prossima azione autorizzata (superseduta da T10):** ~~famiglie **E2 / H-1.3**~~ — chiuse in T10.
 
-**Esplicitamente fuori:** `WP-1`, riapertura `D27`, `H-1.3` PASS pulito, lavoro `src/`.
+**Esplicitamente fuori:** `WP-1`, riapertura `D27`, lavoro `src/`.
 
 ### Tredicesimo ciclo del 25-08-2026 — `T6` eseguito e **CHIUSO** (`M12` + firma Matteo)
 
@@ -1052,6 +1059,31 @@ Non è un difetto del MSS; è il cantiere che il MSS ha oscurato. Non aprirlo di
 superato (le icone sono state rimappate, non rimosse); i restanti erano 1-3 file su lavori chiusi.
 Archiviati come patch in `docs/_lavoro/stash-archivio-24-08-26/` (cartella privata, gitignored)
 prima del `git stash clear`. Worktree: uno solo, pulito.
+
+### Diciassettesimo ciclo del 25-08-2026 — `T10` eseguito e **CHIUSO**.
+
+Mandato: M-H13-PASS Opzione B post M-E2-A..D @ HEAD `80e46f1`.
+Fonte: [`PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/PLAN-CHIUSURA-RIMANENZE-MSS-25-08-26.md) §P1.5 · [`Prompt-orchestratore-chiusura-rimanenze-mss-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Prompt-orchestratore-chiusura-rimanenze-mss-25-08-26.md).
+
+| Famiglia | Controverifica | Atti |
+|---|---|---|
+| M-E2-A no-verify / CI | **PULITO** | [`Report-e2-a-no-verify-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-e2-a-no-verify-25-08-26.md) · `08e1071` |
+| M-E2-B unstaged Report | **PASS_CON_RISERVE** | [`Report-e2-b-unstaged-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-e2-b-unstaged-25-08-26.md) · `972f894` |
+| M-E2-C Cloud fallback | **PULITO** | [`Report-e2-c-cloud-fallback-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-e2-c-cloud-fallback-25-08-26.md) · `a2ec2b9` |
+| M-E2-D light enforcement | **PASS_CON_RISERVE** | [`Report-e2-d-light-enforcement-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-e2-d-light-enforcement-25-08-26.md) · `80e46f1` |
+| M-H13-PASS promozione | **PASS** | [`Report-h13-pass-e2-opzione-b-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-h13-pass-e2-opzione-b-25-08-26.md) |
+| Orchestratore blocco E2 | — | [`Report-orchestratore-e2-opzione-b-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-e2-opzione-b-25-08-26.md) |
+
+**Verdetto:** `H-1.3` = **`PASS`**. Residui umani espliciti in matrice (non stale). `WP-1` resta **NO-GO**.
+
+**Riserve chiuse in T10:** R-T7-03 · R-T7-05.
+
+**Prossima azione autorizzata: `T11`** (P2 backlog: D14 ROADMAP/HANDOFF generate, R-T7-06 verify Output assertions; WP-1 resta NO-GO).
+
+#### Chiusura formale ciclo `T10` — 25-08-2026
+
+- **Ciclo `T10`:** **CHIUSO** (E2-A..D + H13-PASS + orchestratore E2).
+- **Commit/push:** autorizzati Matteo «commit push e proseguiamo».
 
 ### Decisioni di Matteo — 23-08-2026 (`D16`–`D24`, CHIUSE)
 
