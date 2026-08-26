@@ -64,6 +64,10 @@ Rilevati in seduta Meta senior 26-08-26 su dati forensi (`mss:query`, `mss:docto
    insidioso, non meno. **Sanata:** ratificata in Meta 26-08-26 con OK di Matteo.
 2. **Errore di procedura scritto nell'owner sbagliato.** Il fail `MSS-PARSE-JSONL-AMBIGUOUS` è finito in
    `OSSERVAZIONI.md`. **Derivazione:** errore agente — ha scritto dove era già, non dove va il dato.
+   **Causa radice template chiusa 26-08-26:** `CHIUSURA_SESSIONE.md` §6-bis non invita più a creare a
+   mano la heading `Capsula MetaSkillSystem` (STOP anti-collisione + titolo procedura «Registrazione di
+   seduta (MSS)»); scheda R1 allineata. Vedi report
+   `docs/Sessioni di lavoro/26-08-26/Report-fix-template-capsula-chiusura-26-08-26.md`.
 3. **Il report che ha deciso i fix non è mai entrato nel registro.** `Report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md`
    è **untracked e senza capsula**: `validate:mss --require-capsule` lo nega (`MSS-REPORT-NO-CAPSULE`), ma
    `mss:review` lo elenca fra i file toccati **senza segnalare nulla**. **Derivazione:** vincolo strutturale

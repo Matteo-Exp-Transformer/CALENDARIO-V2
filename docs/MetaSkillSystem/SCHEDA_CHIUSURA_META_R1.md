@@ -7,6 +7,8 @@
 ## Prima del comando
 
 1. Lavora dalla root del repository e prepara il report completo **senza** intestazione capsula.
+   In `CHIUSURA_SESSIONE.md` §6-bis la procedura del report si intitola «Registrazione di seduta (MSS)»
+   (o equivalente): **non** «Capsula MetaSkillSystem» — quel titolo lo scrive solo `mss:capsule` (STOP sotto).
 2. Crea i giudizi con `npm run mss:capsule -- --template-r1`.
 3. Nel JSON conserva soltanto le tre chiavi `persona`, `sistema`, `output`. Se `delta` è `nessuno`,
    usa `assertions: []`; negli altri casi scrivi almeno un'asserzione osservabile.

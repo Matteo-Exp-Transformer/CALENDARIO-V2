@@ -312,6 +312,10 @@
 - **Fail 2:** `MSS-OUTPUT-ASSERTION` / `MSS-PRODUCT-GATE` — judgments minimali incompleti rispetto allo schema asse output/sistema.
 - **Ripresa OK:** judgments stampo da chiusura collaudo; sezione 6-bis rinominata; `validate:mss --require-capsule` verde.
 - **Regola portata in:** `CHIUSURA_SESSIONE.md` (fail intermedi obbligatori in report) + report P0/P1 §4-bis.
+- **26-08-26 (sera Meta) — template corretto, causa radice chiusa:** `CHIUSURA_SESSIONE.md` §6-bis ora ha STOP
+  anti-collisione (non intitolare a mano «Capsula MetaSkillSystem»; titolo procedura «Registrazione di seduta
+  (MSS)»); allineamento minimo in `SCHEDA_CHIUSURA_META_R1.md`. Non è più un promemoria agli agenti: è il
+  template che non invita più al deny.
 
 ### 26-08-26 (sera) · Meta senior — analisi 2 istanze WP-1, procedure, forense MSS
 - **Esiti delle due istanze comunicazione (verdetto Meta, OK di Matteo in chat):**

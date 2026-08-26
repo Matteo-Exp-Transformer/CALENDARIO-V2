@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "META-26-08-TEMPLATE-CAPSULA-ANTI-COLLISIONE@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Due agenti in due giorni (istanza 2 P0/P1 + Meta senior) hanno scritto a mano la heading Capsula MetaSkillSystem seguendo CHIUSURA_SESSIONE §6-bis, poi mss:capsule --append-to ha rifiutato con MSS-PARSE-JSONL-AMBIGUOUS",
+        "decision_or_output_changed": "CHIUSURA_SESSIONE.md §6-bis rinominata a Registrazione di seduta (MSS) con STOP anti-collisione esplicito; titolo Capsula lo scrive solo mss:capsule; rimando a SCHEDA_CHIUSURA_META_R1; causa radice template registrata chiusa in ERRORI_PROCESSO e OSSERVAZIONI; regola fail intermedi §4-bis lasciata intatta; FU-META-REPORT-1 non toccato; log deny nello strumento non implementato (prossimo Meta senior)",
+        "G": 2,
+        "O": 2,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "fix-template-capsula-chiusura-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md",
+        "recipient": "agenti che chiudono sedute standard/deep",
+        "problem_or_job": "eliminare il muro ricorrente di chiusura MSS in cui chi segue il template alla lettera crea la heading Capsula prima dello strumento e riceve MSS-PARSE-JSONL-AMBIGUOUS",
+        "intended_use": "fonte unica di chiusura: un agente freddo che legge solo §6-bis capisce di non scrivere a mano Capsula MetaSkillSystem",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato Meta standard 26-08-26 (correzione gia proposta dal Meta senior: una riga nel template)",
+        "authored_by": "agent-composer-meta-fix-template-capsula-26-08",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "§6-bis con STOP anti-collisione; grep non invita a creare la heading prima di mss:capsule; questa seduta chiude con append senza AMBIGUOUS da titolo pre-scritto; validate:mss --require-capsule exit 0",
+        "verification_or_use_evidence": "diff CHIUSURA_SESSIONE.md §6-bis; SCHEDA_CHIUSURA_META_R1 Prima del comando; ERRORI_PROCESSO e OSSERVAZIONI riga causa radice chiusa; validate:mss --require-capsule su questo report",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/SCHEDA_CHIUSURA_META_R1.md",
+          "docs/Comunicazione-Skill/ERRORI_PROCESSO.md",
+          "docs/Comunicazione-Skill/OSSERVAZIONI.md",
+          "docs/Sessioni di lavoro/26-08-26/Report-fix-template-capsula-chiusura-26-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Non implementa log deny nello strumento; non chiude WP-1; non promuove VOCABOLARIO; non tocca FU-META-REPORT-1; non riscrive report storici"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

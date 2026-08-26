@@ -80,17 +80,40 @@ APP_CONTEXT, Comunicazione-Skill/*, SESSION_LOG, report, .cursor/*).
 - Prompt di Matteo annotati (verbatim dove utile) — fase raccolta dati.
 - Cosa si può automatizzare con certezza vs cosa lasciare manuale.
 
-### 6-bis. «Capsula MetaSkillSystem» (obbligatoria per ogni sessione sostanziale)
+### 6-bis. Registrazione di seduta (MSS) (obbligatoria per ogni sessione sostanziale)
+
+> **STOP anti-collisione titolo (causa radice chiusa 26-08-26).** Nel report **non** intitolare
+> nessuna heading `Capsula MetaSkillSystem` — né `## Capsula MetaSkillSystem`, né
+> `## 6-bis. Capsula MetaSkillSystem`, né varianti numerate — **prima** di far girare lo strumento.
+> Quel titolo lo scrive **solo** `npm run mss:capsule -- … --append-to "<report>"`. Se lo copi dal
+> nome storico di questa sezione (o dalla scheda R1), lo strumento rifiuta l'append con exit 2
+> `MSS-PARSE-JSONL-AMBIGUOUS` («il report dichiara già 1 sezione Capsula…»). Due agenti in due giorni
+> (istanza 2 P0/P1 + Meta senior 26-08-26) hanno seguito il template alla lettera e hanno colpito lo
+> stesso muro: **non è distrazione, è collisione template↔tool**.
+
+**Flusso operativo** (allineato a [`SCHEDA_CHIUSURA_META_R1.md`](../MetaSkillSystem/SCHEDA_CHIUSURA_META_R1.md) «Prima del comando» / «STOP»):
+
+1. Scrivi il report completo **senza** intestazione capsula: in §6-bis usa un titolo diverso
+   (es. `## 6-bis. Registrazione di seduta (MSS)` / `## Registrazione MSS`) — solo puntatore/procedura,
+   **senza** blocco jsonl vuoto e **senza** heading riservata.
+2. Crea i judgments su file dedicato (`--template-r1` o stampo già validato).
+3. **Un solo** `npm run mss:capsule -- … --append-to "<path report>"`.
+4. Subito dopo: `npm run validate:mss -- --mode file --file "<path report>" --kind report --require-capsule` → exit 0.
+5. Dopo append riuscito: in coda compare la sezione ufficiale `## Capsula MetaSkillSystem` + JSONL,
+   scritta dallo strumento. **Non** rieseguire `--append-to` sullo stesso report.
 
 Compila il contratto in `../MetaSkillSystem/CONTRATTO_CAPSULA_SESSIONE_V0.md`. Standard/deep: il
-bundle JSONL vive nel report o verbale. Light: vive nel file evento pilot-only collegato dalla riga
-di `SESSION_LOG.md`. Interruzione/compact: snapshot JSONL nel prompt di proseguimento o handoff prima
-di perdere il contesto.
+bundle JSONL vive nel report (appeso dallo strumento) o verbale. Light: vive nel file evento
+pilot-only collegato dalla riga di `SESSION_LOG.md`. Interruzione/compact: snapshot JSONL nel prompt
+di proseguimento o handoff prima di perdere il contesto.
 
 La capsula separa sempre tre delta: **Persona**, **Sistema**, **Output**. Per ciascun dato conserva
 attribuzione, provenienza, grado di assistenza ed eventuale contro-evidenza. Un documento non diventa
 automaticamente un prodotto: va classificato. Se un evento non è avvenuto, scrivi `non osservato`;
 se il delta è nullo, scrivi `nessuno`. ⛔ Mai completare un campo per plausibilità.
+
+> Dettaglio anti-errore (separatori `--check`/`--verify`, denylist controlli, un solo append):
+> [`SCHEDA_CHIUSURA_META_R1.md`](../MetaSkillSystem/SCHEDA_CHIUSURA_META_R1.md) — non duplicare qui.
 
 ### 7. «Analisi flusso prompt, efficienza e statistiche» (sottosezione obbligatoria standard/deep)
 - N° prompt sostanziali di Matteo · correzioni dopo 1ª risposta · follow-up generati · modalità alzata sì/no.
