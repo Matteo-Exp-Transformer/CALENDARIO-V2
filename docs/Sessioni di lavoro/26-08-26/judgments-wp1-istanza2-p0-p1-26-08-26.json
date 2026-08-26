@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "WP1-I2-P0-P1@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Fix P0 multi-tavolo force-replace + P1 invalidate Servizio dopo create admin; collaudo 26/26 con riserve; ritest checklist aggiornata",
+        "decision_or_output_changed": "useForceReplace archive/requeue liberano tutta la tavolata; useCreateAdminBooking invalida TABLE_ASSIGNMENTS_QUERY_KEY; COLLAUDO sezione RITEST; WP-1 resta IN PILOTA ombra; cutover vietato",
+        "G": 2,
+        "O": 1,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-wp1-istanza2-p0-p1-fix-servizio-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Report-wp1-istanza2-p0-p1-fix-servizio-26-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "chiudere i bug che bloccavano ritest T9 (multi-tavolo + refresh) dopo collaudo 26/26",
+        "intended_use": "punto di ripristino fix P0/P1 su env/test; handoff ritest umano + chat senior turni/[O]",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat implementiamo P0 e P1 + report finale + prompt senior",
+        "authored_by": "agent-cursor-composer-26-08-p0p1",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "vitest P0/P1 verdi; report + capsula validate:mss; COLLAUDO con RITEST; WP-1 non chiuso",
+        "verification_or_use_evidence": "vitest sostituzioneGuidata/fix2/appendOnly/useAdminBookingRequests; COLLAUDO RITEST; ADMIN_SERVIZIO_CONTEXT",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md",
+          "docs/Admin-Skill/contesto/ADMIN_SERVIZIO_CONTEXT.md",
+          "src/features/booking/hooks/useTableAssignments.ts",
+          "src/features/booking/hooks/useAdminBookingRequests.ts"
+        ],
+        "relations_no_double_count": [
+          "Non chiude WP-1; non fixa voci [O] V3/V5/T10/T16; non decide turni-tavolo; P6 sala ancora aperto"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

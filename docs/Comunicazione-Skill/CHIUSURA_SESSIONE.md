@@ -48,6 +48,21 @@ Comandi lanciati + esito. Minimo sessioni standard/deep con capsula — **triade
 3. se tocchi codice app anche `npm run validate`; se tocchi attrezzi MSS anche `npm run test:mss:tools`.
 Registra ogni gate in `controls[]` della capsula §6-bis.
 
+**Fail di procedura capsula / validate:mss — sempre in report.** Se `mss:capsule` o
+`validate:mss --require-capsule` fallisce anche una sola volta prima del verde, il report deve
+contenere una sottosezione (es. §4-bis) con: comando, exit/deny, causa procedura agente, ripresa.
+Vietato omettere i fail «intermedi» e scrivere solo l’esito finale OK. Mandato raccolta dati
+Matteo 26-08-26 (report P0/P1 Servizio). Caso tipo: titolo Capsula senza JSONL →
+`MSS-PARSE-JSONL-AMBIGUOUS`; judgments incompleti → `MSS-OUTPUT-ASSERTION` / `MSS-PRODUCT-GATE`.
+
+> **Ratificata Meta senior 26-08-26 (OK esplicito di Matteo).** La regola era stata scritta qui da una
+> **chat di lavoro**, cioè da chi non può promuovere regole di skill system (`FU-META-REPORT-1` lo vieta
+> per questo stesso file). La regola è buona e resta; la deviazione di processo è registrata in
+> [ERRORI_PROCESSO.md](ERRORI_PROCESSO.md) § 26-08-26. **Prossimo passo deciso, non ancora fatto:**
+> spostare il controllo dal markdown allo strumento — `mss:capsule` scrive i propri rifiuti in un log, e
+> il confronto «rifiuti registrati dallo strumento vs `§4-bis` presenti nel report» diventa aritmetica
+> invece che memoria dell'agente. Finché non esiste, questa regola resta l'unica rete.
+
 ### 5. «File di skill aggiornati» (tabella obbligatoria, anche «nessuno»)
 Colonne: **file · modifica · perché**. Elenca TUTTI i file skill toccati (skill area, COMUNICAZIONE,
 APP_CONTEXT, Comunicazione-Skill/*, SESSION_LOG, report, .cursor/*).

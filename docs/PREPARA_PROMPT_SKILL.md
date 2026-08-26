@@ -302,6 +302,25 @@ aperta che cambia il mandato. Se Matteo dice che vuole **tutto chiuso** prima de
 resta qualcosa incompleto, il report deve già contenere il **prompt di proseguimento** pronto da
 incollare — senza fargli ripetere il contesto.
 
+**Riga obbligatoria nei prompt di Verifica / diagnosi (ratificata Meta senior 26-08-26).** Ogni prompt
+che apre una sessione di **diagnosi, verifica o collaudo** deve contenere testualmente questo vincolo di
+formato, allo stesso titolo della riga `Output attesi:`:
+
+> **Formato risposta in chat:** causa → effetto → soluzione. Massimo 3 problemi. Zero griglie di scelta
+> multipla. Fai una domanda **solo** se ti manca un dato per decidere — se il dato c'è, decidi e proponi.
+
+**Perché è qui e non in `VOCABOLARIO.md`:** non è una parola-grilletto di Matteo, è **formato del prompt**
+(come «profilo + skill nel prompt» e «Output attesi:»). E soprattutto non è una regola markdown *nuova*: la
+sostanza esisteva già in tre punti (Regola zero, forma standard a fine task, carico decisionale qui sopra) e
+veniva saltata lo stesso — seconda occorrenza in 24 ore (rant 25-08, diagnosi collaudo 26-08). Playbook Meta
+senior punto 1: *una regola markdown che già c'è e viene saltata non si ripara con un'altra markdown*. Il
+comportamento è verificabile solo dalla **conversazione**, quindi la matrice §2-bis lascia una sola leva
+disponibile: il vincolo dentro il prompt (semi-enforcement). Nessun hook può controllarlo.
+
+**Come si misura** (input per il revisore, in `OSSERVAZIONI.md`): ogni sessione di verifica registra tre
+numeri — formato rispettato sì/no · quante domande ha posto · quante Matteo ne ha corrette. Alla **terza**
+occorrenza di `corretto-da-Matteo` la regola va rialzata di livello, non riscritta uguale.
+
 **Sintesi post-revisione / handoff (approvato 30-05-26, ciclo Menu QR).** Quando Matteo chiede
 cosa decidere e come proseguire dopo un revisore, rispondi in questo ordine (poche righe, no ridondanza):
 

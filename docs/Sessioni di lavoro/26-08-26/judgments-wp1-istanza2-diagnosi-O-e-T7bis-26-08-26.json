@@ -1,0 +1,57 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "WP1-I2-DIAGNOSI-O@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Diagnosi T7-bis e voci [O] del collaudo Servizio senza patch applicativa",
+        "decision_or_output_changed": "Le voci sono classificate per tipo di problema, con prove richieste e backlog P0-P2; WP-1 resta in pilota ombra e T16 resta non verificato.",
+        "G": 1,
+        "O": 1,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "distinguere i difetti reali dalle prove browser o decisioni prodotto prima di modificare il codice del Servizio",
+        "intended_use": "base verificabile per i successivi fix e ritest del pilota WP-1",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt WP-1 istanza 2 diagnosi O e T7-bis del 26-08-26",
+        "authored_by": "agent-cursor-diagnosi-26-08",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "classificazione motivata delle voci, nessuna patch src e WP-1 non dichiarato chiuso",
+        "verification_or_use_evidence": "report §§2-7 e controlli MSS eseguiti alla chiusura",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md",
+          "docs/Sessioni di lavoro/26-08-26/Prompt-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Non chiude WP-1; non implementa P0/P1; non verifica T16 a browser; non modifica PROD."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

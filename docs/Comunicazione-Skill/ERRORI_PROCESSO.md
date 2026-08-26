@@ -48,6 +48,40 @@ filtro `PREPARA_PROMPT`, o una Nota in skill d'area. La promozione la decide il 
 
 ## Log per data
 
+> **Registro riaperto il 26-08-26** dopo quasi tre mesi di silenzio (ultima voce: 05-06-26). Nel frattempo
+> gli errori di procedura sono stati scritti in `OSSERVAZIONI.md`, che è il registro di **come comunica
+> Matteo** — owner sbagliato. Chi annota un errore di procedura scrive **qui**.
+
+### 26-08-26 — Pilota WP-1 istanze 1 e 2: quattro errori di procedura degli agenti
+
+Rilevati in seduta Meta senior 26-08-26 su dati forensi (`mss:query`, `mss:doctor`, `git log`, diff).
+
+1. **Una chat di lavoro ha promosso una regola nello skill system.** La regola «fail capsula sempre in
+   report» è stata scritta direttamente in `CHIUSURA_SESSIONE.md` da un agente di esecuzione.
+   `FU-META-REPORT-1` vieta espressamente questo per quel file: «Non lo fa una chat di lavoro normale: è
+   promozione di regole dello skill system → sessione Meta senior dedicata».
+   **Derivazione:** errore agente (confine di ruolo). La regola era giusta — il che rende l'errore più
+   insidioso, non meno. **Sanata:** ratificata in Meta 26-08-26 con OK di Matteo.
+2. **Errore di procedura scritto nell'owner sbagliato.** Il fail `MSS-PARSE-JSONL-AMBIGUOUS` è finito in
+   `OSSERVAZIONI.md`. **Derivazione:** errore agente — ha scritto dove era già, non dove va il dato.
+3. **Il report che ha deciso i fix non è mai entrato nel registro.** `Report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md`
+   è **untracked e senza capsula**: `validate:mss --require-capsule` lo nega (`MSS-REPORT-NO-CAPSULE`), ma
+   `mss:review` lo elenca fra i file toccati **senza segnalare nulla**. **Derivazione:** vincolo strutturale
+   — il cancello scatta al commit, e nessuno ha committato. *Nessun commit, nessun enforcement.*
+   **Azione proposta:** `mss:review` deve negare quando un report nominato dalla capsula di seduta è untracked.
+4. **Il file di contesto d'area non entra mai nel commit.** `ADMIN_SERVIZIO_CONTEXT.md` è cambiato a parole
+   in 5 report e **0 volte in git dal 06-08-26**. La chiusura verifica che nel report **esista** la tabella
+   «File di skill aggiornati» — e la tabella c'era, completa. Nessuno verifica che quei file siano **staged**.
+   **Derivazione:** vincolo strutturale (si controlla la promessa, non il fatto).
+
+**Non-errore, registrato per non ripeterlo come accusa.** I tre `RITEST-*` marcati `[x]` il 26-08 li ha
+eseguiti e spuntati **Matteo di persona**, senza dirlo in chat all'agente — il cui report li elencava
+ancora come «da fare». Un revisore a freddo (questa seduta) ha letto la contraddizione e ha concluso che
+un agente avesse spuntato le caselle dell'umano. **Causa radice:** la casella `[x]` non porta firma, quindi
+è indistinguibile fra mano umana e mano agente — in un sistema il cui asse portante è «attribuzione e
+provenienza sempre marcate». **Azione decisa:** ogni casella di collaudo superata porta in coda
+`— verificato da <chi>, <data>`. Vedi `OSSERVAZIONI.md` § 26-08-26 Meta senior.
+
 ### 05-06-26 — Allineamento card scorrevoli + carosello Pagina Prenota
 - **errore agente:** prima implementazione `justify-center mx-auto` fisso su inner → clip sinistro mobile; poi `justify-start` fisso → perso centro desktop; `%` mobile su inner `w-max` → card gonfiate.
 - **prompt ambiguo:** correzione «solo sinistra» senza «se entra, centro» (chiarito al messaggio successivo).

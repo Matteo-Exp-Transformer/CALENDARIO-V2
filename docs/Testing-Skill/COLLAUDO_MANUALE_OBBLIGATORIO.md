@@ -1,10 +1,10 @@
 # Collaudo manuale Servizio — checklist operativa
 
-**Aggiornato:** 26-08-2026 · WP1 istanza 2 · ~3h15 · Branch `env/test` · TEST `docnnernvp`  
+**Aggiornato:** 26-08-2026 sera · WP1 istanza 2 · Branch `env/test` · TEST `docnnernvp`  
 **Account:** Pro `tomas@t.com` (blocchi 0-bis→4) · Classic `testc@c.com` (T14–T16)  
 **Password:** `.env.local.test` (`E2E_PRO_ADMIN_PASSWORD` / `MANUAL_ADMIN_PASSWORD`)  
-**Gap-analysis:** [`Gap-analysis-Servizio-QA-manuale-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Gap-analysis-Servizio-QA-manuale-25-08-26.md) · §5 = **non rifare**
-
+**Gap-analysis:** [`Gap-analysis-Servizio-QA-manuale-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Gap-analysis-Servizio-QA-manuale-25-08-26.md) · §5 = **non rifare**  
+**Fix codice 26-08 sera:** P0 multi-tavolo + P1 refresh + UX T9 — vedi sezione **RITEST obbligatorio** sotto.
 ---
 
 ## 0. Preparazione (15 min, una volta)
@@ -35,15 +35,34 @@ Mappa si aggiorna ogni **30 s** — non ricaricare per forzarla. Soglia ritardo 
 | Setup | 0-bis (1) | 1/1 |
 | Validazione | V1–V8 (8) | 8/8 |
 | Blocco 1 — rilascio | T1–T5 (5) 🔴 | 5/5 |
-| Blocco 2 — briefing/assegna | T6–T9 + T7-bis (5) | 4/5 |
+| Blocco 2 — briefing/assegna | T6–T9 + T7-bis (5) | 5/5 |
 | Blocco 3 — visivo | T10–T12 (3) | 3/3 |
 | Blocco 4 — Calendario | T13 (1) | 1/1 |
 | Classic | T14–T16 (3) | 3/3 |
-| **TOTALE** | **26** | **25/26** |
+| **TOTALE** | **26** | **26/26** |
 
-Aperta solo **T7-bis**. T9 = `[O]` (tentata, Matteo ripete non selezionabile tavolo già occupato).
+Checklist umana **chiusa** 26-08 sera. T7-bis e T9 = `[x]` **con riserve** (bug/debiti sotto; non «OK pulito»). WP-1 resta **IN PILOTA ombra** — non equivale a capitolo Servizio chiuso.
 
 🔴 = blocca rilascio se KO · `[O]` = fatta con nota (non è OK pulito)
+
+---
+
+## RITEST obbligatorio (dopo fix 26-08 sera) — fai questi, non tutta la checklist
+
+| Priorità | Prova | Cosa è stato modificato | Cosa controlli tu |
+|---|---|---|---|
+| **P0** | **T9** (parte multi-tavolo) | «Rimetti in attesa» e «Archivia» liberano **tutti** i tavoli della prenotazione | Prenotazione A su **2+ tavoli** → Assegna B su uno di quei tavoli → **Rimetti in attesa** → A torna **intera** in «da assegnare» (nessun tavolo resto occupato). Ripeti con **Archivia** → A archiviata, tutti i tavoli liberi. |
+| **P1** | **T9** (refresh) + flusso Nuova prenotazione | Create admin invalida lista Servizio (niente F5) | Con Servizio già aperto su fascia Cena: **Nuova prenotazione** admin accettata → torna in Servizio → compare in «da assegnare» **senza** refresh manuale. |
+| **UX già fatta** | **T9** (aprire le 3 radio) | Overlay + hint Assegna | Assegna B → **tocca** tavolo occupato (o rilascia drag) → compare riquadro ambra con 3 radio. Se già ok ieri, basta una conferma veloce. |
+| **Docs path** | **T7-bis** | Solo testo checklist (path reali) | Opzionale: rivedi sequenza sotto (cestino Lista + turni in Assegna). **Non** aspetta fix codice turni — decisione prodotto in chat senior. |
+
+**Non ritestare ora** (nessun fix codice su queste): `[O]` **V3, V5, T10, T16** · note T1/T3/T4/T5/T11/T13/T15 (debito; prompt fix via senior).
+
+Dopo il ritest: spunta qui sotto e aggiorna le note T9.
+
+- [x] **RITEST-P0** — multi-tavolo Rimetti in attesa + Archivia OK  
+- [x] **RITEST-P1** — nuova prenotazione admin compare in Servizio senza F5  
+- [x] **RITEST-UX-T9** — 3 radio raggiungibili (tap/drop occupato)  
 
 ---
 
@@ -51,7 +70,7 @@ Aperta solo **T7-bis**. T9 = `[O]` (tentata, Matteo ripete non selezionabile tav
 
 - [x] **0-bis** — Crea sala QA-Manuale (4 tavoli, 2 fasce)  
 - [x] **V1** — Sala senza nome / larghezza < 200 
-* nella vista mappa , div in cui è contenuta la mappa, non si adegua in base a formato mappa. errore = rimane grande e lascia spazio grigio dove non c'è mappa.  deve mostrare solo spazio necessario a mostrare la mappa. * 
+*nella vista mappa , div in cui è contenuta la mappa, non si adegua in base a formato mappa. errore = rimane grande e lascia spazio grigio dove non c'è mappa.  deve mostrare solo spazio necessario a mostrare la mappa.* 
 
 - [x] **V2** — Tavolo senza nome / capienza 0
 - [O] **V3** — Fascia invalida / duplicata / overlap 
@@ -78,11 +97,18 @@ questa fascia oraria"*
 *ho ricevuto avviso di superamento limite massimo coperti per fascia oraria quando h modificato una prenotazione a cui ho agigunto dei coperti, anche se la checkbox " «Mantieni anche il limite coperti della fascia» " non era spuntata.Con checkbox spuntata ho riscontrato warning soft che mi avvisva che stavo accettando ua prenotazione che superava la capienza della fascia oraria. l'avviso mi p arrivato sempre da fuori pagina servizio e assegnazione tavoli, o ricevuto warning mentre ero su modal per modificare una prenotazione, e mentre ho inserito una nuova prenotazione* 
 - [x] **T6** 🔴 — PDF briefing orari corretti
 - [x] **T7** — Colonna Tavolo mono/multi sala
-- [ ] **T7-bis** 🔴 — Elimina tavolo **T2** vs elimina sala (conto turni) `FU-SERV-TURNO-SALA-1`
-*al momento non vedo i turni sui tavoli. se clicco un tavolo, vedo solo se ha prenotazioni assegante, ma non posso vedere turni non so come vederli per capire se sono stati consumati.inoltre se clicco un tavolo non ho pulsante per eliminarlo quando si apre il modal per modificare tavolo.*
+- [x] **T7-bis** 🔴 — Elimina tavolo **T2** vs elimina sala (conto turni) `FU-SERV-TURNO-SALA-1` (con riserve)
+*Path aggiornato 26-08: turni residui solo in modale **Assegna** (fascia con tetto turni); Elimina tavolo = cestino in **Lista**, non nel modal matita.*
+*Nota prodotto (senior): senso dei turni-tavolo vs solo limite coperti — **non** blocco ritest P0/P1.*
+*Dubbio Matteo su «consumo turno dopo delete»: per ora basta verificare che le prenotazioni tornino **da assegnare**; il resto è decisione prodotto.*
+
 - [x] **T8** — Aggiungi tavolo a tavolata già assegnata
-- [O] **T9** 🔴 — Tavolo occupato: tre scelte radio
-*Nota Matteo: «non testabile — i tavoli non permettono più di una assegnazione nelle stesse ore» → in realtà è proprio il caso che apre la modale (vedi sequenza T9 sotto). Altra nota: se libero un tavolo con prenotazione non ancora arrivata, resta in Calendario ma sparisce da «da assegnare» in Servizio — possibile bug prodotto (documentato, non fixato qui).* = RIPETO IMPOSSIBILE TESTARE POICHè NON POSSO SELEZIONARE UN TAVOLO GIA OCCUPATO. posso solo assegnare la prenotazione a tavoli liberi!
+- [x] **T9** 🔴 — Tavolo occupato: tre scelte radio (riserve → **ritesta P0+P1**)
+*Fix UX 26-08: overlay + hint — vedi **RITEST-UX-T9** sopra.*
+*Fix P1 26-08: refresh lista dopo Nuova prenotazione — vedi **RITEST-P1**.*
+*Fix P0 26-08: Rimetti in attesa / Archivia liberano **tutta** la tavolata — vedi **RITEST-P0**.*
+*Ancora aperto (non in P0/P1): in «Aggiungi tavolo» mostrare nome di chi occupa i tavoli non disponibili.*
+
 - [O] **T10** — Piantina 375px senza overflow pagina 
 *scorre tutta la pagina con scroll verticale. ( inoltre vorrei che utente impostasse dimensione Sala basandosi sui Metri no sui pixel. cerchiamo la dimensione media di un tavolo che fa 4 coperti e da li stimiamo dimensione sala : se il tavolo è grande x metri allora se imposta la sala grande X ci staranno X tavoli. cosa ne pensi? come facciamo a far scegliere dimensione sala per metri e no per pixel?)*
 - [x] **T11** — Modifica sala nascosta su mobile
@@ -92,8 +118,8 @@ questa fascia oraria"*
 - [x] **T13** — Badge Calendario `FU-SERV-BADGE-CASCATA-1`
 *vedo il badge con i coperti prenotati per il giorno nel calendario --> ok . non vedo badge della percentuale mensile. dove dovrei trovarlo? inoltre la logica per il giorno doveva essere = se ho impostato limite coperti per face orarie, app somma il limite e in base ai coperti prenotati per quel giorno mi da % di occupazione. questa logica è rimasta invariata?*
 - [x] **T14** 🔴 — Classic: nessuna UI Pro, console pulita
-- [O] **T15** 🔴 — Form Classic ok / oltre cap
-*vedi screen " docs\Sessioni di lavoro\26-08-26\Screenshot 2026-08-26 114900.png" anche se ho configurato correttamente orari apertura e fasce orarie in classic, non vedo orari nel form.*
+- [x] **T15** 🔴 — Form Classic ok / oltre cap
+*funziona ma se inserisco troppi ospiti, nella casella che mostra orari disponibili, il messagio deve dire " non abbiamo abbastanza posti per la vostra prenotazione in questa fascia oraria." mentre ora dice solo "Nessun orario disponibile per questa data. Prova un altro giorno" errato. inoltre dobbiamo sistemare ordine di compilazione utente, i campi non sono in ordine per mostrare correttaemnte la disponibilità. nome - data - N ospiti - ora. confermami che è giusto in questa sequenza.*
 - [O] **T16** — Intervallo arrivo → orari form pubblico 
 *Nota sessione: con due tab (Classic + Pro) i dati Pro (prenotazioni, poi anche sale/tavoli) sono sembrati spariti su `tomas@t.com`, screen 115258/115307; poi Matteo riporta che prenotazioni e anche sale/tavoli **sono tornati**. Causa non accertata — vedi `Esiti-collaudo-manuale-servizio-parziali-26-08-26.md`.*
 
@@ -179,15 +205,16 @@ Da 0-bis a V8 = fatto (vedi checklist rapida e note `[O]`).
 ### T7-bis 🔴 — Elimina tavolo T2 vs elimina sala (`FU-SERV-TURNO-SALA-1`)
 **Cosa testo:** confrontare cosa succede al **conto turni** (quanti “pasti” il tavolo ha già fatto in quella fascia) se elimini un **tavolo** oppure se elimini tutta la **sala**. Oggi i due comportamenti sono diversi (incoerenza nota, fix previsto in P6).
 **Come fare:**
-1. Usa solo sala/tavoli **QA-Manuale**. Assegna una prenotazione **Cena** al tavolo chiamato **T2** (il tavolo col nome T2 — **non** «turno 2»).
-2. Annota i turni usati / residui che vedi su quel tavolo (o in lista).
-3. In **Lista** (o Modifica): **elimina il tavolo T2** → conferma. Guarda se la prenotazione torna **da assegnare** e se il turno risulta **consumato** o no.
-4. Ricrea la situazione su un altro tavolo (es. **T3**): prenotazione assegnata.
-5. **Modifica sala** → **Elimina sala** (QA) → conferma a due passaggi. Guarda di nuovo prenotazione + conto turni.
+1. Usa solo sala/tavoli **QA-Manuale**. Sulla fascia **Cena**, imposta un **tetto turni numerico** (es. 2) — se resta «Illimitata» non vedi i residui.
+2. Assegna una prenotazione **Cena** al tavolo chiamato **T2** (nome del tavolo — **non** «turno 2»).
+3. Per **leggere i turni residui:** apri **Assegna** su un’altra prenotazione della stessa fascia → sulle card tavolo compare «N turni residui» / «Turni esauriti». (Non compare su Lista, né nel modal matita, né al click tavolo in mappa.)
+4. **Elimina il tavolo T2:** vai tab **Lista** → icona **cestino** sulla card T2 (non nel modal «Modifica tavolo») → conferma. Guarda se la prenotazione torna **da assegnare** e se il turno risulta **consumato** o no.
+5. Ricrea la situazione su un altro tavolo (es. **T3**): prenotazione assegnata.
+6. **Modifica sala** → bottone testo **Elimina sala** (QA) → conferma a due passaggi. Guarda di nuovo prenotazione + conto turni (di nuovo via **Assegna** se serve).
 **Cosa controllare (comportamento atteso OGGI, prima del fix P6):**
 - Elimina **tavolo T2**: prenotazione → **da assegnare**; turno **non** consumato.
 - Elimina **sala**: prenotazione → **da assegnare**; turno **consumato** (KO di prodotto atteso oggi = debito `FU-SERV-TURNO-SALA-1`).
-**Trappola:** «T2» = **nome del tavolo**, mai «secondo turno». Questa prova **non** chiede di mettere una seconda prenotazione in coda sullo stesso tavolo mentre la prima è ancora seduta: se non riesci a «prenotare il secondo turno» sulla mappa, è **fuori scope** di T7-bis (comportamento attuale: assegnazione = orario della prenotazione; tavolo già occupato nello stesso orario → vedi T9).
+**Trappola:** «T2» = **nome del tavolo**, mai «secondo turno». Elimina tavolo ≠ Elimina sala (path diversi). Questa prova **non** chiede un secondo cliente in coda sullo stesso tavolo (quello è T9).
 
 ### T8 — Aggiungi tavolo a tavolata
 **Cosa testo:** una prenotazione già assegnata a più tavoli può ricevere un tavolo in più dalla sezione «Assegnate».
@@ -201,18 +228,19 @@ Da 0-bis a V8 = fatto (vedi checklist rapida e note `[O]`).
 **Trappola:** non confondere «aggiungi tavolo alla stessa prenotazione» con «secondo turno» di un altro cliente sullo stesso tavolo.
 
 ### T9 🔴 — Tre scelte quando il tavolo è già occupato
-**Cosa testo:** se assegni la prenotazione **B** sullo stesso tavolo dove è già seduta (o assegnata) la prenotazione **A**, non deve avvenire in silenzio: si apre una modale con **tre opzioni radio** (più Annulla). Devi provarle **tutte e tre**, una per volta.
+**Cosa testo:** se assegni la prenotazione **B** sullo stesso tavolo dove è già seduta (o assegnata) la prenotazione **A**, non deve avvenire in silenzio: si apre un riquadro ambra con **tre opzioni radio** (più Annulla). Devi provarle **tutte e tre**, una per volta.
 **Come fare:**
 1. Crea prenotazione **A** (stesso giorno/fascia) → **Assegna** al tavolo **T2** → conferma.
-2. Crea prenotazione **B** (stesso giorno/fascia, orario che si sovrappone) → **Assegna** → scegli di nuovo il tavolo **T2** (già occupato da A).
-3. Deve aprirsi la modale ambra. Prova **una** radio, conferma, poi **reset** (ricrea A+B o ripeti da capo) e passa alla radio successiva. Fai anche **Annulla** una volta.
+2. Crea prenotazione **B** (stesso giorno/fascia, orario che si sovrappone) → **Assegna** → **tocca di nuovo T2** (anche se risulta Occupato / In arrivo — non serve che sia «libero»).
+3. Si chiude «Assegna» e compare il **riquadro ambra** sotto. In alternativa: trascina B sulla sagoma/card di T2 e **rilascia** (messaggio: «Rilascia: scegli cosa fare…»).
+4. Prova **una** radio, conferma, poi **reset** (ricrea A+B) e passa alla radio successiva. Fai anche **Annulla** una volta.
 **Cosa controllare — le tre radio (nomi esatti in UI):**
 1. **Sposta e assegna** — sposta A su un altro tavolo libero, poi mette B su T2.
 2. **Archivia e assegna** — chiude/archivia A (turno consumato), poi mette B su T2.
 3. **Rimetti in attesa e assegna** — toglie A dal tavolo e la rimette tra le **da assegnare** (senza consumare il turno), poi mette B su T2.
 - Campo **Motivo (opzionale)** presente.
 - **Annulla** chiude senza cambiare niente.
-**Trappola:** «I tavoli non permettono due assegnazioni nelle stesse ore» **è proprio il motivo** per cui compare questa modale — non è un blocco della prova. Non serve «mettere in coda il secondo turno per quando finisce la prima»: qui forzi lo staff a scegliere cosa fare di A. Se dopo «libera tavolo» su una prenotazione non ancora arrivata sparisce da Servizio ma resta in Calendario, annotalo come KO (nota già in checklist rapida).
+**Trappola:** i tavoli liberi entrano in multi-selezione; l’**occupato si tocca una volta** e apre le 3 scelte (non si spunta come libero). Se dopo «libera tavolo» su una prenotazione non ancora arrivata sparisce da Servizio ma resta in Calendario, annotalo come KO.
 
 ### T10 — Responsive piantina
 **Click:** **Servizio** → **Mappa** → **Servizio** · F12 **375** / **834** / **1280** · scroll piantina e pagina  

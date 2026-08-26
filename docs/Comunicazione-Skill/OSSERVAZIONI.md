@@ -300,3 +300,53 @@
 > 📦 **Log-sessione storici (28-05 → 01-06-26)** spostati in [ARCHIVIO_OSSERVAZIONI.md](ARCHIVIO_OSSERVAZIONI.md)
 > per alleggerire questo file. Qui restano: esiti Liv.2 (vivi), sessioni recenti, tabelle ricorrenti.
 > Le nuove sessioni si appendono qui sotto; quando una è consolidata in regola, il revisore la sposta in archivio.
+
+### 26-08-26 · WP-1 istanza 2 diagnosi collaudo Servizio · deep
+- **Correzione Matteo su output:** dopo report diagnosi P0/P1/P2 + domande Sì/No, Matteo: fatica a capire ordine; vuole **causa → effetto → soluzione**; troppe ipotesi/domande/info; domande solo se mancano dati per indirizzare. Annotare per Meta senior.
+- **Contesto:** profilo Verifica, zero `src/`, piano per ultimare checklist (resta T7-bis; T15 chiuso da Matteo pomeriggio con note copy/ordine campi).
+- **Dato grezzo:** preferenza formato «indirizzami, non farmi scegliere tra griglie». Occorrenza comunicazione post-diagnosi MSS ombra.
+
+### 26-08-26 · fail procedura capsula P0/P1 (raccolta errori agenti)
+- **Mandato Matteo:** i fail di `mss:capsule` / `validate:mss` vanno **sempre** annotati nel report (non solo l'OK finale); accumulare dati su errori di procedura agenti.
+- **Fail 1:** `MSS-PARSE-JSONL-AMBIGUOUS` — titolo «Capsula MetaSkillSystem» già nel report senza JSONL → append rifiutato.
+- **Fail 2:** `MSS-OUTPUT-ASSERTION` / `MSS-PRODUCT-GATE` — judgments minimali incompleti rispetto allo schema asse output/sistema.
+- **Ripresa OK:** judgments stampo da chiusura collaudo; sezione 6-bis rinominata; `validate:mss --require-capsule` verde.
+- **Regola portata in:** `CHIUSURA_SESSIONE.md` (fail intermedi obbligatori in report) + report P0/P1 §4-bis.
+
+### 26-08-26 (sera) · Meta senior — analisi 2 istanze WP-1, procedure, forense MSS
+- **Esiti delle due istanze comunicazione (verdetto Meta, OK di Matteo in chat):**
+  - *Istanza 1 (output troppo denso post-diagnosi):* **non è voce VOCABOLARIO, resta osservazione + formato
+    di prompt.** La sostanza esisteva già in tre punti e veniva saltata lo stesso — 2ª occorrenza in 24 ore.
+    Codificata come **riga obbligatoria nei prompt di Verifica/diagnosi** in `PREPARA_PROMPT_SKILL.md` §3
+    (semi-enforcement: verificabile solo dalla chat, nessun hook possibile). Misura: formato rispettato
+    sì/no · n. domande poste · n. corrette da Matteo. Alla 3ª `corretto-da-Matteo` si rialza di livello.
+  - *Istanza 2 (fail capsula):* regola **giusta**, **ratificata** in questa seduta; la deviazione di
+    processo (chat di lavoro che legifera) è in [ERRORI_PROCESSO.md](ERRORI_PROCESSO.md) § 26-08-26.
+- **Dato Matteo (verbatim, punto 5 della chat):** «a fine lavoro istanza 2 ho eseguito io i test e annotato
+  con X i 3 ritest poiché li ho fatti. non l'ho comunicato ad agente, e non gli ho ripetuto io di fare
+  commit aggiornamento report e annotare di segnare errori di procedure con capsule e tool.»
+  → **Due letture, entrambe utili.** (a) La verifica umana è avvenuta davvero ed è il dato Persona più
+  ricco del pilota, ma **non esiste nel registro**: MSS non ha un canale d'ingresso per Matteo (asse
+  Persona vuoto in 55 `judgments-*.json` su 56). (b) Ciò che accade **solo se Matteo lo ripete** non è una
+  regola, è un promemoria — commit, aggiornamento report e annotazione dei fail sono già scritti in
+  `CHIUSURA_SESSIONE.md`. Se dipendono dal suo ricordo, l'enforcement è altrove che nel markdown.
+- **Firma sulle caselle di collaudo (decisa 26-08-26).** Una casella `[x]` scritta da Matteo e una scritta
+  da un agente sono **identiche byte per byte**: un revisore a freddo di questa seduta, con git + ledger +
+  report davanti, ha concluso il falso. Da ora ogni prova superata porta `— verificato da <chi>, <data>`.
+- **Osservazione su come Matteo lavora (dato grezzo, nessuna promozione):** ha eseguito **di persona** le 26
+  prove del collaudo e i 3 ritest, trovando 7 difetti reali. Le decisioni di prodotto in questa chat (turni,
+  walk-in) sono arrivate **come proposta sua**, non come risposta a griglie — coerente con la sua richiesta
+  «indirizzami, non farmi scegliere». *Materiale per il binario valutazione, non per il VOCABOLARIO.*
+- **Forense MSS (numeri da comando):** 147 file con capsula · 610 record · 146 sedute · 495 controlli
+  (468 pass, 25 fail) · **0 su 438 annotazioni verificate da terzi**. Pilota WP-1: 7 capsule + 1 report
+  senza capsula; asse Persona vuoto 7/7. `mss:doctor` **rosso** e `validate:mss:all` **rosso** mentre il
+  pilota gira — una delle cause è un test del MSS congelato sullo stato *precedente* di WP-1
+  (`docs/MetaSkillSystem/tests/tools/run.mjs:1748`). **La macchina anti-stale garantisce la coerenza, non
+  la verità:** il cruscotto è «allineato» a `PLAN_V0`, che è fermo a 25/26 mentre il collaudo è 26/26.
+- **Artefatto pubblicato (Cruscotto Matteo):** fermo al **24-08-26** — quattro sedute indietro. Il file
+  `docs/MetaSkillSystem/Cruscotto MSS.html` è **fuori dai cancelli**: `scripts/mss/views-html.mjs` rifiuta
+  per progetto di scrivere sotto `docs/` versionati (`MSS-VIEWS-HTML-OUT`). Decisione di Matteo: si
+  riallinea a fine seduta del prossimo orchestratore, **non** ora e **non** prima che l'owner sia ratificato.
+- **Decisioni prodotto prese in questa chat:** limite coperti walk-in **rimosso** (il walk-in resta soggetto
+  al conteggio posti di fascia, con avviso e forzatura — comportamento già esistente); turni tavolo →
+  proposta di Matteo su fine-turno dichiarata dall'admin, in valutazione (vedi report di seduta).

@@ -1,0 +1,165 @@
+{
+  "persona": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "signal": "Matteo ha eseguito di persona i tre ritest P0/P1/UX-T9 dopo i fix e ne ha marcato l'esito nella checklist, senza comunicarlo in chat all'agente esecutore; lo ha dichiarato spontaneamente per correggere una conclusione errata del revisore",
+        "actor": "Matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md",
+        "effect": "Il registro MSS dichiarava 0 verifiche indipendenti su 438 annotazioni; una verifica umana reale era avvenuta e non aveva alcun canale d'ingresso. Deciso: firma obbligatoria (chi + quando) su ogni casella di collaudo superata",
+        "evidence_state": "self_report"
+      },
+      {
+        "signal": "Alla domanda binaria sui turni-tavolo (opzione A o B) Matteo non ha scelto: ha proposto un terzo disegno — l'admin dichiara l'ora di fine del turno in corso e i turni multipli diventano dato raccolto anziche limite",
+        "actor": "Matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/26-08-26/Report-meta-senior-analisi-pilota-wp1-e-decisioni-prodotto-26-08-26.md",
+        "effect": "Decisione di prodotto originata dal soggetto, non dall'agente; conferma operativa dell'istruzione registrata 'indirizzami, non farmi scegliere tra griglie'",
+        "evidence_state": "observed"
+      }
+    ],
+    "asserted_by": {
+      "actor_id": "agent-claude-code-26-08-meta-senior",
+      "role": "agente-meta-senior-analisi-wp1",
+      "basis": "direct_observation"
+    },
+    "verification": {
+      "status": "unverified",
+      "verified_by": [],
+      "verified_at": "non_applicabile:non ancora verificato",
+      "criterion_ref": "non_applicabile: nessun criterio di verifica Persona definito in WP-1 ombra",
+      "evidence_refs": [],
+      "notes": "Il soggetto e l'autore della dichiarazione coincidono con la fonte: non puo essere independently_verified. Registrato come segnale osservato, NON come livello. Il pilota non promuove livelli Persona."
+    }
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "META-26-08-COMUNICAZIONE-FORMATO@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Seconda occorrenza in 24 ore della stessa correzione di formato di Matteo (rant 25-08, diagnosi collaudo 26-08): output troppo denso, troppe domande, ordine non causa-effetto-soluzione",
+        "decision_or_output_changed": "Ratificata riga obbligatoria di formato nei prompt di Verifica/diagnosi in PREPARA_PROMPT_SKILL.md sezione 3; NON promossa a voce VOCABOLARIO perche non e una parola-grilletto ma formato di prompt; misura definita (formato si/no, n. domande, n. corrette da Matteo; alla terza si rialza di livello)",
+        "G": 2,
+        "O": 1,
+        "E": 0
+      },
+      {
+        "rule_id_version": "META-26-08-FAIL-CAPSULA-RATIFICA@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Regola 'fail capsula sempre in report' scritta in CHIUSURA_SESSIONE.md da una chat di lavoro, in violazione di FU-META-REPORT-1 che riserva quel file alla sessione Meta senior",
+        "decision_or_output_changed": "Regola ratificata con OK esplicito di Matteo; deviazione di processo registrata in ERRORI_PROCESSO.md riaperto dopo 05-06-26; passo successivo dichiarato: spostare il controllo nello strumento (mss:capsule scrive i propri deny in un log) perche il confronto diventi aritmetica invece che memoria dell'agente",
+        "G": 2,
+        "O": 2,
+        "E": 0
+      },
+      {
+        "rule_id_version": "META-26-08-FORENSE-PILOTA@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Forense su corpus MSS: 147 file con capsula, 610 record, 146 sedute, 495 controls (468 pass, 25 fail), 0 su 438 annotazioni independently_verified; asse Persona vuoto in 55 judgments su 56; mss:doctor e validate:mss:all rossi durante il pilota",
+        "decision_or_output_changed": "Tre buchi documentati: (1) il gate cattura solo cio che viene committato - il report che ha deciso i fix e untracked e senza capsula e mss:review non segnala; (2) l'owner PLAN_V0 e piu vecchio dell'ultima seduta e le viste ne propagano il numero - la macchina anti-stale garantisce la coerenza, non la verita; (3) un test del MSS e congelato sullo stato precedente di WP-1 (tests/tools/run.mjs:1748) e il pilota che avanza rompe la suite che lo misura. Nessuna correzione applicata in questa seduta: solo misura",
+        "G": 2,
+        "O": 2,
+        "E": 1
+      }
+    ],
+    "asserted_by": {
+      "actor_id": "agent-claude-code-26-08-meta-senior",
+      "role": "agente-meta-senior-analisi-wp1",
+      "basis": "direct_observation"
+    },
+    "verification": {
+      "status": "self_report",
+      "verified_by": [],
+      "verified_at": "non_applicabile:self_report",
+      "criterion_ref": "non_applicabile: criterio di verifica non raccolto automaticamente",
+      "notes": "I numeri provengono da esecuzione diretta di mss:query, mss:doctor, test:mss, test:mss:tools, validate:mss:views e validate:docs in questa seduta, non da report altrui. Nessun revisore terzo ha ripetuto le misure."
+    }
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "prompt-orchestratore-fix-voci-O-servizio-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Prompt-orchestratore-fix-voci-O-servizio-26-08-26.md",
+        "recipient": "agente orchestratore incaricato da Matteo",
+        "problem_or_job": "fixare le quattro voci [O] del collaudo Servizio (V3, V5, T10, T16), rimuovere il limite coperti walk-in e collegare la durata base da console, senza chiudere WP-1 e senza toccare PROD",
+        "intended_use": "prompt auto-contenuto da incollare a un orchestratore che lavora con sub-agent e MSS su env/test",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat Meta senior 26-08-26, mandato C (prepara prompt per fixare le voci [O]) piu decisioni prodotto dei punti 1 e 2 del secondo messaggio",
+        "authored_by": "agent-claude-code-26-08-meta-senior",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "ogni blocco auto-contenuto con causa-effetto-soluzione, file:riga verificati sul working tree, rete di test elencata, gate di ritest da 1-3 click, divieti espliciti; ordine di esecuzione con dipendenze dichiarate",
+        "verification_or_use_evidence": "riferimenti file:riga verificati in questa seduta su working tree; conflitto B2/B5 verificato leggendo gli array as const in restaurantSettingRegistry.ts e console/src/lib/restaurantSettings.ts",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md",
+          "docs/Sessioni di lavoro/26-08-26/Report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md",
+          "docs/FOLLOW_UP.md"
+        ],
+        "relations_no_double_count": [
+          "Non chiude WP-1; non implementa alcun fix; non decide il cantiere doppio turno attivo; non riallinea il cruscotto pubblicato"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      },
+      {
+        "output_id": "report-meta-senior-analisi-pilota-wp1-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Report-meta-senior-analisi-pilota-wp1-e-decisioni-prodotto-26-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "misurare cosa hanno prodotto le due istanze del pilota WP-1, se il MSS abbia aggiunto valore rispetto al solo skill system, e se le procedure di chiusura lascino gli artefatti allineati",
+        "intended_use": "base per la revisione fredda del pilota e per le correzioni di sistema decise (firma sulle caselle, canale Persona, deny su report untracked)",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat Meta senior 26-08-26, mandati A e B",
+        "authored_by": "agent-claude-code-26-08-meta-senior",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "numeri da comando rieseguito e non copiati da report altrui; sezione 11 con sei risposte di sostanza; handoff ricostruibile a freddo; nessun dato inventato per sedute non condotte",
+        "verification_or_use_evidence": "mss:query, mss:doctor, test:mss, test:mss:tools, validate:mss:views, validate:docs eseguiti in seduta; esiti in sezione 4 e in controls[]",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Comunicazione-Skill/OSSERVAZIONI.md",
+          "docs/Comunicazione-Skill/ERRORI_PROCESSO.md",
+          "docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md",
+          "docs/PREPARA_PROMPT_SKILL.md"
+        ],
+        "relations_no_double_count": [
+          "Non ratifica PLAN_V0 (25/26 resta da correggere dall'owner); non compila le sezioni 11 mancanti dei due report del 26-08; non genera la capsula assente del report di diagnosi"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ],
+    "asserted_by": {
+      "actor_id": "agent-claude-code-26-08-meta-senior",
+      "role": "agente-meta-senior-analisi-wp1",
+      "basis": "direct_observation"
+    },
+    "verification": {
+      "status": "self_report",
+      "verified_by": [],
+      "verified_at": "non_applicabile:self_report",
+      "criterion_ref": "non_applicabile: criterio di verifica non raccolto automaticamente",
+      "notes": "Nessun revisore terzo ha pesato questi output. La controverifica imparziale prevista da CONTROVERIFICA.md non e stata eseguita in questa seduta."
+    }
+  }
+}

@@ -223,10 +223,12 @@ Baseline completa e confini: [chiusura 06-08](../../Sessioni%20di%20lavoro/06-08
   compare undo/conferma. **Undo (FIX-2):** DELETE fisico della riga appena creata — non consuma un
   turno e non archivia la prenotazione; non viola D48 (append-only sui turni realmente serviti).
 - **Forzatura guidata:** tavolo occupato resta visibile ma non accetta drop silenzioso. Drop/click su tavolo
-  occupato apre avviso esplicito `Libera e assegna`; la riga precedente viene timbrata `checked_out_at`, il
-  nuovo assignment viene inserito con `forced_by_admin`/`force_reason`. Stesso schema per walk-in occupato
-  con conferma in due passaggi. **FIX-2:** la conferma ambra chiude prima la modale «Assegna tavolo»
-  (altrimenti restava sotto e sembrava un fallimento muto).
+  occupato apre il riquadro ambra a tre scelte (`Sposta` / `Archivia` / `Rimetti in attesa` + motivo).
+  Overlay drag-over lista: «Rilascia: scegli cosa fare del cliente seduto» (ex «Libera prima il tavolo»,
+  collaudo 26-08). In modale Assegna: hint + tap sull’occupato apre la stessa forzatura (non entra in
+  multi-selezione). La conferma ambra chiude prima la modale «Assegna tavolo» (altrimenti restava sotto
+  e sembrava un fallimento muto). Stesso schema walk-in occupato con conferma in due passaggi.
+  Audit: `forced_by_admin` / `force_reason` sul nuovo assignment.
 - **Briefing timezone:** orari in modal/PDF usano `desired_time`/ora a muro (`getAccurateStartTime`), non
   `format(new Date(confirmed_start))`.
 - **Mobile:** editor/mappa configurazione nascosta sotto `md`; priorità alla lista/assegnazione operativa.
@@ -323,23 +325,25 @@ Baseline completa e confini: [chiusura 06-08](../../Sessioni%20di%20lavoro/06-08
     ordine (insert su destinazione → delete dal conteso → insert della nuova prenotazione) così un
     fallimento a metà lascia comunque il trasferito assegnato da qualche parte. Il tavolo conteso non
     conta un turno per la sosta scavalcata.
-  - **Archivia** — timbra `checked_out_at` (turno consumato) + `served_at` se non restano altri tavoli
-    attivi sulla stessa prenotazione (riusa `markBookingServedIfFullyReleased`, come `useCheckoutTable`).
-  - **In attesa** — **cambio di comportamento**: prima timbrava `checked_out_at` (consumava un turno);
-    ora **cancella la riga** (DELETE fisico, stesso principio di `useUndoTableAssignment`) e non consuma
-    un turno. È il comportamento pre-fix dell'unica scelta «Libera e assegna».
+  - **Archivia** — timbra `checked_out_at` su **tutte** le assegnazioni attive della prenotazione
+    scavalcata nello stesso giorno (tavolata multi-tavolo inclusa) + `served_at` (collaudo 26-08:
+    prima liberava solo il tavolo conteso e la prenotazione restava parzialmente assegnata).
+  - **In attesa** — **DELETE fisico** di **tutte** le assegnazioni attive della prenotazione nello
+    stesso giorno (non consuma turni); torna intera in «da assegnare». Collaudo 26-08.
   «Conferma» resta spento finché non si sceglie un esito (e per «Sposta» finché non si sceglie anche il
   tavolo); senza tavoli liberi «Sposta» è spento con la spiegazione. Il ramo «Turni esauriti» (tavolo
   verde con turni finiti) non è toccato. Test: `useTableAssignments.sostituzioneGuidata.test.ts`,
   `AssignmentMapPanel.sostituzioneGuidata.test.tsx`; aggiornati `useTableAssignments.fix2.test.ts` e
   `.appendOnly.test.ts` per il nuovo comportamento di «in attesa».
+- **Refresh Servizio dopo Nuova prenotazione admin (26-08):** `useCreateAdminBooking` + form admin
+  invalidano `TABLE_ASSIGNMENTS_QUERY_KEY` (prima solo `bookings` → lista «da assegnare» stale fino a
+  F5). Query Servizio: anche `refetchOnWindowFocus: 'always'`.
 - **S4-FIX-6 — una fascia non può accavallarsi su un'altra.** `ServiceSlotsManager` (editor fasce di
   Servizio) non validava le sovrapposizioni — a differenza di Impostazioni → Imposta Fasce Orarie, che
   le blocca da tempo con `validateSlotConfigs`. Il salvataggio del ramo «valore base» ora riusa
   `slotRangesOverlap` per confrontarsi con le altre fasce esistenti (esclusa se stessa in modifica);
   fasce adiacenti restano ammesse. Solo controllo app, nessun vincolo DB. Test:
   `serviceSlots.sovrapposizione.test.tsx`.
-- **`npm run validate` verde: 151 file / 1247 test** (+3 file / +12 test rispetto a prima di questo fix).
 
 ### 9.9 FIX-4D (02-08-26) — sagome tavolo più grandi + ora di arrivo
 

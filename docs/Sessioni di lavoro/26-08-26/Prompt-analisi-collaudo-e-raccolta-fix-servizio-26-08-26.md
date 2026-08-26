@@ -1,7 +1,12 @@
 # Prompt — Analisi collaudo Servizio + raccolta fix (senza implementare)
 
 **Salvato:** 26-08-2026 · dopo chiusura docs `5399020` su `env/test`  
-**Uso:** incolla il blocco sotto in una **nuova chat** (agente freddo).
+**Stato:** **SUPERSEDED** per il proseguimento WP-1 istanza 2 — usa invece  
+[`Prompt-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md`](Prompt-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md)  
+(primo compito = sub-agent su T7-bis + tutte le prove `[O]`, poi proposte fix).  
+Questo file resta come bozza storica generica.
+
+**Uso (storico):** incolla il blocco sotto in una **nuova chat** (agente freddo).
 
 ---
 
