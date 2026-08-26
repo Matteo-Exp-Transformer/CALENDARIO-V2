@@ -54,7 +54,7 @@ legge, poi cio che scrive.**
 
 - **Ultimo ciclo chiuso:** `T13` **CHIUSO**
 - **Titolo ciclo:** Ventesimo ciclo del 25-08-2026
-- **Prossima azione:** `T14` (prima istanza WP-1 ombra: blindatura Admin Servizio — test, fix e protezione funzioni del cantiere; revisione fredda dopo l'istanza; cutover vietato; `src/` solo nel perimetro Servizio scelto)
+- **Prossima azione:** `T14` (WP-1 ombra in corso: istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano Servizio in corso — completare prove + esiti OK/KO; revisione fredda dopo; cutover vietato; non chiudere WP-1)
 - **R1:** CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2
 
 ## Lavagna pacchetti (M)
@@ -83,7 +83,7 @@ legge, poi cio che scrive.**
 
 **Non classificate (M):**
 - `H-1` Validator e hook rapidi (prima tranche) — _chiusura invalidata dalla revisione H-1.1_
-- `WP-1` Piloti reali in modalità ombra (autorizzato; cutover vietato) — _IN PILOTA — ombra (D27 riaperta 25-08-26 verbatim; cutover vietato; prima istanza = Admin Servizio blindatura/test)_
+- `WP-1` Piloti reali in modalità ombra (autorizzato; cutover vietato) — _IN PILOTA — ombra (D27 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano in corso ~12/26)_
 - `E-2` Enforcement superiore (ancora da decidere) — _buco intenzionale_
 
 ## Riserve aperte
@@ -92,7 +92,7 @@ legge, poi cio che scrive.**
 
 ## Prossimo passo
 
-Completare `T14`. `WP-1` resta _IN PILOTA — ombra (D27 riaperta 25-08-26 verbatim; cutover vietato; prima istanza = Admin Servizio blindatura/test)_ (`H-1.3` PASS ≠ via libera pilota).
+Completare `T14`. `WP-1` resta _IN PILOTA — ombra (D27 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano in corso ~12/26)_ (`H-1.3` PASS ≠ via libera pilota).
 
 ## Dati mobili
 

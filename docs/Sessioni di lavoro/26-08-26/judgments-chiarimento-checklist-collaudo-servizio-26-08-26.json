@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "WP1-COLLAUDO-CHIARIMENTO@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Follow-up WP-1 ombra: chiarimento sequenze T1/T2/T5 checklist umana Servizio + aggiornamento conteggio collaudo e cruscotto",
+        "decision_or_output_changed": "COLLAUDO T1/T2/T5 (e T3/T4/T15) in formato Cosa testo/Come fare/Cosa controllare; conteggio 12/26 da spunte Matteo; PLAN_V0+cruscotto: T14 continua, collaudo in corso, WP-1 non chiuso; cutover vietato; zero src/",
+        "G": 2,
+        "O": 1,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-chiarimento-checklist-collaudo-servizio-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Report-chiarimento-checklist-collaudo-servizio-26-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "rendere eseguibili le prove T1/T2/T5 della checklist Servizio durante il collaudo umano e chiudere la seduta con report+commit",
+        "intended_use": "Matteo continua collaudo con sequenze chiare; stato WP-1/collaudo riflesso in cruscotto senza chiudere WP-1",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat parent sub-agent A-F 26-08-26",
+        "authored_by": "sub-agent-collaudo-chiarimento-26-08",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "T1/T2/T5 riscritte; conteggio da checkbox file; cruscotto generate:mss:views; report §11 completo; capsula; WP-1 non chiuso; commit+push env/test",
+        "verification_or_use_evidence": "COLLAUDO_MANUALE_OBBLIGATORIO.md; generate:mss:views; validate:mss --require-capsule; git push env/test",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md",
+          "docs/MetaSkillSystem/CRUSCOTTO_MATTEO_MSS.md",
+          "docs/Sessioni di lavoro/25-08-26/Report-wp1-istanza2-checklist-qa-servizio-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Non chiude WP-1; non esegue collaudo al posto di Matteo; non inventa OK/KO per prove [ ]; non fix src/"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

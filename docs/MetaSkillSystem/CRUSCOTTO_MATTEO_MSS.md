@@ -18,7 +18,7 @@ Mandato: chiusura reale dei tre residui post-T12 (lavagna + Q-B + Q-C). Decision
 - [`Report-chiusura-residui-t13-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-chiusura-residui-t13-25-08-26.md)
 
 ## Cosa devi fare tu
-R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T14` (prima istanza WP-1 ombra: blindatura Admin Servizio — test, fix e protezione funzioni del cantiere; revisione fredda dopo l'istanza; cutover vietato; `src/` solo nel perimetro Servizio scelto).
+R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. Il prossimo gate è `T14` (WP-1 ombra in corso: istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano Servizio in corso — completare prove + esiti OK/KO; revisione fredda dopo; cutover vietato; non chiudere WP-1).
 
 ## Lavagna
 
@@ -46,7 +46,7 @@ R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. I
 
 **Non classificate (M):**
 - `H-1` Validator e hook rapidi (prima tranche) — _chiusura invalidata dalla revisione H-1.1_
-- `WP-1` Piloti reali in modalità ombra (autorizzato; cutover vietato) — _IN PILOTA — ombra (D27 riaperta 25-08-26 verbatim; cutover vietato; prima istanza = Admin Servizio blindatura/test)_
+- `WP-1` Piloti reali in modalità ombra (autorizzato; cutover vietato) — _IN PILOTA — ombra (D27 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano in corso ~12/26)_
 - `E-2` Enforcement superiore (ancora da decidere) — _buco intenzionale_
 
 ## Riserve aperte
@@ -55,5 +55,5 @@ R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. I
 
 ## Prossimo passo
 
-Completare `T14`. `WP-1` resta _IN PILOTA — ombra (D27 riaperta 25-08-26 verbatim; cutover vietato; prima istanza = Admin Servizio blindatura/test)_ (`H-1.3` PASS ≠ via libera pilota).
+Completare `T14`. `WP-1` resta _IN PILOTA — ombra (D27 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano in corso ~12/26)_ (`H-1.3` PASS ≠ via libera pilota).
 <!-- mss:generated cruscotto-matteo fine -->

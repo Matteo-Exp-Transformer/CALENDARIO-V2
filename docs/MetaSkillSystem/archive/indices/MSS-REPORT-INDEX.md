@@ -762,5 +762,13 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 | Report-t9-f3-r5-r6-dati-move-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-t9-f3-r5-r6-dati-move-25-08-26.md` |
 | Report-t9-f4-r8-d14-portabilita-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-t9-f4-r8-d14-portabilita-25-08-26.md` |
 | Report-verifica-post-t12-d27-prep-wp1-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-verifica-post-t12-d27-prep-wp1-25-08-26.md` |
+| Report-wp1-istanza1-servizio-blindatura-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-wp1-istanza1-servizio-blindatura-25-08-26.md` |
+| Report-wp1-istanza2-checklist-qa-servizio-25-08-26.md | `docs/Sessioni di lavoro/25-08-26/Report-wp1-istanza2-checklist-qa-servizio-25-08-26.md` |
+
+## 26-08-26
+
+| File | Path |
+|---|---|
+| Report-chiarimento-checklist-collaudo-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-chiarimento-checklist-collaudo-servizio-26-08-26.md` |
 
 <!-- mss:generated report-index fine -->

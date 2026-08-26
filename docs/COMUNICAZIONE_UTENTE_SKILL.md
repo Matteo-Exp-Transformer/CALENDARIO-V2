@@ -98,6 +98,28 @@ minimo:** dai abbastanza per capire e agire, non un muro di testo da decifrare.
 Origine: feedback Matteo 30-05-26 — «perdo dettagli per troppi token a display; voglio focalizzarmi
 subito sulle cose importanti, i dettagli li chiedo». Stesso stile già in `PREPARA_PROMPT_SKILL.md` § 3.
 
+## Piani e preparazione: sezione «Domande per te» (obbligatoria)
+
+Quando prepari un **piano**, un **mandato** o un **prompt orchestrator** e servono scelte di Matteo,
+**non mescolare** le domande nel corpo tecnico del piano (quello è per l'agente).
+
+Struttura in chat verso Matteo:
+
+1. **Cosa cambia per te** — una frase (Regola zero).
+2. **Contesto minimo** — solo se serve capire le domande (max 2 frasi).
+3. **`## Domande per te`** — elenco numerato; ogni voce ha:
+   - **Cosa devo sapere** — in linguaggio sala/prodotto, non sigle.
+   - **Perché conta** — una riga (effetto sulla checklist o sul test).
+   - **Risposta suggerita** — opzionale, solo se c'è un default sensato.
+4. **Dopo le tue risposte** — dichiara esplicitamente che consegnerai prompt + plan agente (non
+   prima).
+
+Il **plan per l'agente** (sub-agent, file path, divieti MSS, criteri chiusura istanza) va in un
+blocco separato o in un file in `docs/Sessioni di lavoro/`, **non** nella sezione domande.
+
+Anti-pattern (feedback Matteo 25-08-26): «criteri di accettazione del piano» con punti tecnici
+senza titolo «Domande per te» → Matteo non capisce cosa rispondere.
+
 > **Quando Matteo dice «ragioniamo»** (voce Liv. 1 in `Comunicazione-Skill/VOCABOLARIO.md`): vuole
 > fermarsi a ragionare PRIMA di eseguire. La risposta usa esplicitamente il formato strutturato —
 > spiegazione breve + effetto per te + **tabellina riassuntiva** + **checklist** — anche se di norma

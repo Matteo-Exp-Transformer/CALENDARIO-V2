@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "WP1-I2-CHECKLIST-QA@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "WP-1 istanza 2 ombra: gap-analysis + aggiornamento checklist umana Servizio (solo docs)",
+        "decision_or_output_changed": "COLLAUDO_MANUALE_OBBLIGATORIO con setup QA-Manuale, validazione V1-V8, T7-bis FU turno sala, §5 allineato 257+19+5; WP-1 resta IN PILOTA; cutover vietato; zero src/",
+        "G": 2,
+        "O": 0,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-wp1-istanza2-checklist-qa-servizio-25-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/25-08-26/Report-wp1-istanza2-checklist-qa-servizio-25-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "consegnare checklist umana Servizio eseguibile da zero per collaudo manuale post-blindatura WP1 i1",
+        "intended_use": "Matteo esegue T/V prove e manda esiti OK/KO; base revisione fredda WP-1",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt-orchestrator-wp1-istanza2-checklist-qa-servizio-25-08-26.md",
+        "authored_by": "sub-agent-wp1-i2-checklist-qa",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "gap-analysis INCLUSO/ESCLUSO/DA BUTTARE; COLLAUDO aggiornato §0-bis §1-bis T7-bis §5 WP1; mss:status exit 0; capsula controls reali; WP-1 non chiuso; no src/",
+        "verification_or_use_evidence": "mss:status; gap-analysis; COLLAUDO_MANUALE_OBBLIGATORIO.md; validate:mss --require-capsule",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/PLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/25-08-26/Gap-analysis-Servizio-QA-manuale-25-08-26.md",
+          "docs/Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md",
+          "docs/Sessioni di lavoro/25-08-26/Piano-esecutore-wp1-istanza2-checklist-qa-servizio-25-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Chiude istanza 2 WP-1; non chiude WP-1; non esegue collaudo browser; non fix FU prodotto"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

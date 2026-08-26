@@ -172,6 +172,10 @@ Stato: **cancello M4 Impostazioni chiuso** — Vitest `settings-*` **120/120** (
 **13/13**, `pro-service` **6/6**, batteria Playwright completa **118/118**. La checklist manuale
 4/62 è accettazione di prodotto separata e non va convertita in spunte automatiche.
 
+**Checklist umana agg. 25-08-26 (WP-1 istanza 2):** `docs/Testing-Skill/COLLAUDO_MANUALE_OBBLIGATORIO.md`
+— setup sala «QA-Manuale», validazione modali V1–V8, T1–T16 + T7-bis (`FU-SERV-TURNO-SALA-1`), §5
+allineato a 257 Vitest + 19 E2E + 5 createUpdate (gap-analysis in `Sessioni di lavoro/25-08-26/`).
+
 ### QA visuale Matteo S4 — 24-06-26
 
 > **Fotografia storica:** la tabella sotto descrive i gap al 24-06, non lo stato corrente. Le prove

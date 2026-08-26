@@ -287,6 +287,16 @@
 
 ---
 
+## 25-08-26 — prepara checklist QA Servizio + istanza 2 WP-1 MSS
+
+- **Comunicazione:** quando l'agente prepara un piano con scelte per Matteo, le domande devono stare in
+  una sezione **`Domande per te`**, in linguaggio semplice (cosa fare in app / effetto), separate dal
+  plan tecnico per l'agente. Il piano mescolato con «criteri di accettazione» tecnici non dice chiaramente
+  cosa rispondere → correzione richiesta esplicita.
+- **MSS:** questa sessione = **istanza 2 di N** su WP-1 ombra (istanza 1 = blindatura test automatici
+  Servizio). Istanza 2 = checklist collaudo manuale solo Matteo; confronto procedura MSS vs skill system
+  normale; chiusura con report + capsula, **non** «WP-1 finito».
+
 > 📦 **Log-sessione storici (28-05 → 01-06-26)** spostati in [ARCHIVIO_OSSERVAZIONI.md](ARCHIVIO_OSSERVAZIONI.md)
 > per alleggerire questo file. Qui restano: esiti Liv.2 (vivi), sessioni recenti, tabelle ricorrenti.
 > Le nuove sessioni si appendono qui sotto; quando una è consolidata in regola, il revisore la sposta in archivio.
