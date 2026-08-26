@@ -769,7 +769,15 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 
 | File | Path |
 |---|---|
+| Report-b2-b5-walk-in-durata-console-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-b2-b5-walk-in-durata-console-26-08-26.md` |
+| Report-b3-v3-fasce-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-b3-v3-fasce-26-08-26.md` |
+| Report-b4-t10-piantina-mobile-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-b4-t10-piantina-mobile-26-08-26.md` |
 | Report-chiarimento-checklist-collaudo-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-chiarimento-checklist-collaudo-servizio-26-08-26.md` |
 | Report-chiusura-collaudo-checklist-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-chiusura-collaudo-checklist-servizio-26-08-26.md` |
+| Report-fix-template-capsula-chiusura-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-fix-template-capsula-chiusura-26-08-26.md` |
+| Report-meta-senior-analisi-pilota-wp1-e-decisioni-prodotto-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-meta-senior-analisi-pilota-wp1-e-decisioni-prodotto-26-08-26.md` |
+| Report-orchestratore-fix-voci-O-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-orchestratore-fix-voci-O-servizio-26-08-26.md` |
+| Report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md` |
+| Report-wp1-istanza2-p0-p1-fix-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-wp1-istanza2-p0-p1-fix-servizio-26-08-26.md` |
 
 <!-- mss:generated report-index fine -->

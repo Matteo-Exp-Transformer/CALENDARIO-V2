@@ -16,7 +16,7 @@
  *   public_booking_page_background, public_booking_strip_photo,
  *   booking_staff_presets_visible, booking_custom_staff_presets,
  *   booking_menu_promos, booking_placement_areas, app_theme,
- *   walk_in_max_guests, booking_time_slots_enabled, booking_public_form_config
+ *   restaurant_default_duration, booking_time_slots_enabled, booking_public_form_config
  *
  * SUBSET ESPOSTO IN UI (F7):
  *   La Console espone un sottoinsieme delle chiavi "numeri tecnici" — quelle la cui
@@ -27,7 +27,7 @@
  *   - booking_window_days   : intero 1–365, default 60 — finestra prenotazione pubblica
  *   - slot_limit_enabled    : boolean, default false — interruttore limiti coperti per-fascia
  *   - booking_reject_out_of_slot : boolean, default false — rifiuta prenotazioni fuori fascia
- *   - walk_in_max_guests    : intero 0–500, default 20 — massimo coperti per walk-in
+ *   - restaurant_default_duration : intero 30–360, default 90 — durata base prenotazioni admin
  *   - booking_time_slots_enabled : boolean, default true — raggruppa digest in fasce (solo Classic)
  *
  *   Chiavi NON esposte (richiedono editor specializzati, troppo complessi per F7):
@@ -65,7 +65,7 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_menu_promos',
   'booking_placement_areas',
   'app_theme',
-  'walk_in_max_guests',
+  'restaurant_default_duration',
   'booking_time_slots_enabled',
   'booking_public_form_config',
 ] as const
@@ -127,16 +127,16 @@ export const EXPOSED_SETTINGS: ExposedSetting[] = [
     },
   },
   {
-    key: 'walk_in_max_guests',
+    key: 'restaurant_default_duration',
     type: 'int',
-    label: 'Walk-in: massimo coperti per ingresso',
-    description: 'Massimo coperti accettati in un singolo walk-in. Default 20, max 500.',
-    defaultValue: 20,
+    label: 'Durata base prenotazione (minuti)',
+    description: 'Usata quando una prenotazione admin non ha una durata da card, preset o tipologia. Min 30, max 360.',
+    defaultValue: 90,
     validate: (value) => {
       const n = Number(value)
       if (!Number.isInteger(n)) return 'Deve essere un numero intero'
-      if (n < 0) return 'Deve essere 0 o maggiore'
-      if (n > 500) return 'Massimo 500'
+      if (n < 30) return 'Minimo 30 minuti'
+      if (n > 360) return 'Massimo 360 minuti'
       return null
     },
   },
@@ -197,9 +197,9 @@ export function parseExposedSettingFromDb(
       if (setting.key === 'booking_window_days') {
         return n >= 1 && n <= 365 ? n : setting.defaultValue
       }
-      // Per walk_in_max_guests: clamp 0–500
-      if (setting.key === 'walk_in_max_guests') {
-        return n >= 0 && n <= 500 ? n : setting.defaultValue
+      // Per restaurant_default_duration: clamp 30–360
+      if (setting.key === 'restaurant_default_duration') {
+        return n >= 30 && n <= 360 ? n : setting.defaultValue
       }
       return n
     }

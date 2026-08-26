@@ -1,0 +1,55 @@
+{
+  "persona": { "delta": "nessuno", "assertions": [] },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "orchestratore-fix-voci-O-servizio-26-08-26@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Completamento B2, B5, B3 e B4 con due gate rossi finali",
+        "decision_or_output_changed": "I registri durata, la validazione fasce, lo scroll della piantina e i controlli E2E/MSS sono coerenti con owner e documentazione.",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-orchestratore-fix-voci-O-servizio-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Report-orchestratore-fix-voci-O-servizio-26-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "consegnare e revisionare i fix Servizio con evidenza dei gate e delle complicazioni operative",
+        "intended_use": "handoff, commit e ritest manuale residuo",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt orchestratore fix voci O servizio 26-08-26",
+        "authored_by": "codex-orchestratore",
+        "verified_by": "codex-orchestratore",
+        "acceptance_criterion": "Due rossi verdi, documentazione allineata, B1 esplicitamente non implementato senza prova manuale.",
+        "verification_or_use_evidence": "Playwright mirato 1/1 e npm run test:mss:tools 73 verdi",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Sessioni di lavoro/26-08-26/Prompt-orchestratore-fix-voci-O-servizio-26-08-26.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "e2e/pro/pro-service-tables-lifecycle.spec.ts",
+          "docs/MetaSkillSystem/tests/tools/run.mjs",
+          "docs/FOLLOW_UP.md"
+        ],
+        "relations_no_double_count": [
+          "Non modifica B1, migrazioni, cutover o produzione."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

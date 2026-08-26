@@ -744,9 +744,8 @@ const SlotModal: FC<SlotModalProps> = ({ isOpen, onClose, initial }) => {
             htmlFor="slot-maxguests"
             className="inline-flex max-w-full flex-wrap items-center gap-x-1 text-sm font-medium text-primary-900"
           >
-            Coperti massimi per{' '}
+            Coperti massimi per questa fascia oraria{' '}
             <span className="inline-flex flex-wrap items-center gap-1.5">
-              fascia
               <FormInfoToggle
                 open={maxGuestsInfoOpen}
                 onToggle={() => setMaxGuestsInfoOpen((o) => !o)}

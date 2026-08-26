@@ -9,7 +9,7 @@
  *   - Per i tenant NON-SANDBOX: tutto in sola lettura (editor disabilitati).
  *
  * CHIAVI ESPOSTE (subset da EXPOSED_SETTINGS):
- *   booking_window_days, walk_in_max_guests (interi), slot_limit_enabled,
+ *   booking_window_days, restaurant_default_duration (interi), slot_limit_enabled,
  *   booking_reject_out_of_slot, booking_time_slots_enabled (boolean).
  *   Aggiungere chiavi = aggiungere entry in restaurantSettings.ts.
  *

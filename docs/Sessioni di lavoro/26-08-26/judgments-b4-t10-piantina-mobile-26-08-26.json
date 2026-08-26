@@ -1,0 +1,57 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "B4-T10-piantina-mobile@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Sala con piantina più alta del viewport su telefono o tablet",
+        "decision_or_output_changed": "Il frame della sola ServicePlanMap limita l’altezza a 70dvh e mantiene overflow interno fino a lg, dove il tetto viene rimosso.",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-b4-t10-piantina-mobile-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Report-b4-t10-piantina-mobile-26-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "far scorrere la piantina della sala nel proprio riquadro sui viewport mobili senza alterare il desktop",
+        "intended_use": "revisione orchestratore e ritest browser B4 a 375/834/1280",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt orchestratore fix voci O servizio 26-08-26, blocco B4",
+        "authored_by": "codex-b4",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Vitest mirato verde; cap verticale mobile/tablet; reset desktop; nessuna modifica a box-content o TableMap senza browser.",
+        "verification_or_use_evidence": "ServicePlanMap.griglia.test.tsx, npm run typecheck e npm run lint",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Sessioni di lavoro/26-08-26/Prompt-orchestratore-fix-voci-O-servizio-26-08-26.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "src/features/booking/components/servizio/ServicePlanMap.tsx",
+          "src/features/booking/components/__tests__/ServicePlanMap.griglia.test.tsx"
+        ],
+        "relations_no_double_count": [
+          "Non modifica B2/B5, TableMap, box-content, database, produzione, migrazioni, e2e mutanti, cutover o checklist manuale."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

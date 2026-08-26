@@ -3,17 +3,22 @@ import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
 import type { BookingRequest, BookingRequestInput } from '@/types/booking'
 import { toast } from 'react-toastify'
-import { createBookingDateTime, calculateEndTimeFromStart } from '../utils/dateUtils'
+import { createBookingDateTime, calculateEndTimeFromStart, calculateEndTimeFromStartMinutes } from '../utils/dateUtils'
 import { buildFeatures } from '@/config/features'
 import { logger } from '@/lib/logger'
 import type { Json, TablesInsert } from '@/types/database'
-import { durationSnapshotFromConfirmedRange } from '../utils/bookingDurationSnapshot'
 import { TABLE_ASSIGNMENTS_QUERY_KEY } from './useTableAssignments'
+import { useRestaurantSetting } from './useRestaurantSetting'
+import { resolveBookingDuration } from '../lib/resolveBookingDuration'
 
 // Hook for creating booking requests directly as ACCEPTED (admin only)
 export const useCreateAdminBooking = () => {
   const { tenantId, edition } = useTenantContext()
   const queryClient = useQueryClient()
+  const { data: restaurantDefaultDuration = 90 } = useRestaurantSetting(
+    'restaurant_default_duration',
+    { authenticated: true },
+  )
   return useMutation({
     mutationFn: async (data: BookingRequestInput) => {
       if (!tenantId) {
@@ -29,11 +34,23 @@ export const useCreateAdminBooking = () => {
       
       const fallbackTime = '20:00'
       const startTime = normalizedTime || fallbackTime
-      const endTime = calculateEndTimeFromStart(startTime)
+      const resolvedDuration = resolveBookingDuration({
+        restaurant_default_duration: restaurantDefaultDuration,
+      })
+      const durationMinutes = resolvedDuration?.duration_minutes
+      const endTime = durationMinutes == null
+        ? calculateEndTimeFromStart(startTime)
+        : calculateEndTimeFromStartMinutes(startTime, durationMinutes)
       
       const confirmedStart = createBookingDateTime(data.desired_date, startTime, true)
       const confirmedEnd = createBookingDateTime(data.desired_date, endTime, false, startTime)
-      const durationSnapshot = durationSnapshotFromConfirmedRange(confirmedStart, confirmedEnd)
+      const durationSnapshot = resolvedDuration
+        ? {
+            duration_minutes: resolvedDuration.duration_minutes,
+            duration_source: resolvedDuration.source,
+            duration_rule_version: resolvedDuration.rule_version,
+          }
+        : undefined
       
       const insertData: TablesInsert<'booking_requests'> = {
         tenant_id: tenantId,

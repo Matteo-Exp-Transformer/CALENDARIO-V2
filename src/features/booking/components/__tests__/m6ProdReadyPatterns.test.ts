@@ -50,7 +50,6 @@ describe('M6 prod-ready patterns', () => {
       'src/pages/PublicMenuCategoryPage.tsx',
       'src/lib/menuPhotoUpload.ts',
       'src/features/booking/hooks/useCarouselPhotoUpload.ts',
-      'src/features/booking/components/servizio/WalkInLimitCard.tsx',
       'src/features/booking/components/servizio/RoomConfigModal.tsx',
       'src/features/booking/components/servizio/TableFormModal.tsx',
       'src/features/booking/components/servizio/ServiceSlotsManager.tsx',

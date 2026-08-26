@@ -32,7 +32,7 @@ const modalState = vi.hoisted(() => ({
   rooms: [] as { id: string; name: string }[],
   acceptedBookings: [] as Partial<BookingRequest>[],
   assignments: [] as { table_id: string; service_slot_id: string; date: string; checked_out_at: string | null }[],
-  maxGuests: 20,
+  restaurantDefaultDuration: 90,
   serviceSlots: [] as { id: string; name: string; start_time: string; end_time: string; min_duration: number | null; display_order: number; is_canonical: boolean; max_guests: number | null; max_turns: number | null; max_turns_resume: number | null; slot_color: string | null; turnover_buffer_minutes: number; arrival_step_minutes: number; tenant_id: string; created_at: string; updated_at: string }[],
   // Capienza check
   isAvailable: true as boolean,
@@ -53,7 +53,7 @@ vi.mock('@/features/booking/hooks/useBookingQueries', () => ({
 
 vi.mock('@/features/booking/hooks/useRestaurantSetting', () => ({
   useRestaurantSetting: (key: string) => {
-    if (key === 'walk_in_max_guests') return { data: modalState.maxGuests }
+    if (key === 'restaurant_default_duration') return { data: modalState.restaurantDefaultDuration }
     return { data: null }
   },
 }))
@@ -102,7 +102,7 @@ describe('WP-B2 Walk-in coerente', () => {
     modalState.rooms = []
     modalState.acceptedBookings = []
     modalState.assignments = []
-    modalState.maxGuests = 20
+    modalState.restaurantDefaultDuration = 90
     modalState.serviceSlots = []
     modalState.isAvailable = true
     modalState.walkInMutate.mockReset()

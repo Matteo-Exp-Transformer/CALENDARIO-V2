@@ -120,7 +120,7 @@ describe('S4-FIX-6 — fasce di Servizio non si accavallano', () => {
     ]
   })
 
-  it('nuova fascia accavallata su Cena → il salvataggio si rifiuta e nomina le due fasce', async () => {
+  it('nuova fascia accavallata su Cena → il salvataggio si rifiuta e nomina le due fasce con gli orari', async () => {
     const user = userEvent.setup()
     renderManager()
 
@@ -132,7 +132,7 @@ describe('S4-FIX-6 — fasce di Servizio non si accavallano', () => {
     await user.click(screen.getByRole('button', { name: /^aggiungi$/i }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Le fasce "Serale" e "Cena" si sovrappongono',
+      'Le fasce "Serale" (20:00–23:00) e "Cena" (19:00–22:00) si sovrappongono',
     )
     expect(createSlotSpy).not.toHaveBeenCalled()
   })
@@ -183,6 +183,34 @@ describe('S4-FIX-6 — fasce di Servizio non si accavallano', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/nome fascia duplicato/i)
     expect(createSlotSpy).not.toHaveBeenCalled()
+  })
+
+  it('nome duplicato più avanti nell’elenco ha priorità su un overlap trovato prima', async () => {
+    const user = userEvent.setup()
+    slotsState.slots = [
+      makeSlot('slot-aperitivo', 'Aperitivo', '20:00:00', '23:00:00', 0),
+      makeSlot('slot-cena', 'Cena', '12:00:00', '15:00:00', 1),
+    ]
+    renderManager()
+
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia/i }))
+    await user.type(screen.getByLabelText('Nome fascia'), 'cena')
+    await setTime(user, 'slot-start', '19:00')
+    await setTime(user, 'slot-end', '22:00')
+
+    await user.click(screen.getByRole('button', { name: /^aggiungi$/i }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Nome fascia duplicato: "cena"')
+    expect(createSlotSpy).not.toHaveBeenCalled()
+  })
+
+  it('mostra per esteso la label dei coperti della fascia', async () => {
+    const user = userEvent.setup()
+    renderManager()
+
+    await user.click(screen.getByRole('button', { name: /aggiungi fascia/i }))
+
+    expect(screen.getByRole('spinbutton', { name: 'Coperti massimi per questa fascia oraria' })).toBeInTheDocument()
   })
 
   it('nuova fascia con inizio uguale alla fine → il salvataggio si rifiuta (Servizio la accettava prima del fix)', async () => {

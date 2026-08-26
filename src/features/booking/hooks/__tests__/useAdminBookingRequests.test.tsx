@@ -3,8 +3,9 @@ import { renderHook, act } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import React from 'react'
 
-const { mockFrom } = vi.hoisted(() => ({
+const { mockFrom, mockRestaurantDefaultDuration } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
+  mockRestaurantDefaultDuration: { value: 90 },
 }))
 
 vi.mock('@/lib/supabase', () => ({
@@ -17,6 +18,10 @@ vi.mock('@/contexts/TenantContext', () => ({
 
 vi.mock('react-toastify', () => ({
   toast: { success: vi.fn(), error: vi.fn() },
+}))
+
+vi.mock('../useRestaurantSetting', () => ({
+  useRestaurantSetting: () => ({ data: mockRestaurantDefaultDuration.value }),
 }))
 
 import { useTenantContext } from '@/contexts/TenantContext'
@@ -54,6 +59,7 @@ const BOOKING_INPUT = {
 describe('useCreateAdminBooking — placement', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockRestaurantDefaultDuration.value = 90
     mockUseTenantContext.mockReturnValue({
       tenantId: 'tenant-1',
       edition: 'classic',
@@ -93,5 +99,40 @@ describe('useCreateAdminBooking — placement', () => {
     expect(chain['insert']).toHaveBeenCalledWith(
       expect.objectContaining({ placement: 'Sala A' }),
     )
+  })
+
+  it('risolve prima la durata console e poi calcola confirmed_end a +90 minuti', async () => {
+    const chain = buildInsertChain({ data: { id: 'new-3' }, error: null })
+    mockFrom.mockReturnValue(chain)
+
+    const { result } = renderHook(() => useCreateAdminBooking(), { wrapper: makeWrapper() })
+
+    await act(async () => {
+      await result.current.mutateAsync(BOOKING_INPUT)
+    })
+
+    expect(chain['insert']).toHaveBeenCalledWith(expect.objectContaining({
+      confirmed_end: '2026-05-10T21:30:00+00:00',
+      duration_minutes: 90,
+      duration_source: 'restaurant_default',
+      duration_rule_version: 1,
+    }))
+  })
+
+  it('calcola in minuti anche una durata console non multipla di un ora', async () => {
+    mockRestaurantDefaultDuration.value = 31
+    const chain = buildInsertChain({ data: { id: 'new-4' }, error: null })
+    mockFrom.mockReturnValue(chain)
+
+    const { result } = renderHook(() => useCreateAdminBooking(), { wrapper: makeWrapper() })
+
+    await act(async () => {
+      await result.current.mutateAsync(BOOKING_INPUT)
+    })
+
+    expect(chain['insert']).toHaveBeenCalledWith(expect.objectContaining({
+      confirmed_end: '2026-05-10T20:31:00+00:00',
+      duration_minutes: 31,
+    }))
   })
 })

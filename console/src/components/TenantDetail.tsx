@@ -432,7 +432,7 @@ function InterviewCoverageMap({ org }: InterviewCoverageMapProps) {
       title: 'Regole di prenotazione (numeri tecnici)',
       // Parzialmente supportata: 5 chiavi esposte nel pannello impostazioni.
       status: '✅',
-      note: 'Parziale: 5 chiavi esposte (booking_window_days, walk_in_max_guests, slot_limit_enabled, booking_reject_out_of_slot, booking_time_slots_enabled). Editor avanzati (business_hours, slot_guest_capacities) in arrivo (FU-CONSOLE-9)',
+      note: 'Parziale: 5 chiavi esposte (booking_window_days, restaurant_default_duration, slot_limit_enabled, booking_reject_out_of_slot, booking_time_slots_enabled). Editor avanzati (business_hours, slot_guest_capacities) in arrivo (FU-CONSOLE-9)',
     },
     {
       sez: 'Sez.5',

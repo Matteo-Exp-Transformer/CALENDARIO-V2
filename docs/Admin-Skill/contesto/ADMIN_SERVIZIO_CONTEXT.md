@@ -49,7 +49,7 @@
 - `service_slot_overrides`
 - `booking_table_assignments`
 - `booking_requests`
-- `restaurant_settings.walk_in_max_guests`
+- `restaurant_settings.restaurant_default_duration` (durata base console, default 90 minuti)
 
 ## 5. Vincoli
 
@@ -66,8 +66,8 @@
 - Tavolo richiede capienza intera > 0; sala obbligatoria se esistono sale.
 - Drag mappa disabilitato sotto 768px.
 - Slot supportano overnight; `max_turns=0` indica servizio chiuso.
-- Walk-in usa limite default 20 se setting assente; registry ammette 0..500, modal richiede 1..max.
-- **Guard modifiche non salvate (FU-023, M6 12-06-26):** modali sala/tavolo/fascia (`RoomConfigModal`, `TableFormModal`, `SlotModal` in `ServiceSlotsManager`) e card `WalkInLimitCard` usano `DiscardChangesConfirmModal` + `UnsavedChangesContext` (sorgenti `servizio-room-modal`, `servizio-table-modal`, `servizio-slot-modal`, `servizio-walk-in-limit`). Chiusura X/overlay/Annulla con form dirty → conferma in-app; navigazione sidebar Pro bloccata finché dirty. Pattern: `CustomerFormModal` / `MenuQrModal`. Test: `servizioModalsGuard.adminBlindatura.test.tsx`.
+- Walk-in è vincolato solo dalla capienza della fascia: oltre capienza mostra l'avviso ambra e il secondo click conferma; nessun limite separato per singolo ingresso.
+- **Guard modifiche non salvate (FU-023, M6 12-06-26):** modali sala/tavolo/fascia (`RoomConfigModal`, `TableFormModal`, `SlotModal` in `ServiceSlotsManager`) usano `DiscardChangesConfirmModal` + `UnsavedChangesContext` (sorgenti `servizio-room-modal`, `servizio-table-modal`, `servizio-slot-modal`). Chiusura X/overlay/Annulla con form dirty → conferma in-app; navigazione sidebar Pro bloccata finché dirty. Pattern: `CustomerFormModal` / `MenuQrModal`. Test: `servizioModalsGuard.adminBlindatura.test.tsx`.
 - **Riordino fasce in Pro (19-06-26):** `ServiceSlotsManager` ora ha frecce Su/Giù su ogni fascia (`SlotControls`). Click → `persistSlotOrder()` chiama `updateSlot.mutateAsync` per ogni fascia con `display_order = indice-posizione` e `skipToast:true`. Prima/ultima fascia disabilita rispettiva freccia. Pattern display_order = indice array (identico a Classic). Nessuna migrazione. Test: `serviceSlotsMoveOrder.servizioBlindatura.test.tsx`. ⚠️ Nuove fasce create da Pro ricevevano sempre `display_order:0` — `persistSlotOrder` normalizza automaticamente.
 - **Intervallo arrivi S3 (solo Pro):** la modale fascia espone preset 15/30/60 + «Altro», range
   5–120. Scrive `service_slots.arrival_step_minutes` tramite la stessa RPC PATCH. Nessuna manopola
@@ -435,9 +435,8 @@ Baseline completa e confini: [chiusura 06-08](../../Sessioni%20di%20lavoro/06-08
   originale (gated `viewMode==='list'`): reso sempre visibile perché FIX-4 toglie "Nuova sala" da
   `RoomTabs` (solo Mappa) — se l'header restasse Lista-only, la vista Mappa perderebbe ogni modo di
   creare una sala. Vale il criterio guida "niente due CTA diverse per creare una sala".
-- **FIX-3 — Walk-in sotto le fasce.** `WalkInLimitCard` non è più in cima alla pagina (comune alle
-  due viste): ora c'è una copia sotto la `CollapsibleCard` "Fasce orarie" di Lista e una sotto quella
-  di Mappa (rami JSX separati, serviva una copia per vista). Nessun cambio alla logica/guard interna.
+- **B2 (26-08-26) — limite walk-in rimosso.** La card e la relativa sorgente del guard non esistono più:
+  il walk-in resta regolato dalla sola capienza della fascia, con avviso ambra e conferma al secondo click.
 - **FIX-4 — "Nuova sala" rimosso da `RoomTabs`.** Tolti pulsante e prop `onAddRoom` (interfaccia +
   call-site in `ServizioPage.tsx` + test `servizioA1Fixes.test.tsx`); resta solo "Modifica sala". La
   creazione sala passa solo dall'header (FIX-2). Testi residui "Nuova sala" aggiornati a "Aggiungi
@@ -605,6 +604,16 @@ Baseline completa e confini: [chiusura 06-08](../../Sessioni%20di%20lavoro/06-08
   fasce (spegnere tutte le fasce non fa scattare "Almeno una fascia oraria è richiesta" — comportamento
   preesistente invariato, la regola nuova sull'array vuoto non è stata introdotta lì per non rompere
   un flusso già supportato).
+- **V3 fasce (26-08-26).** Nella modifica di una fascia, `validateSlotConfigs` completa prima la
+  scansione dei nomi duplicati e soltanto dopo valuta le sovrapposizioni: così il messaggio non
+  dipende dall'ordine dell'array. Un overlap reale nomina entrambe le fasce e i due intervalli; in
+  Servizio il campo espone la label completa «Coperti massimi per questa fascia oraria». Prove:
+  `bookingTimeSlots.settingsM4.adminBlindatura.test.ts` e `serviceSlots.sovrapposizione.test.tsx`.
+- **T10 piantina mobile (26-08-26).** Il frame operativo di `ServicePlanMap` ha
+  `max-h-[70dvh] overflow-auto` sotto `lg` e annulla il tetto da desktop: una sala molto alta si
+  scorre dentro il suo riquadro invece di allungare tutta la pagina. Non modificare `TableMap` o
+  `box-content` senza prova browser dell'overflow orizzontale a 375px; il ritest visivo resta il
+  solo gate manuale. Prova codice: `ServicePlanMap.griglia.test.tsx`; report B4 T10 del 26-08-26.
 - **FIX D — l'avviso di fine turno sopravvive al reload (D-D, FU-SERV-RELEASE-NOTICE-1).** Nuova
   colonna `booking_table_assignments.release_notice_handled_at timestamptz` (mig. **070**). "Ancora
   occupato" timbra `now()` sulla **riga di assegnazione esatta** che ha generato l'avviso

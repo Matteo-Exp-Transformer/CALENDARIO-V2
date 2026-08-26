@@ -323,7 +323,7 @@ RULE  Prop aggiunte ad AdminDashboard sempre OPTIONAL con default sensati
 RULE  Edition Classic = !features.sidebar → AdminShell fa return anticipato, nessuna sidebar
 RULE  Per aggiungere una feature gated: 1) flag in FeatureFlags+buildFeatures 2) featureKey in SIDEBAR_NAV_ITEMS 3) gating nel render
 
-RULE  walk_in_max_guests: range 0–500 (0 = nessun walk-in accettato), campo opzionale. email/phone contatto opzionali — validati solo se compilati. Validazione in `restaurantSettingRegistry.ts`.
+RULE  Walk-in: nessun limite separato per singolo ingresso; oltre la capienza della fascia l'admin riceve un avviso morbido e può confermare al secondo click. `restaurant_default_duration` è la durata base console dei flussi admin: intero 30–360, default 90, validato in `restaurantSettingRegistry.ts`.
 RULE  Selettore orario: UNICO componente `TimePicker24h` (pubblico+admin), minuti liberi 0-59, prop `compact` per form pubblico — `TimeInput` ELIMINATO, non reintrodurre input nativo type="time"
 RULE  Avviso orario notturno (fine < inizio): testo unico `OVERNIGHT_TIME_END_HINT` in `bookingTimeSlots.ts` — nel modal CRUD fascia e nella sezione Classic «Imposta Fasce Orarie»; **non** sigle inline `(notturna +1)` nelle liste.
 RULE  **Servizio** (fasce/override a tempo, modal CRUD fascia, assegnazione tavoli, libera tavolo, quick assign da Calendario): **dettaglio completo → `docs/Admin-Skill/contesto/ADMIN_SHELL_PAGES_CONTEXT.md` § Servizio** (sottosezioni Fasce orarie · Assegnazione tavoli · Accesso rapido da Calendario). Flussi utente → `contesto/ADMIN_SERVIZIO_CONTEXT.md`.
@@ -526,7 +526,7 @@ Dopo ogni modifica al codice che cambia l'architettura, le strutture dati o le r
 | `AssignmentMapPanel` / `useTableAssignments` / `serviceSlotBookingFilter` | `contesto/ADMIN_SHELL_PAGES_CONTEXT.md` § Servizio → Assegnazione tavoli |
 | Struttura cartelle `src/` | `APP_CONTEXT_SKILL.md` §3 |
 | Qualsiasi file LOCK | Aggiorna sezione "stato attuale" nello skill di area |
-| `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE walk_in_max_guests |
+| `restaurantSettingRegistry.ts` (validazione, range, campi) | `APP_CONTEXT_SKILL.md` §4 RULE Walk-in / restaurant_default_duration |
 | `MenuPricesTab.tsx` / `MenuSelection.tsx` / `menuPricesCatalogLayout.ts` / `presetMenus.ts` / `menuCatalogGrouping.ts` | `Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` (+ `Prenota-Skill/contesto/PRENOTA_DATA_FLOW_CONTEXT.md`) |
 | `MenuQrManager.tsx` / `MenuQrModal.tsx` / `useMenuQrCodes.ts` / pagine pubbliche menu | `docs/Menu-QR-Skill/MENU_QR_SKILL.md` + `APP_CONTEXT_SKILL.md` §4 RULE Menu QR |
 | `tenant_features` / `buildFeatures` / `featureOverrides` / `TenantContext` / `useFeatures` | `APP_CONTEXT_SKILL.md` §4 RULE Feature flag commerciali + `DATA_FLOW_SKILL.md` |

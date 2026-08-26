@@ -26,6 +26,10 @@ export function getSlotLabel(slot: Pick<SlotConfig, 'name' | 'start_time' | 'end
  */
 export type SlotValidationInput = Pick<SlotConfig, 'name' | 'start_time' | 'end_time'>
 
+function formatSlotForOverlapMessage(slot: SlotValidationInput): string {
+  return `"${slot.name}" (${slot.start_time.slice(0, 5)}–${slot.end_time.slice(0, 5)})`
+}
+
 export interface ValidateSlotConfigsOptions {
   /**
    * Indice della fascia "in bozza" nell'array (revisione senior FIX C, 03-08-26).
@@ -81,7 +85,7 @@ export function validateSlotConfigs(
     for (let i = 0; i < slots.length; i++) {
       for (let j = i + 1; j < slots.length; j++) {
         if (slotRangesOverlap(slots[i].start_time, slots[i].end_time, slots[j].start_time, slots[j].end_time)) {
-          return `Le fasce "${slots[i].name}" e "${slots[j].name}" si sovrappongono`
+          return `Le fasce ${formatSlotForOverlapMessage(slots[i])} e ${formatSlotForOverlapMessage(slots[j])} si sovrappongono`
         }
       }
     }
@@ -98,14 +102,24 @@ export function validateSlotConfigs(
   if (focus.start_time === focus.end_time) return `Fascia "${focus.name}": inizio e fine coincidono`
 
   const focusKey = focus.name.trim().toLowerCase()
+
+  // Prima completiamo il controllo del nome contro TUTTE le altre fasce. In questo
+  // modo un overlap con una fascia che capita prima nell'array non può mascherare
+  // un nome duplicato presente più avanti.
   for (let i = 0; i < slots.length; i++) {
     if (i === focusIndex) continue
     const other = slots[i]
     if (other.name.trim().toLowerCase() === focusKey) {
       return `Nome fascia duplicato: "${focus.name}"`
     }
+  }
+
+  // Solo dopo i nomi controlliamo tutte le sovrapposizioni della bozza.
+  for (let i = 0; i < slots.length; i++) {
+    if (i === focusIndex) continue
+    const other = slots[i]
     if (slotRangesOverlap(focus.start_time, focus.end_time, other.start_time, other.end_time)) {
-      return `Le fasce "${focus.name}" e "${other.name}" si sovrappongono`
+      return `Le fasce ${formatSlotForOverlapMessage(focus)} e ${formatSlotForOverlapMessage(other)} si sovrappongono`
     }
   }
   return null

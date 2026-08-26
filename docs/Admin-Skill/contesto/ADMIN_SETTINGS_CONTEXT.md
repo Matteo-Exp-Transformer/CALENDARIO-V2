@@ -50,7 +50,8 @@ chiave gia registrata.
 |---|---|
 | Anagrafica/contatti | `restaurant_name`, `contact_email`, `contact_phone`, `contact_address` |
 | Orari e capienze | `business_hours`, `slot_guest_capacities` (legacy/supporto), `booking_time_slots_enabled`, `timezone`, `booking_window_days` |
-| **Limiti coperti** | **`slot_guest_capacities`** (cap per-fascia, fonte autoritativa letta da edge+badge), **`slot_limit_enabled`** (interruttore globale limiti per-fascia), **`booking_reject_out_of_slot`** (vincolo orario fuori-fascia), `walk_in_max_guests`. ⚠️ `daily_guest_limit` **RIMOSSO** (18-06-26, cambio modello — vedi §8) |
+| **Limiti coperti** | **`slot_guest_capacities`** (cap per-fascia, fonte autoritativa letta da edge+badge), **`slot_limit_enabled`** (interruttore globale limiti per-fascia), **`booking_reject_out_of_slot`** (vincolo orario fuori-fascia). ⚠️ `daily_guest_limit` **RIMOSSO** (18-06-26, cambio modello — vedi §8) |
+| **Durata prenotazione** | `restaurant_default_duration`: durata base in minuti per i flussi admin, gestita dalla console super-admin (default 90; min 30, max 360). |
 | Tema | `app_theme` (solo admin, ID in `APP_THEME_IDS`) |
 | Pagina Prenota | `booking_public_form_config`, `public_booking_page_background`, `public_booking_strip_photo`, `booking_placement_areas` |
 | Promo/preset | `booking_menu_promos`, `booking_custom_staff_presets`, `booking_staff_presets_visible` |

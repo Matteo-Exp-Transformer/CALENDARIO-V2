@@ -111,7 +111,7 @@
 | Sale (nome) | Pro | 🟩 | tabella `rooms` | — | |
 | Tavoli (nome, capienza, posizione) | Pro | 🟩 | tabella `tables` | — | |
 | Aree di posizionamento | Pro | 🟦 | `booking_placement_areas` | — | |
-| Limite coperti walk-in | Pro | 🟦 | `walk_in_max_guests` | 20 | |
+| Durata base prenotazione admin (minuti) | tutte | 🟦 | `restaurant_default_duration` | 90 | min 30, max 360; card/preset/tipologia hanno priorità |
 | Ritardo / no-show (minuti) | Pro | 🟦 | (console sala) | 15–20 | |
 | Limite coperti operativo con tavoli | Pro | 🟦 | (motore Servizio) | — | |
 

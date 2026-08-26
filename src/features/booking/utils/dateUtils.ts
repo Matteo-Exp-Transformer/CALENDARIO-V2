@@ -114,19 +114,24 @@ export function extractTimeFromISO(isoString: string | null | undefined): string
 
 
 /**
- * Calculates the end time string starting from startTime adding a number of hours.
+ * Calculates the end time string starting from startTime adding a number of minutes.
  * Keeps the result within the same 24h window (wraps if it crosses midnight).
  */
-export function calculateEndTimeFromStart(startTime: string, hoursToAdd: number = 3): string {
+export function calculateEndTimeFromStartMinutes(startTime: string, minutesToAdd: number): string {
   if (!startTime) return ''
 
   const [hours, minutes] = startTime.split(':').map(Number)
-  const totalMinutes = hours * 60 + minutes + hoursToAdd * 60
+  const totalMinutes = hours * 60 + minutes + minutesToAdd
   const wrappedMinutes = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60)
   const endHours = Math.floor(wrappedMinutes / 60)
   const endMinutes = wrappedMinutes % 60
 
   return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`
+}
+
+/** Backward-compatible hours wrapper for existing callers. */
+export function calculateEndTimeFromStart(startTime: string, hoursToAdd: number = 3): string {
+  return calculateEndTimeFromStartMinutes(startTime, Math.round(hoursToAdd * 60))
 }
 
 /**

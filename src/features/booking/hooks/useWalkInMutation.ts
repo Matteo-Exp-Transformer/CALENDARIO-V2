@@ -56,6 +56,8 @@ export interface WalkInInput {
    * Usata come pavimento dal resolver durata (gerarchia D35) — mai come valore unico.
    */
   slot_min_duration?: number
+  /** Durata base da console, ultimo gradino della gerarchia D35. */
+  restaurant_default_duration?: number
   force_replace_existing?: boolean
   force_reason?: string
 }
@@ -100,11 +102,10 @@ export function useWalkInMutation() {
       const confirmedStart = createBookingDateTime(desiredDate, desiredTime)
 
       // Risolve la durata con il resolver D35.
-      // Per il walk-in non abbiamo card/preset/booking_mode disponibili qui
-      // (la config walk-in da console è FU-SERV-ADMIN-PANEL-1, non ancora implementata).
-      // Passiamo solo slot_min_duration come pavimento — il resolver usa quello come floor,
-      // non come sorgente: senza altri livelli configurati ritorna undefined (D42).
+      // Per il walk-in non abbiamo card/preset/booking_mode disponibili qui.
+      // La durata base console è l'ultimo gradino; la fascia resta solo un pavimento.
       const resolved = resolveBookingDuration({
+        restaurant_default_duration: input.restaurant_default_duration,
         slot_min_duration: input.slot_min_duration,
       })
 

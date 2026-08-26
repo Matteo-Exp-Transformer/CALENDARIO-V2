@@ -77,8 +77,8 @@ export const RESTAURANT_SETTING_KEYS_V1 = [
   'booking_placement_areas',
   /** Tema visivo dashboard admin (solo /admin); non influenza la pagina pubblica Prenota */
   'app_theme',
-  /** Numero massimo coperti accettati in un singolo walk-in (default 20) */
-  'walk_in_max_guests',
+  /** Durata base in minuti, gestita dalla console super-admin (default 90). */
+  'restaurant_default_duration',
   /** Classic: abilita/disabilita raggruppamento digest per fasce orarie (default true). In Pro ignorato -- sempre ON. */
   'booking_time_slots_enabled',
   /** Configurazione UI pagina pubblica /prenota: titolo, descrizione, modalità di prenotazione visibili. */
@@ -361,7 +361,8 @@ export type RestaurantSettingValueMap = {
   booking_menu_promos: MenuPromo[]
   booking_placement_areas: string[]
   app_theme: AppThemeId
-  walk_in_max_guests: number
+  /** Durata base della prenotazione da console super-admin (minuti). */
+  restaurant_default_duration: number
   /** Classic: abilita raggruppamento digest per fasce. Pro: ignorato (sempre true). Default true per retro-compatibilita. */
   booking_time_slots_enabled: boolean
   /** Configurazione UI pagina pubblica /prenota: titolo, descrizione e modalità di prenotazione. */
@@ -579,22 +580,14 @@ export const restaurantSettingRegistry: {
       return 'Tema app non valido'
     },
   },
-  walk_in_max_guests: {
-    key: 'walk_in_max_guests',
-    parseFromDb: (raw) => {
-      if (typeof raw === 'number' && Number.isFinite(raw) && raw >= 0) return raw
-      if (typeof raw === 'string') {
-        const n = parseInt(raw, 10)
-        if (!Number.isNaN(n) && n >= 0) return n
-      }
-      return 20
-    },
+  restaurant_default_duration: {
+    key: 'restaurant_default_duration',
+    parseFromDb: (raw) => parseBookingDuration(raw) ?? 90,
     serializeToDb: (value) => value as Json,
-    validate: (value) => {
-      const n = Number(value)
-      if (!Number.isInteger(n) || n < 0 || n > 500) return 'Deve essere un intero tra 0 e 500'
-      return null
-    },
+    validate: (value) =>
+      parseBookingDuration(value) != null
+        ? null
+        : `Deve essere un intero tra ${BOOKING_DURATION_MIN} e ${BOOKING_DURATION_MAX} minuti`,
   },
   booking_time_slots_enabled: {
     key: 'booking_time_slots_enabled',

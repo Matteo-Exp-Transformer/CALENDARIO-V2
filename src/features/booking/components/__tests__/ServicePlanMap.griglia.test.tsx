@@ -131,6 +131,15 @@ describe('ServicePlanMap — griglia sale', () => {
     expect(screen.queryByTestId('service-plan-room-r-vuota')).toBeNull()
     expect(roomWrapper('r-a')).toHaveAttribute('data-room-visibility', 'always')
   })
+
+  it('su mobile/tablet limita l’altezza della piantina allo scroll interno, senza cambiare il desktop', () => {
+    renderMap('r-a')
+
+    const plan = screen.getByTestId('service-plan-room-r-a')
+    expect(plan.className).toContain('max-h-[70dvh]')
+    expect(plan.className).toContain('overflow-auto')
+    expect(plan.className).toContain('lg:max-h-none')
+  })
 })
 
 /**

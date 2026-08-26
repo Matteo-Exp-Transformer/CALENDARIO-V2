@@ -38,8 +38,9 @@ disabilita una feature del bundle.
 - **Anagrafica/contatti:** `restaurant_name`, `contact_*`.
 - **Orari/fasce/capienze:** `business_hours`, `slot_guest_capacities`, `booking_time_slots_enabled`.
 - **Limiti coperti:** `slot_guest_capacities` (cap per-fascia, fonte autoritativa letta da Edge e
-  badge), `slot_limit_enabled` (interruttore globale), `booking_reject_out_of_slot` (vincolo orario),
-  `walk_in_max_guests`. ⚠️ *Correzione 05-08-26: qui era elencato `daily_guest_limit` come limite
+  badge), `slot_limit_enabled` (interruttore globale), `booking_reject_out_of_slot` (vincolo orario).
+  La durata base admin è `restaurant_default_duration` (console super-admin, default 90 minuti).
+  ⚠️ *Correzione 05-08-26: qui era elencato `daily_guest_limit` come limite
   giornaliero attivo — **rimosso il 18-06-26** col cambio di modello; nessun file di `src/` lo legge
   più.*
 - **Pagina Prenota:** `public_booking_page_background`, `public_booking_strip_photo`,

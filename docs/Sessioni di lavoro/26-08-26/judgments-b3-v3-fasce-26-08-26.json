@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "B3-V3-fasce@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Rinomino di una fascia con nome duplicato e sovrapposizione concorrente",
+        "decision_or_output_changed": "La validazione della bozza completa prima la scansione dei nomi duplicati e solo dopo controlla le sovrapposizioni; il copy overlap riporta entrambi gli intervalli.",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-b3-v3-fasce-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Report-b3-v3-fasce-26-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "correggere la priorità e il copy della validazione fasce in Servizio",
+        "intended_use": "revisione orchestratore e ritest manuale dei tre passaggi B3",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt orchestratore fix voci O servizio 26-08-26, blocco B3",
+        "authored_by": "codex-b3",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Vitest mirati verdi; duplicato prioritario; copy overlap con due intervalli; label coperti completa.",
+        "verification_or_use_evidence": "bookingTimeSlots.settingsM4.adminBlindatura.test.ts e serviceSlots.sovrapposizione.test.tsx",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Sessioni di lavoro/26-08-26/Prompt-orchestratore-fix-voci-O-servizio-26-08-26.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "src/features/booking/utils/bookingTimeSlots.ts",
+          "src/features/booking/components/servizio/ServiceSlotsManager.tsx",
+          "src/features/booking/utils/__tests__/bookingTimeSlots.settingsM4.adminBlindatura.test.ts",
+          "src/features/booking/components/__tests__/serviceSlots.sovrapposizione.test.tsx"
+        ],
+        "relations_no_double_count": [
+          "Non modifica B2/B5, database, produzione, migrazioni, cutover o checklist di collaudo."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

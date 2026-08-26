@@ -188,6 +188,7 @@ completo e ragionato in `INVENTARIO_FUNZIONALITA_ONBOARDING_VS_CONSOLE.md`, colo
 | Coperti per fascia | `slot_guest_capacities` | Classic | 🟩 cliente | ✅ |
 | Limite coperti ON/OFF | `slot_limit_enabled` | Classic | 🟦 tu (con cliente) | ✅ |
 | Rifiuta fuori fascia | `booking_reject_out_of_slot` | Classic | 🟦 tu | ✅ |
+| Validazione fasce (nome duplicato prima, poi orari sovrapposti) | `validateSlotConfigs` | Classic + Pro | 🟦 tu | ✅ |
 | Modifiche temporanee fasce/coperti («Quando?») | `service_slot_overrides` | Pro | 🟩 cliente | ✅ |
 | Minimo durata fascia | `service_slots.min_duration` | Classic | 🟦 tu | 🔜 (solo TEST) |
 | Buffer turnover | `service_slots.turnover_buffer_minutes` | Classic/Pro | 🟦 tu | 🔜 (solo TEST) |
@@ -204,7 +205,8 @@ completo e ragionato in `INVENTARIO_FUNZIONALITA_ONBOARDING_VS_CONSOLE.md`, colo
 | Tema admin | `app_theme` | Classic | 🟩 cliente | ✅ |
 | Sale | tabella `rooms` | Pro | 🟩 cliente | ✅ |
 | Tavoli (nome, capienza, mappa) | tabella `tables` | Pro | 🟩 cliente | ✅ |
-| Limite walk-in | `walk_in_max_guests` | Pro | 🟦 tu | ✅ |
+| Limite walk-in | — | Pro | — | ✅ rimosso: vale la capienza della fascia con avviso e conferma staff |
+| Durata base prenotazione admin | `restaurant_default_duration` | tutte | 🟦 console super-admin | ✅ default 90 min (30–360) |
 | Versione venduta + funzioni | `tenants.edition` + features | tutte | 🟦 tu | ✅ |
 | Servizio dal vivo / conto tavolo / ordine da QR cliente | — | Pro | — | 🚫 fuori ora |
 

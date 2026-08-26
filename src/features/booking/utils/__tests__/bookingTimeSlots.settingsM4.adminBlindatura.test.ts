@@ -34,12 +34,14 @@ describe('settings-time-slots M4 — helper bookingTimeSlots', () => {
     expect(slotRangesOverlap('22:00', '02:00', '01:00', '01:30')).toBe(true)
   })
 
-  it('validateSlotConfigs blocca overlap strutturale', () => {
+  it('validateSlotConfigs blocca overlap strutturale citando entrambe le fasce e gli orari', () => {
     const slots = [
       baseSlot({ id: 'a', name: 'A', start_time: '12:00', end_time: '15:00' }),
       baseSlot({ id: 'b', name: 'B', start_time: '14:00', end_time: '18:00' }),
     ]
-    expect(validateSlotConfigs(slots)).toMatch(/sovrappongono/i)
+    expect(validateSlotConfigs(slots)).toBe(
+      'Le fasce "A" (12:00–15:00) e "B" (14:00–18:00) si sovrappongono',
+    )
   })
 
   it('validateSlotConfigs blocca orari malformati e inizio=fine', () => {
@@ -107,12 +109,23 @@ describe('settings-time-slots M4 — helper bookingTimeSlots', () => {
       expect(validateSlotConfigs(slots, { focusIndex: 1 })).toMatch(/duplicato/i)
     })
 
-    it('una sovrapposizione che coinvolge la bozza resta rifiutata', () => {
+    it('una sovrapposizione che coinvolge la bozza resta rifiutata e cita entrambe le fasce con gli orari', () => {
       const slots = [
         baseSlot({ id: 'other', name: 'Cena', start_time: '19:00', end_time: '22:00' }),
         baseSlot({ id: 'draft', name: 'Serale', start_time: '20:00', end_time: '23:00' }),
       ]
-      expect(validateSlotConfigs(slots, { focusIndex: 1 })).toMatch(/sovrappongono/i)
+      expect(validateSlotConfigs(slots, { focusIndex: 1 })).toBe(
+        'Le fasce "Serale" (20:00–23:00) e "Cena" (19:00–22:00) si sovrappongono',
+      )
+    })
+
+    it('un nome duplicato della bozza ha priorità su un overlap con una fascia precedente', () => {
+      const slots = [
+        baseSlot({ id: 'overlap', name: 'Aperitivo', start_time: '20:00', end_time: '23:00' }),
+        baseSlot({ id: 'duplicate', name: 'Cena', start_time: '12:00', end_time: '15:00' }),
+        baseSlot({ id: 'draft', name: 'cena', start_time: '19:00', end_time: '22:00' }),
+      ]
+      expect(validateSlotConfigs(slots, { focusIndex: 2 })).toBe('Nome fascia duplicato: "cena"')
     })
 
     it('senza focusIndex (Impostazioni) un duplicato ovunque nell\'array resta rifiutato: nessuna regressione', () => {

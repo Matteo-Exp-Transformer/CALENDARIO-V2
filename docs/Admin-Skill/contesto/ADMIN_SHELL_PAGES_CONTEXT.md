@@ -171,8 +171,8 @@ customer.email === searchTerm  // case-sensitive, manca trim
 
 > **Layout pagina (Servizio-UI FIX-1..7, 03-08-26):** header con **unica CTA "Aggiungi sala"**
 > (sempre visibile, Lista e Mappa — `RoomTabs` non ha più "Nuova sala"); "Fasce orarie" è una
-> `CollapsibleCard` chiusa di default in entrambe le viste, con `WalkInLimitCard` subito sotto
-> (non più in cima alla pagina). Dettaglio completo + piantina visibile senza fascia + badge tavolo
+> `CollapsibleCard` chiusa di default in entrambe le viste. Il walk-in non ha un limite separato:
+> oltre la capienza della fascia avvisa e richiede il secondo click. Dettaglio completo + piantina visibile senza fascia + badge tavolo
 > sul digest Home + note/intolleranze nella strip "Assegnate": `ADMIN_SERVIZIO_CONTEXT.md` §9.11.
 
 ### File chiave

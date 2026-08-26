@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "B2-B5-walk-in-durata@26-08-26",
+        "trigger_event": "Creazione walk-in o prenotazione admin senza durata specifica",
+        "decision_or_output_changed": "Il limite walk-in separato non viene più applicato; la durata base console validata determina confirmed_end prima dello snapshot.",
+        "G": 2,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-b2-b5-walk-in-durata-console-26-08-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/26-08-26/Report-b2-b5-walk-in-durata-console-26-08-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "rimuovere il limite walk-in separato e far derivare la durata admin dalla console",
+        "intended_use": "revisione orchestratore e ritest manuale su console e Servizio",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt orchestratore fix voci O servizio 26-08-26, B2 e integrazione B5",
+        "authored_by": "codex-b2-b5",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Registro app e console coerenti; prenotazione admin con durata 90 produce fine a start + 90 minuti; test mirati e gate repository verdi.",
+        "verification_or_use_evidence": "Vitest B2/B5, typecheck, build console, test MSS e validate repository",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Sessioni di lavoro/26-08-26/Prompt-orchestratore-fix-voci-O-servizio-26-08-26.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "src/features/booking/lib/restaurantSettingRegistry.ts",
+          "console/src/lib/restaurantSettings.ts",
+          "src/features/booking/hooks/useAdminBookingRequests.ts",
+          "src/features/booking/components/home/WalkInModal.tsx"
+        ],
+        "relations_no_double_count": [
+          "Non aggiunge table_late_threshold_minutes o table_release_notice_recall_minutes.",
+          "Non modifica l'assegnazione doppio turno sullo stesso tavolo."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

@@ -360,6 +360,13 @@ test.describe('Walk-in da browser', () => {
     const oldClientName = `${E2E_SERVIZIO_PREFIX}WalkIn-Old-${runId}`
     const newClientName = `${E2E_SERVIZIO_PREFIX}WalkIn-New-${runId}`
     const today = todayIsoDate()
+    // Questo scenario verifica esclusivamente la doppia conferma del tavolo occupato.
+    // Il cap configurabile della fascia e' coperto altrove: lo fissiamo OFF qui per
+    // non far consumare il primo click da un avviso di capienza dipendente dal tenant.
+    const tableModeRespectsSlotCapSnapshot = await getRestaurantSettingSnapshot(
+      tenantId,
+      'table_mode_respects_slot_cap',
+    )
 
     // Pulizia preventiva: se un run precedente va in timeout, Playwright può
     // interrompere il finally. Una vecchia fascia WalkIn 00:00-23:59 con
@@ -413,6 +420,8 @@ test.describe('Walk-in da browser', () => {
     })
 
     try {
+      await upsertRestaurantSettingValue(tenantId, 'table_mode_respects_slot_cap', false)
+
       await loginAsProAdmin(page)
       await expect(page.getByRole('heading', { name: /^Home$/i })).toBeVisible({ timeout: 10000 })
 
@@ -428,6 +437,7 @@ test.describe('Walk-in da browser', () => {
       await tableSelect.selectOption(busyTable.id)
 
       await expect(dialog.getByTestId('busy-table-warning')).toHaveText(/puoi forzare la sostituzione/i)
+      await expect(dialog.getByTestId('capacity-warning')).toHaveCount(0)
 
       const submit = dialog.getByRole('button', { name: /^Aggiungi walk-in$/i })
       await submit.click()
@@ -476,6 +486,11 @@ test.describe('Walk-in da browser', () => {
       await deleteTablesByPrefix(tenantId, tablePrefix).catch(() => {})
       await deleteRoomsByPrefix(tenantId, roomPrefix).catch(() => {})
       await deleteServiceSlotsByPrefix(tenantId, slotName).catch(() => {})
+      await restoreRestaurantSettingSnapshot(
+        tenantId,
+        'table_mode_respects_slot_cap',
+        tableModeRespectsSlotCapSnapshot,
+      ).catch(() => {})
     }
   })
 })

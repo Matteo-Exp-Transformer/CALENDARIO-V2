@@ -56,10 +56,6 @@ vi.mock('@/features/booking/components/servizio/ServiceSlotsManager', () => ({
   ServiceSlotsManager: () => <div data-testid="service-slots-manager" />,
 }))
 
-vi.mock('@/features/booking/components/servizio/WalkInLimitCard', () => ({
-  WalkInLimitCard: () => <div data-testid="walk-in-limit-card" />,
-}))
-
 vi.mock('@/features/booking/components/servizio/AssignmentMapPanel', () => ({
   AssignmentMapPanel: () => <div data-testid="assignment-map-panel" />,
 }))

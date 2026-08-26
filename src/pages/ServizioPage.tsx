@@ -7,8 +7,6 @@ import { RoomTabs } from '@/features/booking/components/servizio/RoomTabs'
 import { RoomConfigModal } from '@/features/booking/components/servizio/RoomConfigModal'
 import { TableMap } from '@/features/booking/components/servizio/TableMap'
 import { ServiceSlotsManager } from '@/features/booking/components/servizio/ServiceSlotsManager'
-import { WalkInLimitCard } from '@/features/booking/components/servizio/WalkInLimitCard'
-import { useFeatures } from '@/hooks/useFeatures'
 import { AssignmentMapPanel } from '@/features/booking/components/servizio/AssignmentMapPanel'
 import {
   useTables,
@@ -129,7 +127,6 @@ const TableCard: FC<TableCardProps> = ({ table, onEdit, onDelete, isDeleting }) 
 }
 
 export const ServizioPage: FC = () => {
-  const features = useFeatures()
   const { data: tables = [], isLoading: loadingTables, error } = useTables()
   const { data: rooms = [], isLoading: loadingRooms } = useRooms()
   const deleteTable = useDeleteTable()
@@ -331,13 +328,12 @@ export const ServizioPage: FC = () => {
           </>
         )}
 
-        {/* Fasce orarie — chiusa di default (FIX-1); Walk-in subito sotto (FIX-3) */}
+        {/* Fasce orarie — chiusa di default (FIX-1). */}
         {!isLoading && !error && viewMode === 'list' && (
           <div className="space-y-4">
             <CollapsibleCard title="Fasce orarie" defaultExpanded={false}>
               <ServiceSlotsManager />
             </CollapsibleCard>
-            {features.walkIn && <WalkInLimitCard />}
           </div>
         )}
 
@@ -438,7 +434,6 @@ export const ServizioPage: FC = () => {
               <CollapsibleCard title="Fasce orarie" defaultExpanded={false}>
                 <ServiceSlotsManager />
               </CollapsibleCard>
-              {features.walkIn && <WalkInLimitCard />}
             </div>
           </div>
         )}

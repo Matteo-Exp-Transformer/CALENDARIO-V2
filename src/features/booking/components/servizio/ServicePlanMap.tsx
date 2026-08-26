@@ -196,7 +196,7 @@ export const ServicePlanMap: FC<ServicePlanMapProps> = ({
                 {room.name}
               </p>
               <div
-                className="box-content overflow-auto rounded-xl border border-(--color-border) shadow-sm"
+                className="box-content max-h-[70dvh] overflow-auto rounded-xl border border-(--color-border) shadow-sm lg:max-h-none"
                 style={{ width: room.width, maxWidth: '100%' }}
                 data-testid={`service-plan-room-${room.id}`}
               >

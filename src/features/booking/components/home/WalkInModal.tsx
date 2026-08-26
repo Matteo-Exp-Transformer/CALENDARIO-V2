@@ -11,6 +11,7 @@ import { useCapacityCheck } from '@/features/booking/hooks/useCapacityCheck'
 import { useServiceSlots } from '@/features/booking/hooks/useServiceSlots'
 import { useTableAssignments } from '@/features/booking/hooks/useTableAssignments'
 import { isTimeInsideSlot } from '@/features/booking/utils/bookingTimeSlots'
+import { resolveBookingDuration } from '@/features/booking/lib/resolveBookingDuration'
 
 interface WalkInModalProps {
   isOpen: boolean
@@ -31,7 +32,10 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
   const { data: tables = [] } = useTables()
   const { data: rooms = [] } = useRooms()
   const { data: acceptedBookings = [] } = useAcceptedBookings()
-  const { data: maxGuests = 20 } = useRestaurantSetting('walk_in_max_guests', { authenticated: true })
+  const { data: restaurantDefaultDuration = 90 } = useRestaurantSetting(
+    'restaurant_default_duration',
+    { authenticated: true },
+  )
   const { data: serviceSlots = [] } = useServiceSlots()
 
   // Fascia corrente: la prima fascia il cui intervallo contiene "ora"
@@ -43,12 +47,15 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
     return serviceSlots.find((s) => isTimeInsideSlot(nowHm, s.start_time.slice(0, 5), s.end_time.slice(0, 5))) ?? null
   }, [serviceSlots, nowHm])
 
-  // Orario di fine stimato in base al resolver: lo calcoliamo qui per stimare la finestra
-  // e passarla a useCapacityCheck. Il valore effettivo lo risolve useWalkInMutation.
-  // Se non c'è durata configurata usiamo 90 min (fallback identico alla mutation).
+  // Orario di fine stimato con la stessa risoluzione usata dalla mutation, così la
+  // capienza della fascia valuta la finestra che verrà poi persistita.
   const slotMinDuration = activeSlot?.min_duration ?? undefined
+  const resolvedDuration = resolveBookingDuration({
+    restaurant_default_duration: restaurantDefaultDuration,
+    slot_min_duration: slotMinDuration,
+  })
   // useCapacityCheck richiede endTime come stringa HH:mm
-  const estimatedEndMinutes = now.getMinutes() + now.getHours() * 60 + (slotMinDuration ?? 90)
+  const estimatedEndMinutes = now.getMinutes() + now.getHours() * 60 + (resolvedDuration?.duration_minutes ?? 90)
   const estimatedEndHm = `${String(Math.floor(estimatedEndMinutes / 60) % 24).padStart(2, '0')}:${String(estimatedEndMinutes % 60).padStart(2, '0')}`
 
   // D45.1: usa useCapacityCheck per la fascia che contiene "ora".
@@ -147,6 +154,7 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
         max_turns: activeSlot?.max_turns ?? null,
         placement: selectedTable?.name ?? undefined,
         slot_min_duration: slotMinDuration,
+        restaurant_default_duration: restaurantDefaultDuration,
         force_replace_existing: isSelectedTableBusy && forceOccupiedTable,
         force_reason: isSelectedTableBusy
           ? 'Forzatura guidata walk-in: tavolo occupato liberato dallo staff'
@@ -194,7 +202,6 @@ export const WalkInModal: FC<WalkInModalProps> = ({ isOpen, onClose }) => {
             id="walkin-guests"
             type="number"
             min={1}
-            max={maxGuests}
             step={1}
             placeholder="Es. 2"
             value={numGuests}

@@ -9,7 +9,7 @@ export interface ResolveBookingDurationInput {
   preset_default_duration?: number
   /** Gradino 3 — BookingMode.default_duration (tipologia). */
   booking_mode_default_duration?: number
-  /** Gradino 4 — super-admin console (futuro, Classic L2-lite). Per ora sempre undefined. */
+  /** Gradino 4 — durata base configurata dalla console super-admin. */
   restaurant_default_duration?: number
   /** Pavimento: service_slots.min_duration. Applicato al risultato, non come concorrente dei livelli. */
   slot_min_duration?: number

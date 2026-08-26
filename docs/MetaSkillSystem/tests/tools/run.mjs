@@ -1737,11 +1737,14 @@ const tests = [
     }
   }],
 
-  ['T13 / lavagna — WP-1 NON INIZIATO con PASS in prosa non è Fatte', () => {
-    // Bug: classifyPlanState vedeva «PASS» nella parentetica di WP-1 e lo metteva in Fatte.
-    const wp1Live =
+  ['T13 / lavagna — WP-1 vivo non finisce in Fatte; il caso NO-GO con PASS resta coperto', () => {
+    // Regressione originaria: classifyPlanState vedeva «PASS» nella parentetica di WP-1
+    // e lo metteva in Fatte. Il piano vivo e ora IN PILOTA (non piu NON INIZIATO),
+    // quindi il caso storico resta una fixture esplicita e il controllo live verifica
+    // la semantica attuale: WP-1 non e una consegna completata.
+    const wp1NoGoFixture =
       'NON INIZIATO — NO-GO (D27 chiusa; H-1.3 PASS ≠ via libera pilota)'
-    assert.equal(classifyPlanState(wp1Live), 'da-fare')
+    assert.equal(classifyPlanState(wp1NoGoFixture), 'da-fare')
     assert.equal(classifyPlanState('NON INIZIATO'), 'da-fare')
     assert.equal(classifyPlanState('BLOCCATO DA PRIMO PILOTA'), 'da-fare')
     assert.equal(
@@ -1753,11 +1756,16 @@ const tests = [
     const board = parsePlanBoard(planText)
     const wp1 = board.find((r) => r.id === 'WP-1')
     assert.ok(wp1, 'WP-1 deve esistere sulla lavagna owner')
-    assert.equal(classifyPlanState(wp1.stato), 'da-fare')
+    assert.match(wp1.stato, /IN PILOTA/i, 'il test live deve leggere lo stato vigente dell’owner')
+    assert.equal(
+      classifyPlanState(wp1.stato),
+      'non-classificata',
+      'IN PILOTA non e ne completato ne pianificato: la lavagna lo espone separatamente',
+    )
     const md = deriveMatteoDashboard(planText)
     // Colonna Fatte: `| `WP-1` … | — | … |` non deve comparire
     assert.doesNotMatch(md, /^\| `WP-1` [^|]*\| — \|/m)
-    assert.match(md, /^\| [^|]*\| [^|]*\| `WP-1` /m)
+    assert.match(md, /^\*\*Non classificate \(M\):\*\*[\s\S]*^- `WP-1` /m)
   }],
 
   ['V2 — lavagna: §4-ter prevale, glossa dichiarata, glossa orfana = rosso', () => {
