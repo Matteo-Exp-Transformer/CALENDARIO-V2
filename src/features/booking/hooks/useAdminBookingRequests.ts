@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useTenantContext } from '@/contexts/TenantContext'
 import { supabase } from '@/lib/supabase'
 import type { BookingRequest, BookingRequestInput } from '@/types/booking'
@@ -8,10 +8,12 @@ import { buildFeatures } from '@/config/features'
 import { logger } from '@/lib/logger'
 import type { Json, TablesInsert } from '@/types/database'
 import { durationSnapshotFromConfirmedRange } from '../utils/bookingDurationSnapshot'
+import { TABLE_ASSIGNMENTS_QUERY_KEY } from './useTableAssignments'
 
 // Hook for creating booking requests directly as ACCEPTED (admin only)
 export const useCreateAdminBooking = () => {
   const { tenantId, edition } = useTenantContext()
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (data: BookingRequestInput) => {
       if (!tenantId) {
@@ -78,6 +80,13 @@ export const useCreateAdminBooking = () => {
       }
 
       return result as unknown as BookingRequest
+    },
+    onSuccess: async () => {
+      // Servizio legge unassigned/assignments da TABLE_ASSIGNMENTS_QUERY_KEY, non da `bookings`.
+      await queryClient.invalidateQueries({
+        queryKey: [TABLE_ASSIGNMENTS_QUERY_KEY, tenantId],
+        refetchType: 'all',
+      })
     },
     onError: (error: Error) => {
       logger.error('Error creating admin booking:', error)

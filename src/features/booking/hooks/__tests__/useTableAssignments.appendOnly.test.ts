@@ -53,6 +53,7 @@ vi.mock('@/lib/supabase', () => {
       return chain
     }
     chain.eq = () => chain
+    chain.in = () => chain
     chain.select = () => chain
     chain.single = () => Promise.resolve({ data: { id: 'forced-assignment' }, ...result })
     // Rende la catena awaitable (pattern senza .single())

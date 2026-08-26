@@ -443,6 +443,7 @@ export const AdminBookingForm: React.FC<AdminBookingFormProps> = ({
           queryClient.invalidateQueries({ queryKey: ['bookings', 'accepted'], refetchType: 'all' }),
           queryClient.invalidateQueries({ queryKey: ['bookings', 'stats'], refetchType: 'all' }),
           queryClient.invalidateQueries({ queryKey: ['bookings', 'all'], refetchType: 'all' }),
+          queryClient.invalidateQueries({ queryKey: ['table_assignments'], refetchType: 'all' }),
         ])
 
         navigationSaveResolveRef.current?.()

@@ -55,6 +55,16 @@ vi.mock('@/lib/supabase', () => {
       }
       return chain
     }
+    chain.in = (col: string, values: string[]) => {
+      if (currentEntry) {
+        currentEntry.match = {
+          ...(currentEntry.match ?? {}),
+          [col]: values.join(','),
+          [`${col}_in`]: values.join(','),
+        }
+      }
+      return chain
+    }
     chain.select = () => chain
     chain.single = () => {
       dbState.nextInsertId++
@@ -213,14 +223,14 @@ describe('S4-FIX-5 — useForceReplaceBookingOnTable, tre esiti', () => {
 
     const ops = assignmentOps()
     expect(ops.map((o) => o.op)).toEqual(['update', 'insert'])
-    expect(ops[0].match).toMatchObject({ id: 'a-old' })
+    expect(ops[0].match?.id_in ?? ops[0].match?.id).toContain('a-old')
     expect(ops[0].payload).toMatchObject({ checked_out_at: expect.any(String) })
 
     const served = servedAtUpdateFor('b-old')
     expect(served?.payload).toMatchObject({ served_at: expect.any(String) })
   })
 
-  it('archive — NON marca served_at se restano altri tavoli attivi sulla stessa prenotazione (tavolata)', async () => {
+  it('archive — su tavolata multi-tavolo libera TUTTI i tavoli e marca served_at (collaudo 26-08)', async () => {
     const hook = useForceReplaceBookingOnTable()
     const oldAssignment = makeAssignment({ id: 'a-old', booking_id: 'b-old' })
     const otherActiveTable = makeAssignment({ id: 'a-other', booking_id: 'b-old', table_id: 'table-altro' })
@@ -236,6 +246,33 @@ describe('S4-FIX-5 — useForceReplaceBookingOnTable, tre esiti', () => {
       outcome: 'archive',
     })
 
+    const ops = assignmentOps()
+    expect(ops.map((o) => o.op)).toEqual(['update', 'insert'])
+    expect(ops[0].match?.id_in ?? ops[0].match?.id).toContain('a-old')
+    expect(ops[0].match?.id_in ?? ops[0].match?.id).toContain('a-other')
+    expect(servedAtUpdateFor('b-old')?.payload).toMatchObject({ served_at: expect.any(String) })
+  })
+
+  it('requeue — DELETE di TUTTE le assegnazioni attive della prenotazione (tavolata), served_at non toccato', async () => {
+    const hook = useForceReplaceBookingOnTable()
+    const oldAssignment = makeAssignment({ id: 'a-old', booking_id: 'b-old' })
+    const otherActiveTable = makeAssignment({ id: 'a-other', booking_id: 'b-old', table_id: 'table-altro' })
+
+    await hook.mutateAsync({
+      bookingId: 'b-new',
+      tableId: 'table-conteso',
+      slotId: 'slot-1',
+      date: '2026-08-02',
+      maxTurns: 3,
+      existingAssignments: [oldAssignment, otherActiveTable],
+      reason: 'Bianchi torna in attesa',
+      outcome: 'requeue',
+    })
+
+    const ops = assignmentOps()
+    expect(ops.map((o) => o.op)).toEqual(['delete', 'insert'])
+    expect(ops[0].match?.id_in ?? ops[0].match?.id).toContain('a-old')
+    expect(ops[0].match?.id_in ?? ops[0].match?.id).toContain('a-other')
     expect(servedAtUpdateFor('b-old')).toBeUndefined()
   })
 
@@ -256,7 +293,7 @@ describe('S4-FIX-5 — useForceReplaceBookingOnTable, tre esiti', () => {
 
     const ops = assignmentOps()
     expect(ops.map((o) => o.op)).toEqual(['delete', 'insert'])
-    expect(ops[0].match).toMatchObject({ id: 'a-old' })
+    expect(ops[0].match?.id_in ?? ops[0].match?.id).toContain('a-old')
     expect(servedAtUpdateFor('b-old')).toBeUndefined()
   })
 })

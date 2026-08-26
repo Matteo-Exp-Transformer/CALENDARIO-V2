@@ -111,6 +111,7 @@ export function useTableAssignments(date: string) {
     },
     enabled: !!tenantId && !!date,
     refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
     refetchInterval: SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS,
   })
 }
@@ -158,6 +159,7 @@ export function useUnassignedBookings(
     },
     enabled: !!tenantId && !!date && !!slot?.id,
     refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
     refetchInterval: SERVICE_ASSIGNMENTS_REFETCH_INTERVAL_MS,
   })
 }
@@ -546,29 +548,39 @@ export function useForceReplaceBookingOnTable() {
           .eq('tenant_id', tenantId!)
         if (deleteError) throw deleteError
       } else if (outcome === 'archive') {
+        // Collaudo 26-08: «Archivia e assegna» su tavolata multi-tavolo deve liberare
+        // TUTTI i tavoli della prenotazione scavalcata, altrimenti non archivia e resta
+        // parzialmente assegnata.
+        const activeForDisplaced = existingAssignments.filter(
+          (a) =>
+            a.booking_id === displacedBookingId &&
+            a.date === date &&
+            a.checked_out_at === null,
+        )
         const checkedOutAt = new Date().toISOString()
+        const idsToCheckout = activeForDisplaced.map((a) => a.id)
         const { error: releaseError } = await supabase
           .from('booking_table_assignments')
           .update({ checked_out_at: checkedOutAt })
-          .eq('id', currentAssignment.id)
+          .in('id', idsToCheckout)
           .eq('tenant_id', tenantId!)
         if (releaseError) throw releaseError
 
-        // S4-REQ-3: archivia solo se non restano altri tavoli attivi sulla stessa prenotazione.
-        const remainingActiveForBooking = existingAssignments.filter(
+        await markBookingServedIfFullyReleased(displacedBookingId, tenantId!, 0)
+      } else {
+        // requeue — DELETE fisico di TUTTE le assegnazioni attive della prenotazione
+        // (stesso giorno): deve tornare intera in «da assegnare», non restare su altri tavoli.
+        const activeForDisplaced = existingAssignments.filter(
           (a) =>
             a.booking_id === displacedBookingId &&
-            a.checked_out_at === null &&
-            a.id !== currentAssignment.id,
-        ).length
-        await markBookingServedIfFullyReleased(displacedBookingId, tenantId!, remainingActiveForBooking)
-      } else {
-        // requeue — stesso principio di useUndoTableAssignment: non è un turno servito,
-        // DELETE fisico invece del timbro checked_out_at (non consuma un posto nel conteggio).
+            a.date === date &&
+            a.checked_out_at === null,
+        )
+        const idsToDelete = activeForDisplaced.map((a) => a.id)
         const { error: deleteError } = await supabase
           .from('booking_table_assignments')
           .delete()
-          .eq('id', currentAssignment.id)
+          .in('id', idsToDelete)
           .eq('tenant_id', tenantId!)
         if (deleteError) throw deleteError
       }

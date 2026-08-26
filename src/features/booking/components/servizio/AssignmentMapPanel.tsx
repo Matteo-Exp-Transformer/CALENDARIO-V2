@@ -245,7 +245,9 @@ const DroppableTable: FC<DroppableTableProps> = ({ table, status, assignedBookin
 
       {isOver && status !== 'free' && (
         <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/70">
-          <p className="px-2 text-center text-xs font-semibold text-amber-800">Libera prima il tavolo</p>
+          <p className="px-2 text-center text-xs font-semibold text-amber-800">
+            Rilascia: scegli cosa fare del cliente seduto
+          </p>
         </div>
       )}
 
@@ -1166,6 +1168,10 @@ export const AssignmentMapPanel: FC<AssignmentMapPanelProps> = ({
               </p>
               <p className="mt-1 text-xs text-(--color-text-muted)">
                 Puoi scegliere più tavoli: una tavolata grande può stare su due tavoli piccoli.
+              </p>
+              <p className="mt-1 text-xs text-amber-800">
+                Tavolo già occupato: toccalo — si aprono le tre scelte (sposta / archivia / rimetti in
+                attesa), non si somma alla tavolata.
               </p>
             </div>
 
