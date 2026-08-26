@@ -7,9 +7,8 @@
 > È la direzione che governa l'ordine dei prossimi pacchetti.  
 > **Ultimo movimento:** **T14** continua — `WP-1` **`IN PILOTA` — ombra** (`D27` riaperta 25-08-26).
 > Istanza 1 (blindatura Admin Servizio) **fatta**; istanza 2 (checklist QA umana) **consegnata**;
-> **collaudo umano in corso** (`COLLAUDO_MANUALE_OBBLIGATORIO.md`, ~12/26 prove annotate). Cutover
-> (`WP-6`) **vietato**. **Non** dichiarare `WP-1` chiuso. Gate: completare collaudo + esiti OK/KO +
-> revisione fredda. Audit P1 in
+> **collaudo umano in corso** (`COLLAUDO_MANUALE_OBBLIGATORIO.md`, **25/26** prove annotate; aperta solo **T7-bis**; T9 `[O]` non completabile per UI; evento dati Pro assenti-poi-tornati documentato senza causa certa). Cutover
+> (`WP-6`) **vietato**. **Non** dichiarare `WP-1` chiuso. Gate: chiudere T7-bis + raccolta fix da note + revisione fredda. Audit P1 in
 > [`AUDIT_STATO_REALE_23-08-26.md`](AUDIT_STATO_REALE_23-08-26.md).
 >
 > **Rettifica 21-08-26 (append, non riscrittura):** l'intestazione precedente si era fermata al
@@ -77,7 +76,7 @@ lavoro del masterplan.
 | 3 | `H-1` — validator + hook rapidi | **chiusura invalidata dalla revisione H-1.1** | resta storia del primo hardening |
 | 3.1 | `H-1.1` — integrità append-only e semantica | **`CHIUSO NEL DISEGNO` 10-08-26** | revisione completa esterna prima di WP-1 |
 | 3.2 | `H-1.3` — amendment / staged / parità superfici | **`PASS` 25-08-26** — ✅ riserva `H13-POST-L01` CHIUSA 24-08-26 (`M13`); ✅ T7 `B-E2-CI` chiuso (`SK-5`); ✅ Opzione B **M-E2-A..D CHIUSE** (CI post-hoc no-verify; Report/Verbale unstaged; Cloud checklist+CI; light deny `MSS-LIGHT-NO-EVENT`); residui umani misurati in `COVERAGE_MATRIX_H1.json` (`--no-verify` Git, hook Cloud non installabile, JSONL/fixture unstaged, legacy/undeclared) — **non** stale «bypass intenzionali accettati» | P2 (`T11`) **CHIUSO**; **non** apre WP-1; G5 non PASS |
-| 4 | `WP-1` — piloti reali in ombra | **`IN PILOTA` — ombra** (`D27` 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano in corso ~12/26) | ricostruzione fredda senza perdita/invenzione; WP-1 non chiuso dopo una sola istanza |
+| 4 | `WP-1` — piloti reali in ombra | **`IN PILOTA` — ombra** (`D27` 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano **25/26**, aperta T7-bis; T9 `[O]`) | ricostruzione fredda senza perdita/invenzione; WP-1 non chiuso dopo una sola istanza |
 | 5 | `WP-2` — mining storico normalizzato | `BLOCCATO DA PRIMO PILOTA` | eventi citano fonti e schema/versione |
 | 6 | `WP-3` — kernel, manifest, pacchetti e chiavi | `NON INIZIATO` | autorità e precedenze formalizzate |
 | 7 | `WP-4` — preflight, registro Output e viste | `NON INIZIATO` | conflitti/owner/scope rilevati prima delle azioni coperte |
@@ -533,6 +532,7 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 | 10-08-26 | Chiusura H-1 invalidata; aperto H-1.1 dopo 17 controprove rosse. Fix mirato verde su 41 fixture e 19 gruppi; gate finali in corso | sessione H-1.1 |
 | 10-08-26 | H-1.1 chiuso nel disegno: append-only HEAD/staged, assi/versioni/modalità, storia e frozen protetti; gate locali verdi, limiti globali registrati | `Report-hardening-h1-1-metaskillsystem-10-08-26.md` |
 | 10-08-26 | H-1.3 = **PASS_CON_RISERVE** (review post-remediation); WP-1 resta **NON INIZIATO / NO-GO**; track baseline L5+hook autorizzato (path invariati); G5 non PASS | `Report-revisione-indipendente-h13-post-remediation-10-08-26.md` · `Report-track-commit-h13-l5-pass-con-riserve-10-08-26.md` |
+| 26-08-26 | T14/WP-1: checklist umana Servizio snellita + T1/T2/T5/T7-bis/T9 chiariti; collaudo Matteo **25/26** (aperta T7-bis; T9 `[O]`); chiusura capitolo docs senza chiudere WP-1; cutover vietato | `Report-chiusura-collaudo-checklist-servizio-26-08-26.md` · `COLLAUDO_MANUALE_OBBLIGATORIO.md` |
 | 26-08-26 | T14/WP-1: checklist umana Servizio snellita + T1/T2/T5 chiariti; collaudo Matteo **12/26** in corso; WP-1 resta IN PILOTA ombra (non chiuso); cutover vietato | `Report-chiarimento-checklist-collaudo-servizio-26-08-26.md` · `COLLAUDO_MANUALE_OBBLIGATORIO.md` |
 | 21-08-26 | Plan directory/export/sandbox prodotto (zero move); D9 decisa ed eseguita; D6/D7/D8/D10 aperte | `Report-plan-directory-export-sandbox-mss-21-08-26.md` |
 | 21-08-26 | **Consulenza esterna indipendente** — prima famiglia di modello diversa da Cursor/Codex. Prove: test a freddo superato (stato ricostruito in 2 file); 5 contraddizioni vive fra owner; 3 bypass dell'enforcement riproducibili; 3 cancelli globali rossi per 3 righe di configurazione | `MAPPA-MSS-consulenza-esterna-21-08-26.md` · `Report-consulenza-esterna-fable-mss-21-08-26.md` |
@@ -548,7 +548,7 @@ necessario restano buchi governati dai pacchetti che raccolgono i dati.
 
 `WP-1` è **`IN PILOTA` — ombra** (`D27` riaperta 25-08-26). H-1.3 è **`PASS`** (25-08-26 Opzione B /
 T10). `SEP-G5` **non** è PASS. Cutover (`WP-6`) **vietato**. Istanza 1 (blindatura Servizio) e
-istanza 2 (checklist QA umana) consegnate; **collaudo umano in corso** — WP-1 **non** chiuso.
+istanza 2 (checklist QA umana) consegnate; **collaudo umano 25/26** (aperta T7-bis) — WP-1 **non** chiuso.
 
 **P0 (23-08-26) — CONCLUSO COME ASSENZA:** ricerca del fix `SK-7` dichiarato → **nessun** commit,
 branch, stash, PR o patch recuperabile; D2/D3 riprodotti su `46b8bca` (`parseCheckSpec` spezza al

@@ -770,5 +770,6 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 | File | Path |
 |---|---|
 | Report-chiarimento-checklist-collaudo-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-chiarimento-checklist-collaudo-servizio-26-08-26.md` |
+| Report-chiusura-collaudo-checklist-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-chiusura-collaudo-checklist-servizio-26-08-26.md` |
 
 <!-- mss:generated report-index fine -->

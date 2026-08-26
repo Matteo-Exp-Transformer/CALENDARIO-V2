@@ -46,7 +46,7 @@ R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. I
 
 **Non classificate (M):**
 - `H-1` Validator e hook rapidi (prima tranche) — _chiusura invalidata dalla revisione H-1.1_
-- `WP-1` Piloti reali in modalità ombra (autorizzato; cutover vietato) — _IN PILOTA — ombra (D27 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano in corso ~12/26)_
+- `WP-1` Piloti reali in modalità ombra (autorizzato; cutover vietato) — _IN PILOTA — ombra (D27 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano 25/26, aperta T7-bis; T9 [O])_
 - `E-2` Enforcement superiore (ancora da decidere) — _buco intenzionale_
 
 ## Riserve aperte
@@ -55,5 +55,5 @@ R1 è **CHIUSO CON RISERVE — M12 soddisfatto; riserva busta ridotta in T2**. I
 
 ## Prossimo passo
 
-Completare `T14`. `WP-1` resta _IN PILOTA — ombra (D27 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano in corso ~12/26)_ (`H-1.3` PASS ≠ via libera pilota).
+Completare `T14`. `WP-1` resta _IN PILOTA — ombra (D27 25-08-26; cutover vietato; istanza 1 blindatura Servizio fatta; istanza 2 checklist QA fatta; collaudo umano 25/26, aperta T7-bis; T9 [O])_ (`H-1.3` PASS ≠ via libera pilota).
 <!-- mss:generated cruscotto-matteo fine -->
