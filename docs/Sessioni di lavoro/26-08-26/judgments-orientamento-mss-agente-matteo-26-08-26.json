@@ -1,0 +1,60 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "agente-matteo-memoria-operativa-0.1@mss-v0.1-wp0.1-freeze-2",
+        "trigger_event": "Matteo richiede che MSS restituisca continuità operativa, riusi decisioni verificabili e riduca i flussi manuali ripetuti",
+        "decision_or_output_changed": "creato piano prospettico per cartolina operativa, delega con fonte e tre eval AM; nessuna autonomia o tool nuovo abilitato",
+        "G": 1,
+        "O": 0,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "piano-memoria-operativa-agente-matteo-0.1",
+        "primary_type": "governance",
+        "canonical_version": "docs/MetaSkillSystem/Senior-Eval-Pack/PIANO_MEMORIA_OPERATIVA_AGENTE_MATTEO_V0.md",
+        "recipient": "Matteo",
+        "problem_or_job": "evitare che Matteo ricostruisca manualmente punto della situazione e flussi di test già coperti",
+        "intended_use": "mandato al senior orchestrator per consolidare il protocollo prospettico AM-01, AM-02 e AM-03; non abilita autonomia né cutover",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo (direzione del piano approvata in chat 26-08-2026)",
+        "directed_by": "seduta Meta senior di orientamento 26-08-2026",
+        "authored_by": "openai-codex",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "piano con fonti proprietarie, confini di autonomia, procedure, AM-01/02/03, denominatori, evidenze, confondenti e gate; validate:docs verde",
+        "verification_or_use_evidence": "npm run validate:docs; revisione del senior orchestrator ancora da eseguire",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/PLAN_V0.md",
+          "docs/MetaSkillSystem/Senior-Eval-Pack/SENIOR_EVAL_SKILL.md",
+          "docs/MetaSkillSystem/Senior-Eval-Pack/CONTRATTO_EVAL_SENIOR_V0.md",
+          "docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md",
+          "docs/Sessioni di lavoro/26-08-26/Report-orientamento-mss-agente-matteo-26-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "piano di governance; non è output app, non chiude SEP-5/SEP-6 e non dimostra valore o autonomia"
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
