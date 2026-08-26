@@ -390,6 +390,31 @@
   il perimetro; verifica `self_report/unverified`; comparabilità `non_comparabile`.
 - Fonte: `docs/Sessioni di lavoro/10-08-26/Report-creazione-handoff-senior-eval-pack-metaskillsystem-10-08-26.md`.
 
+### `SEP-SES-20260826-040` — consolidamento prospettico «Agente Matteo»
+
+- Config/metodo: `SEP-AGC-openai-codex-001` · `SEP-MET-foundation-co-design-0.1`.
+- Ruolo/obiettivo: Meta senior; trasformare la direzione ratificata da Matteo in piano operativo
+  senza creare memoria parallela, autonomia generale o dati fittizi.
+- Output: cartolina operativa obbligatoria; limiti di fonte/STOP; protocolli AM-01, AM-02 e AM-03
+  con denominatori, fonti, esiti, evidenze, confondenti, ruoli e conseguenze.
+- Stato attribuito: `SEP-5` passa a `IN_CORSO` perché il disegno del freeze è completo. Non passa
+  `SEP-G2`: mancano tre cicli reali, cinque casi AM-03, ruoli nominati e freeze datati.
+- Evidenza/limite: decisione diretta di Matteo nel mandato e controlli documentali della seduta;
+  completezza `complete` per il disegno, `self_report` per l'esecuzione, nessuna revisione fredda e
+  nessuna istanza prospettica svolta.
+- Comparabilità: `non_comparabile`.
+- Fonte: `docs/Sessioni di lavoro/26-08-26/Report-piano-operativo-agente-matteo-26-08-26.md`.
+
+### `SEP-SES-20260827-041` — disegno della calibrazione di allineamento
+
+- Config/metodo: Meta senior Codex · evoluzione documentale di `SEP-MET-foundation-co-design-0.1`; il metodo di test `AM-C0` è soltanto disegnato, non ancora esercitato.
+- Ruolo/obiettivo: trasformare la richiesta di Matteo in una prova controllata della memoria decisionale, senza copiare dati privati, giudicare persone o attribuire differenze a modelli non comparabili.
+- Output: protocollo `AM-C0`; scheda decisione con citazione, condizioni e STOP; canovaccio di cinque casi; sequenza Cursor Base/Pacchetto e revisore Codex cieco; prompt di passaggio al senior Claude.
+- Stato attribuito: `SEP-5` resta `IN_CORSO`; non esistono ancora fonti autorizzate, chiave sigillata, configurazioni Cursor, risposte o verdetti. `SEP-G2` non passa.
+- Evidenza/limite: decisione diretta di Matteo nella chat del 27-08-2026 e ricostruzione di fonti owner del 26-08; nessuna esecuzione del test e nessuna revisione fredda.
+- Comparabilità: `non_comparabile` finché il freeze non registra configurazioni e condizioni identiche salvo il pacchetto.
+- Fonte: `docs/Sessioni di lavoro/27-08-26/Report-preparazione-calibrazione-allineamento-mss-27-08-26.md`.
+
 ## 5. Sintesi trasversale
 
 ### Cosa ha prodotto valore osservabile

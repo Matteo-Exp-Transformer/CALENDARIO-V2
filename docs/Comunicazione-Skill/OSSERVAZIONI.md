@@ -354,3 +354,10 @@
 - **Decisioni prodotto prese in questa chat:** limite coperti walk-in **rimosso** (il walk-in resta soggetto
   al conteggio posti di fascia, con avviso e forzatura — comportamento già esistente); turni tavolo →
   proposta di Matteo su fine-turno dichiarata dall'admin, in valutazione (vedi report di seduta).
+
+### 27-08-26 · Linguaggio chiaro per decisioni MSS — esempio riuscito, non nuova regola
+
+- **Da dove si partiva:** la formula «prima proviamo il nuovo sistema sui tre lavori reali; poi facciamo un confronto separato fra due agenti Cursor» non faceva capire a Matteo chi lanciasse le chat, in quale ordine, quale fosse il materiale uguale e cosa venisse giudicato.
+- **Formato che ha funzionato:** metafora di due agenti davanti allo stesso bivio; frasi complete che nominano soggetto, azione, motivo e limite; sequenza concreta di lancio; distinzione fra ciò che è già deciso, ciò che va chiesto e ciò che deve fermare l'agente. Nessuna sigla lasciata senza spiegazione nella risposta a Matteo.
+- **Feedback diretto di Matteo:** «ottimo. questo tipo di output mi piace molto. è chiaro e mi aiuta a non dover indovinare di cosa parli, è chiaro e mi fa capire come approfondire il discorso per scegliere bene.»
+- **Uso futuro:** quando un piano MSS propone test o decisioni, spiegare prima la scena concreta (chi riceve cosa, cosa fa, cosa si guarda) e solo dopo i codici del sistema. Questa è un'osservazione registrata: non promuove da sola una voce nel VOCABOLARIO.

@@ -1,0 +1,58 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+      "assertions": [
+        {
+          "rule_id_version": "AM-C0@0.1.0",
+          "trigger_event": "Richiesta di Matteo di testare se il pacchetto MSS trasmette decisioni e impone STOP quando manca una fonte.",
+          "decision_or_output_changed": "Aggiunto protocollo read-only con fonti autorizzate, chiave sigillata, Cursor Base/Pacchetto e revisore Codex cieco.",
+          "G": 1,
+          "O": 0,
+          "E": 0
+        }
+      ]
+  },
+  "output": {
+    "delta": "creato",
+      "assertions": [
+        {
+          "output_id": "protocollo-calibrazione-allineamento-am-v0",
+          "primary_type": "governance",
+          "canonical_version": "docs/MetaSkillSystem/Senior-Eval-Pack/PROTOCOLLO_CALIBRAZIONE_ALLINEAMENTO_AM_V0.md",
+          "recipient": "Senior Claude, Matteo, esecutori Cursor e revisore Codex",
+          "problem_or_job": "Preparare un confronto controllato che renda citabile il perché di un'azione e visibile lo STOP quando manca una fonte.",
+          "intended_use": "Calibrazione AM-C0 prima del freeze di istanze reali.",
+          "conceived_by": "Matteo",
+          "decided_by": "Matteo",
+          "directed_by": "Seduta MetaSkillSystem 27-08-2026",
+          "authored_by": "Codex",
+          "verified_by": "non_osservato",
+          "acceptance_criterion": "Protocollo, ruoli, cinque casi candidati, cecità e STOP documentati senza dichiarare test eseguito.",
+          "verification_or_use_evidence": "Lettura degli owner MSS, report orientamento e checklist Servizio; validazioni finali registrate nel report.",
+          "verification_status": "self_report",
+          "owner_ref": "docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md",
+          "privacy_release": "internal",
+          "support_files": [
+            "docs/MetaSkillSystem/Senior-Eval-Pack/PIANO_MEMORIA_OPERATIVA_AGENTE_MATTEO_V0.md",
+            "docs/Sessioni di lavoro/27-08-26/Prompt-senior-preparazione-test-allineamento-agente-matteo-27-08-26.md"
+          ],
+          "relations_no_double_count": [
+            "Non esegue Cursor o Codex revisore.",
+            "Non passa SEP-G2 e non autorizza modifiche app."
+          ],
+          "product_candidate": {
+            "recipient": "pass",
+            "problem_or_job": "pass",
+            "canonical_version": "pass",
+            "fixed_acceptance_criterion": "pass",
+            "verification_or_use_evidence": "pass",
+            "result": "eligible"
+          }
+        }
+      ]
+  }
+}

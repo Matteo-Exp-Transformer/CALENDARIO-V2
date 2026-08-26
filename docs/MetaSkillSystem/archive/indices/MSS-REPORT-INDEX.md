@@ -778,7 +778,14 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 | Report-meta-senior-analisi-pilota-wp1-e-decisioni-prodotto-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-meta-senior-analisi-pilota-wp1-e-decisioni-prodotto-26-08-26.md` |
 | Report-orchestratore-fix-voci-O-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-orchestratore-fix-voci-O-servizio-26-08-26.md` |
 | Report-orientamento-mss-agente-matteo-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-orientamento-mss-agente-matteo-26-08-26.md` |
+| Report-piano-operativo-agente-matteo-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-piano-operativo-agente-matteo-26-08-26.md` |
 | Report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-wp1-istanza2-diagnosi-O-e-T7bis-26-08-26.md` |
 | Report-wp1-istanza2-p0-p1-fix-servizio-26-08-26.md | `docs/Sessioni di lavoro/26-08-26/Report-wp1-istanza2-p0-p1-fix-servizio-26-08-26.md` |
+
+## 27-08-26
+
+| File | Path |
+|---|---|
+| Report-preparazione-calibrazione-allineamento-mss-27-08-26.md | `docs/Sessioni di lavoro/27-08-26/Report-preparazione-calibrazione-allineamento-mss-27-08-26.md` |
 
 <!-- mss:generated report-index fine -->

@@ -57,7 +57,7 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | `SEP-3` | Bootstrap e prima calibrazione del pacchetto | `CHIUSO_COME_CALIBRAZIONE` | seduta `SEP-SES-20260810-015`; self-report/unverified; non comparabile |
 | `SEP-3A` | Handoff operativo permanente | `CHIUSO_NEL_DISEGNO` | seduta `SEP-SES-20260810-016`; sesto documento autorizzato successivamente da Matteo; efficacia futura non osservata |
 | `SEP-4` | Revisione indipendente di struttura e contratto | `CHIUSO_COME_CALIBRAZIONE` | review `017` → `SEP-G1_FAIL` (HIGH F01); remediation `018` sanato F01; accettazione formale `020` → **`SEP-G1_PASS_CON_RISERVE`** (Cursor-only; riserve R1–R3); MEDIUM/LOW restano `SEP-D08` |
-| `SEP-5` | Freeze del primo protocollo prospettico | `BLOCCATO_DA_GATE` | gate G1 accettato con riserve **non** apre automaticamente SEP-5; servono ancora decisioni preventive di Matteo sul freeze |
+| `SEP-5` | Freeze del primo protocollo prospettico | `IN_CORSO` | piano operativo AM-01…03 formalizzato su decisione di Matteo 26-08-2026; il 27-08 aggiunge `AM-C0`, calibrazione read-only per testare fonti/STOP prima del freeze reale; `SEP-G2` resta non passato finché cicli, casi, ruoli, esiti e digest dell'istanza non sono congelati prima dell'esecuzione |
 | `SEP-6` | Prima eval senior prospettica | `BLOCCATO_DA_GATE` | richiede `SEP-G2`; non può riusare questa calibrazione come campione |
 | `SEP-7` | Revisione indipendente della prima eval | `BLOCCATO_DA_GATE` | richiede istanza `SEP-6` finalizzata e materiale di review definito |
 | `SEP-8` | Primo confronto controllato | `BLOCCATO_DA_GATE` | richiede almeno due istanze comparabili; vietato anticipare ranking |
@@ -94,6 +94,7 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | 21-08-2026 | `SEP-11` (chiusura documentale preparazione `036`) | `IN_CORSO` invariato · fonti vive allineate; prossimo = **plan directory** | `Report-chiusura-documentale-preparazione-036-21-08-26.md` | Meta documentation closure (`SEP-SES-20260821-037`) | corretti riferimenti superati; roadmap/handoff/prompt coerenti; zero F5/move/sandbox; pubblicazione docs non eseguita |
 | 21-08-2026 | `SEP-11` (plan directory) | `IN_CORSO` invariato · **plan prodotto**, zero move; D9 decisa ed eseguita | `Report-plan-directory-export-sandbox-mss-21-08-26.md` | Meta plan `SEP-AGC-anthropic-claudecode-001` (`SEP-SES-20260821-038`) | albero/export/sandbox progettati; `PLAN-F01` HIGH (accoppiamento per profondità); D6/D7/D8/D10 aperte; SEP-G5 non PASS |
 | 21-08-2026 | §7 (rettifica di coerenza) | nessun cambio di stato · **due righe rettificate** | `MAPPA-MSS-consulenza-esterna-21-08-26.md` §7 · `Report-consulenza-esterna-fable-mss-21-08-26.md` | Consulente esterno `SEP-AGC-anthropic-fable-001` (`SEP-SES-20260821-039`) | §7 dichiarava H-1.3 `FAIL` contro §4/§6/§4-bis dello stesso file, e accusava `PLAN_V0` di essere stale quando non lo era; rettifica **append**, testo originale barrato e conservato; nessun gate dichiarato |
+| 26-08-2026 | `SEP-5` | `BLOCCATO_DA_GATE` → `IN_CORSO` | `PIANO_MEMORIA_OPERATIVA_AGENTE_MATTEO_V0.md` + report piano operativo 26-08-26 | Meta senior Codex (`SEP-SES-20260826-040`) | Matteo ratifica la direzione «Agente Matteo»; AM-01/02/03 ricevono formato prospettico completo. Mancano ancora freeze specifici di tre cicli, cinque casi e revisore: `SEP-G2` non passa e nessuna eval parte. |
 
 ## 5. Gate
 
@@ -136,15 +137,20 @@ conferma esplicita del perimetro di scrittura. Fino ad allora l'archivio resta i
 
 ## 6. Prossimo passo atomico
 
-**Immediato:** chat Meta **solo plan** col prompt
-`docs/Sessioni di lavoro/10-08-26/Prompt-plan-directory-export-sandbox-mss-10-08-26.md`.
-Albero MSS + export + sandbox/ripristino. **Zero move**. F5 exec solo dopo plan approvato.
+**Immediato:** eseguire prima la calibrazione read-only `AM-C0`: analisi di solidità del pacchetto,
+intervista di Matteo sulle sole fonti di metodo e decisione autorizzate, chiave sigillata di cinque
+casi e review Codex cieca delle risposte Cursor Base/Pacchetto. La forma è in
+`PROTOCOLLO_CALIBRAZIONE_ALLINEAMENTO_AM_V0.md`. Se la calibrazione mostra fonti insufficienti,
+conflitti o STOP mancanti, correggere il pacchetto e non congelare istanze reali. Soltanto dopo
+questa decisione si congelano tre aperture/modifiche Servizio reali, cinque casi AM-03, ruoli,
+fonti, esiti, tetto di ripetizione e digest. Non avviare `SEP-6`.
 
 **H-1.3 = `PASS_CON_RISERVE`** (review `034`; riserva H13-POST-L01). **Non** è PASS pulito.
 **WP-1 = NO-GO** (non aprire). **SEP-G5 non PASS**.
 
 **Backlog dedicati (max 3 vivi):** (1) ~~F4-doc~~ · (2) ~~H-1.3 remediation+review+track `ee0ab39`~~ ·
-(3) **plan directory/export/sandbox** (prompt `036` pronto); SEP-5 resta bloccato.
+(3) freeze prospettico AM (`SEP-5` in corso); il piano directory/export/sandbox resta storia
+congelata e non autorizza move/F5.
 `SEP-D08` resta debito pack, **non** prossimo atomico.
 
 **Fatto in track `035`:** whitelist L5 + 2 hook + report/prompt H-1.3 **committed+pushed**
@@ -171,7 +177,8 @@ suite 41+32 verde.
 **Vietato senza nuovo mandato:** claim H-1.3 PASS *pulito* (senza riserve); path rewrite / F5;
 move; `_lavoro`; claim SEP-G5 PASS; WP-1; SEP-5 auto; stash drop senza Sì.
 
-**Non automatico:** `SEP-5` resta bloccato da decisioni freeze separate.
+**Non automatico:** `SEP-5` è in corso solo come disegno del freeze; richiede ancora decisioni
+specifiche di Matteo per superare `SEP-G2` o aprire un'istanza.
 
 **Decisione Matteo 10-08-2026 (CHIUSA — non riaprire senza nuova evidenza):**
 accetta `SEP-G1_PASS_CON_RISERVE` con convalida **Cursor-only** (nessun budget per altri modelli);
@@ -231,8 +238,9 @@ Decisioni ancora appartenenti a Matteo:
 
 - scelte sul **plan directory/export/sandbox**: albero target, contenuto export, forma della sandbox
   e ordine delle eventuali fasi esecutive; nessun F5 prima dell'approvazione;
-- compito e configurazione della prima eval prospettica (`SEP-5`/`SEP-G2`);
-- criteri, conseguenze e tetto delle ripetizioni da congelare;
+- calibrazione `AM-C0`: fonti autorizzate, cinque chiavi, configurazione Cursor comparabile e revisore Codex cieco;
+- tre cicli Servizio reali, cinque casi AM-03 e configurazione della prima istanza (`SEP-5`/`SEP-G2`), solo dopo la calibrazione;
+- ruoli evaluator/revisore, esiti, conseguenze e tetto delle ripetizioni da congelare;
 - eventuale autorizzazione a nuovo enforcement (F02/F03) o remediation `SEP-D08`;
 - soglia qualitativa per promuovere il pacchetto da sperimentale ad affidabile;
 - eventuale riapertura indipendenza forte se diventa disponibile un AGC/modello distinto;
