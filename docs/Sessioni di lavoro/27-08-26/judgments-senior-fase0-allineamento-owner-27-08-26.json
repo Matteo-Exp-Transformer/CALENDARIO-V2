@@ -1,0 +1,61 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "AM-C0@0.1.1",
+        "trigger_event": "Prova di solidita in Fase 0: tre dei cinque casi di AM-C0 contraddicevano docs/FOLLOW_UP.md, e due file del pacchetto affermavano stati opposti su WP-1 e H-1.3.",
+        "decision_or_output_changed": "Decisioni di prodotto rimesse nel loro owner con rettifica append-only; protocollo corretto per rispecchiarle; asserzioni di stato non possedute sostituite da puntatori; aggiunti gli elementi di freeze mancanti e la distinzione fra chiave di caso e verdetto atteso.",
+        "G": 1,
+        "O": 1,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-senior-fase0-allineamento-owner-27-08-26",
+        "primary_type": "governance",
+        "canonical_version": "docs/Sessioni di lavoro/27-08-26/Report-senior-fase0-allineamento-owner-e-documentazione-obsoleta-27-08-26.md",
+        "recipient": "Matteo, senior orchestratore enforcement, senior orchestratore test AM",
+        "problem_or_job": "Impedire che la calibrazione AM-C0 partisse sopra fonti che si contraddicono, e registrare il problema strutturale della documentazione obsoleta.",
+        "intended_use": "Base per le due chat senior preparate a fine seduta: enforcement e orchestrazione dei test.",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt senior preparazione test allineamento 27-08-2026",
+        "authored_by": "Senior Claude",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Finding della Fase 0 verificati con comando prima di agire; decisioni registrate nel loro owner con rettifica append-only; cancelli MSS e documentali verdi; sezione 11 compilata.",
+        "verification_or_use_evidence": "validate:mss:all exit 0; validate:docs 194 file e 1014 path con 0 rotti; generate:mss:views OK; git diff --check pulito; verifiche mirate su FOLLOW_UP, BookingCalendar.tsx e create-booking/index.ts.",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/FOLLOW_UP.md",
+          "docs/MetaSkillSystem/Senior-Eval-Pack/PROTOCOLLO_CALIBRAZIONE_ALLINEAMENTO_AM_V0.md",
+          "docs/Sessioni di lavoro/27-08-26/Prompt-senior-enforcement-documentazione-obsoleta-27-08-26.md",
+          "docs/Sessioni di lavoro/27-08-26/Prompt-senior-orchestratore-test-agente-matteo-27-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Non esegue la calibrazione: nessun caso congelato, nessun esecutore Cursor, nessun revisore Codex.",
+          "Non risolve il problema della documentazione obsoleta: lo diagnostica e lo instrada a una chat dedicata.",
+          "Non passa SEP-G2 e non autorizza modifiche app."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

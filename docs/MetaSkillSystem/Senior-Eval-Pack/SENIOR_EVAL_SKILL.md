@@ -109,4 +109,9 @@ Fermarsi prima di procedere se:
 8. **Rettifica:** nuovo record append-only collegato al bersaglio.
 9. **Handoff:** dopo report e verifiche, aggiorna la vista attiva e accoda il passaggio al registro.
 
-Il prossimo passo e ogni gate vivo si leggono esclusivamente in `MASTERPLAN_V0.md`.
+Il prossimo passo e ogni gate vivo **di questo pacchetto** si leggono esclusivamente in
+`MASTERPLAN_V0.md` §6. Il prossimo passo di `SYS-1` — cioè del pilota `WP-1` e del lavoro app —
+si legge in `../PLAN_V0.md` e nella riga «Prossima azione autorizzata» di `HANDOFF_SENIOR_V0.md`.
+Sono due corsie diverse e possono indicare lavori diversi senza che nessuna delle due sia stale.
+⚠️ Se le due si contraddicono sullo **stesso** oggetto, STOP e checkpoint con Matteo: non scegliere
+la rotta più comoda.

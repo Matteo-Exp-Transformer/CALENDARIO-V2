@@ -145,7 +145,7 @@ Prima dell'istanza Matteo deve consegnare o approvare le cinque schede, indicare
 ## 6. Sequenza, gate e stato probatorio
 
 | Fase | Stato possibile | Output | Non dimostra |
-|---|---|---|
+|---|---|---|---|
 | `AM-P0` — disegno | fatto | questo piano e i formati di freeze | `SEP-G2`, comparabilità, efficacia |
 | `AM-C0` — calibrazione read-only dell'allineamento | da fare | casi sigillati, due risposte Cursor, review Codex cieca e limiti | efficacia sulle modifiche reali, ranking o autonomia |
 | `AM-P1` — freeze di istanza | da fare | cicli/casi/ruoli/timestamp/digest scelti prima dell'esito | esecuzione o pass |
@@ -153,7 +153,7 @@ Prima dell'istanza Matteo deve consegnare o approvare le cinque schede, indicare
 | `AM-P3` — revisione fredda | da fare | esiti, confondenti e limiti riletti da ruolo compatibile | decisione di adozione |
 | `AM-P4` — decisione Matteo | da fare | adotta, corregge o ritira il profilo | ranking o cutover automatico |
 
-`AM-C0` viene prima di AM-P1: è una calibrazione controllata che può mostrare se il pacchetto di fonti è insufficiente o ambiguo. Non è una scorciatoia per `SEP-G2`. `SEP-5` può essere `IN_CORSO` perché il disegno del freeze è ora operativo. `SEP-G2` resta non passato finché AM-P1 non è congelato per istanze specifiche; `SEP-6`, `SEP-7` e ogni claim di comparabilità restano bloccati.
+`AM-C0` viene prima di AM-P1: è una calibrazione controllata che può mostrare se il pacchetto di fonti è insufficiente o ambiguo. Non è una scorciatoia per `SEP-G2`. Lo stato di `SEP-5` non si legge qui: appartiene a [`MASTERPLAN_V0.md`](MASTERPLAN_V0.md) §4 e alla transizione registrata in §4-bis. `SEP-G2` resta non passato finché AM-P1 non è congelato per istanze specifiche; `SEP-6`, `SEP-7` e ogni claim di comparabilità restano bloccati.
 
 ## 7. Prossimo task atomico e STOP
 

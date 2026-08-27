@@ -37,7 +37,8 @@
 9. **Preparare / avviare la migrazione documentale controllata** — matrice source→target, ordine,
    test, rollback e autorizzazione per fase (`SEP-11`, gate `SEP-G5`). ~~Prossimo atomico = plan
    directory/export/sandbox~~ → **CONGELATO il 21-08-2026 dalla decisione `D15`**
-   (`../PLAN_V0.md` §16.4). F5 resta fuori. SEP-5 bloccato finché l'owner non dice altrimenti.
+   (`../PLAN_V0.md` §16.4). F5 resta fuori. Lo stato di `SEP-5` si legge nel masterplan: questa
+   roadmap è una vista e non lo possiede.
 10. **Passare da sperimentale ad affidabile** — solo dopo almeno un ciclo prospettico revisionato,
     debiti critici risolti o accettati e decisione esplicita di Matteo (`SEP-12`).
 

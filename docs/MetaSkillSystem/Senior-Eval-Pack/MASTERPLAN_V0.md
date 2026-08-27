@@ -47,7 +47,7 @@ agenti, non sana H-1.3 e non apre `WP-1`.
 
 Questi stati valgono soltanto per i work package elencati qui e non aggiornano `SYS-1`.
 
-## 4. Stato corrente al 21-08-2026
+## 4. Stato corrente — aggiornato al 27-08-2026
 
 | ID | Work package | Stato corrente | Evidenza e limite |
 |---|---|---|---|
@@ -95,6 +95,8 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | 21-08-2026 | `SEP-11` (plan directory) | `IN_CORSO` invariato · **plan prodotto**, zero move; D9 decisa ed eseguita | `Report-plan-directory-export-sandbox-mss-21-08-26.md` | Meta plan `SEP-AGC-anthropic-claudecode-001` (`SEP-SES-20260821-038`) | albero/export/sandbox progettati; `PLAN-F01` HIGH (accoppiamento per profondità); D6/D7/D8/D10 aperte; SEP-G5 non PASS |
 | 21-08-2026 | §7 (rettifica di coerenza) | nessun cambio di stato · **due righe rettificate** | `MAPPA-MSS-consulenza-esterna-21-08-26.md` §7 · `Report-consulenza-esterna-fable-mss-21-08-26.md` | Consulente esterno `SEP-AGC-anthropic-fable-001` (`SEP-SES-20260821-039`) | §7 dichiarava H-1.3 `FAIL` contro §4/§6/§4-bis dello stesso file, e accusava `PLAN_V0` di essere stale quando non lo era; rettifica **append**, testo originale barrato e conservato; nessun gate dichiarato |
 | 26-08-2026 | `SEP-5` | `BLOCCATO_DA_GATE` → `IN_CORSO` | `PIANO_MEMORIA_OPERATIVA_AGENTE_MATTEO_V0.md` + report piano operativo 26-08-26 | Meta senior Codex (`SEP-SES-20260826-040`) | Matteo ratifica la direzione «Agente Matteo»; AM-01/02/03 ricevono formato prospettico completo. Mancano ancora freeze specifici di tre cicli, cinque casi e revisore: `SEP-G2` non passa e nessuna eval parte. |
+| 27-08-2026 | `SEP-5` | `IN_CORSO` invariato · cella §4 riscritta con `AM-C0` | `PROTOCOLLO_CALIBRAZIONE_ALLINEAMENTO_AM_V0.md` + report preparazione 27-08-26 | Meta senior Codex (`SEP-SES-20260827-041`) | riga mancante, appesa a posteriori il 27-08: l'edit del 27-08 alla cella `SEP-5` era stato fatto senza registrarlo qui, aggirando la mitigazione anti-overwrite di `SEP-F05` |
+| 27-08-2026 | nessun WP | nessun cambio di stato · **tre righe rettificate** in §4 e §6 | Fase 0 di `AM-C0` (revisione read-only) + `docs/FOLLOW_UP.md` | Senior Claude (`SEP-SES-20260827-042`) | intestazione §4 datata 21-08 su tabella aggiornata al 27-08; §6 affermava `H-1.3` e `WP-1`, che appartengono a `../PLAN_V0.md`, in contraddizione con la vista di continuità. Correzioni redazionali: nessun gate dichiarato, nessuno stato cambiato |
 
 ## 5. Gate
 
@@ -145,8 +147,14 @@ conflitti o STOP mancanti, correggere il pacchetto e non congelare istanze reali
 questa decisione si congelano tre aperture/modifiche Servizio reali, cinque casi AM-03, ruoli,
 fonti, esiti, tetto di ripetizione e digest. Non avviare `SEP-6`.
 
-**H-1.3 = `PASS_CON_RISERVE`** (review `034`; riserva H13-POST-L01). **Non** è PASS pulito.
-**WP-1 = NO-GO** (non aprire). **SEP-G5 non PASS**.
+**SEP-G5 non PASS** (questo masterplan possiede questo gate).
+
+⚠️ **`H-1.3` e `WP-1` non appartengono a questo file.** Il loro stato si legge esclusivamente in
+[`../PLAN_V0.md`](../PLAN_V0.md) oppure con `npm run mss:status`. Fino al 27-08-2026 queste righe
+affermavano «H-1.3 = `PASS_CON_RISERVE`» e «WP-1 = NO-GO» mentre l'owner e la vista di continuità
+dichiaravano `H-1.3` PASS (riserva H13-POST-L01 chiusa il 24-08) e `WP-1` in pilota ombra: era una
+divergenza per rotta d'ingresso, non un gate. Rimossa qui invece che corretta, perché il valore ha
+un solo proprietario.
 
 **Backlog dedicati (max 3 vivi):** (1) ~~F4-doc~~ · (2) ~~H-1.3 remediation+review+track `ee0ab39`~~ ·
 (3) freeze prospettico AM (`SEP-5` in corso); il piano directory/export/sandbox resta storia
