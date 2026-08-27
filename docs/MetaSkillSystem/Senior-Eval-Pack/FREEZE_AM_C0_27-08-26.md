@@ -34,6 +34,14 @@ nel working tree** al momento del freeze, non quella committata. Digest per ripr
 | `.cursor/rules/comandi-base.mdc` | `60583e69282dedfb1a137856c6714fb21302fd85600ad5101261c7ad49782982` |
 | **aggregato dei 31 file di overlay** (`sha256sum` di ciascuno, poi `sha256sum` del risultato) | `2f76a704e3d51c0dc72f1faa03bb454e0c3b3c4276cdc9b83fee0500f496f622` |
 
+> ➕ **Aggiunto dopo il commit del freeze (append-only).** Il lavoro di questa seduta è stato
+> committato su `env/test` come **`e7338da`** — «docs(mss): congela la calibrazione AM-C0 e registra le
+> regole di metodo», 11 file, 1418 inserimenti. **I risultati della calibrazione valgono su quel
+> commit.** Il commit **non** invalida i digest qui sopra: nessuno dei 31 file dello strato è stato
+> toccato, e i tre file di istradamento restano non committati con lo stesso contenuto. Chi esegue
+> ricontrolla l'aggregato prima di partire: se è diverso, qualcuno ha modificato lo strato dopo il
+> freeze e va detto a Matteo invece di procedere.
+
 ### Prerequisito verificato prima del freeze
 
 La calibrazione gira **sullo skill system corretto dall'enforcement**, non sulla baseline di ieri
