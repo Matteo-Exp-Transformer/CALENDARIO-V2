@@ -8,6 +8,9 @@
 *.mjs  text eol=lf
 *.cjs  text eol=lf
 *.json text eol=lf
+# Le fixture MSS hanno hash sha256 congelati calcolati su byte LF:
+# senza questa riga ogni checkout nuovo su Windows le converte in CRLF e test:mss diventa rosso.
+*.jsonl text eol=lf
 *.css  text eol=lf
 *.html text eol=lf
 *.md   text eol=lf
