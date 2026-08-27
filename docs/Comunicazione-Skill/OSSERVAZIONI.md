@@ -297,6 +297,25 @@
   Servizio). Istanza 2 = checklist collaudo manuale solo Matteo; confronto procedura MSS vs skill system
   normale; chiusura con report + capsula, **non** «WP-1 finito».
 
+### 27-08-26 · Handoff — all'umano solo ciò che l'agente non può fare
+
+- **Cosa è successo:** a fine seduta di freeze `AM-C0` il senior ha chiuso con una sezione «Il tuo
+  prossimo passo» che elencava a Matteo quattro azioni operative: creare sei cartelle con `git worktree`,
+  verificare un'esclusione, potare un file per data, lanciare 19 sessioni. Tutte azioni da agente.
+- **Correzione di Matteo, verbatim:** «le cose che devo fare io sono le cose che deve fare prossimo
+  agente. prepara prompt. io DEVO fare cose che agenti nonpossono fare. prepara prompt per prossimo
+  agente che proseguira e gestirà i test».
+- **Regola che ne esce:** la chiusura di una seduta non produce una lista di compiti per Matteo, produce
+  un **mandato per la chat successiva**. Ciò che resta a lui è solo ciò che un agente non può fare:
+  aprire sessioni in runtime non pilotabili, e prendere decisioni. Il mandato deve contenere un elenco
+  **chiuso** di ciò che si chiede all'umano, così che l'agente successivo non ricada nello stesso errore.
+- **Esito:** scritto `Prompt-senior-esecuzione-calibrazione-am-c0-27-08-26.md`, con §7 «Cosa chiedi a
+  Matteo, e solo questo». Osservazione registrata, **nessuna promozione a voce del VOCABOLARIO**:
+  è la 1ª occorrenza esplicita. Se si ripete, sale di livello.
+- **Nota collegata (stessa seduta):** ha chiesto anche di non ricevere testo esplicativo prima delle
+  domande — «non darmi contenuti da laeggere che spiegano. andiamo direttamente avanti». Coerente con
+  «indirizzami, non farmi scegliere» già registrato.
+
 > 📦 **Log-sessione storici (28-05 → 01-06-26)** spostati in [ARCHIVIO_OSSERVAZIONI.md](ARCHIVIO_OSSERVAZIONI.md)
 > per alleggerire questo file. Qui restano: esiti Liv.2 (vivi), sessioni recenti, tabelle ricorrenti.
 > Le nuove sessioni si appendono qui sotto; quando una è consolidata in regola, il revisore la sposta in archivio.

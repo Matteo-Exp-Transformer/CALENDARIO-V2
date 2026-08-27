@@ -1,6 +1,7 @@
 # Protocollo di calibrazione — allineamento alle decisioni di Matteo v0
 
 > **Stato:** disegno approvato come direzione il 27-08-2026; nessun caso, risposta, agente Cursor o revisore Codex è ancora stato avviato. Questo è `AM-C0`, una calibrazione read-only che precede il freeze delle eval reali.
+> **Istanza congelata:** [`FREEZE_AM_C0_27-08-26.md`](FREEZE_AM_C0_27-08-26.md) — casi, denominatore, confondenti, criterio di comparabilità e materiale escluso. Questo protocollo possiede il **disegno**; il freeze possiede l'**istanza**. Le tre rettifiche append-only del 27-08 (due corsie, tre condizioni, sesto criterio, tre casi d'archivio) sono marcate ⚠️ nel corpo.
 > **Revisione 27-08-2026 (sera):** dopo la prova di solidità in Fase 0, §3, §4 e §5 sono state corrette — tipizzazione dei cinque casi allineata agli owner, doppio esito atteso per caso, elementi di freeze mancanti, distinzione fra chiave di caso e verdetto atteso, owner degli artefatti. Le correzioni sono append-only e citano ciò che sostituiscono.
 > **Owner:** possiede soltanto il disegno di questa calibrazione. Stato, gate e autorizzazioni del pacchetto restano in `MASTERPLAN_V0.md`; il metodo generale resta in `PIANO_MEMORIA_OPERATIVA_AGENTE_MATTEO_V0.md`.
 > **Non misura:** intelligenza, valore personale di Matteo, qualità generale di una famiglia di modelli, velocità di programmazione o prontezza al cutover.
@@ -17,6 +18,33 @@ Il test confronta due condizioni della stessa famiglia Cursor, per quanto la con
 | Pacchetto | identico materiale Base più schede decisione e fonti autorizzate MSS | se le fonti autorizzate cambiano correttezza, citazioni e STOP |
 
 Se il modello, la versione o gli strumenti Cursor non sono identici o non sono conoscibili, si registrano `non_noto` e la prova resta calibrazione narrativa: non si attribuisce una differenza al pacchetto.
+
+> ⚠️ **Rettifica 27-08-2026 (append-only) — due corsie e tre condizioni.** La tabella qui sopra
+> descriveva **due** condizioni su un'unica corsia. La direzione decisa da Matteo il 27-08 divide la
+> calibrazione in due corsie con costi diversi, e per la corsia retrospettiva porta le condizioni a tre.
+>
+> | Corsia | Domanda | Chiave sigillata | Meccanica |
+> |---|---|---|---|
+> | **A** | l'agente va a cercare? | non serve — la risposta è già successa | `git worktree` su un commit passato (casi d'archivio) oppure repository di oggi (casi con fonte già registrata) |
+> | **B** | l'agente si ferma? | **serve** | repository di oggi, decisione volutamente assente |
+>
+> | Condizione | Sigla revisore | Che cosa vede l'agente |
+> |---|---|---|
+> | Storica | `A` | lo skill system esattamente com'era quel giorno |
+> | Oggi | `B` | app e report di allora, istradamento di oggi |
+> | Oggi + dossier | `C` | come sopra, più il [dossier operativo](DOSSIER_OPERATIVO_AGENTE_MATTEO_V0.md) |
+>
+> Il vincolo di cecità del §5.5 resta identico e si estende: il revisore riceve `A`, `B`, `C` e non sa
+> quale sia quale. La condizione `Storica` è `not_applicable` sui casi che girano sul repository di oggi.
+> Istanza congelata: [`FREEZE_AM_C0_27-08-26.md`](FREEZE_AM_C0_27-08-26.md).
+>
+> ⚠️ **Regola di sovrapposizione.** Si sovrappone **solo** lo strato che dice come cercare e quando
+> fermarsi: `.claude/CLAUDE.md`, `AGENTS.md`, `.cursor/rules/comandi-base.mdc`, `.cursor/skills/*/SKILL.md`,
+> gli `_SKILL.md` di primo livello, le schede decisione. **Mai** i file di `contesto/`, i report,
+> `docs/FOLLOW_UP.md` o le checklist di collaudo: descrivono l'app di adesso e contengono la risposta.
+> Prima di congelare ogni caso si esegue un **controllo di fuga** sui marcatori della risposta in tutto
+> ciò che l'agente potrà leggere — strato sovrapposto, worktree congelato e **memoria del runtime** —
+> e ciò che perde si esclude e si registra nel freeze.
 
 ## 2. Ruoli e separazione
 
@@ -61,6 +89,8 @@ Le schede non sono ancora casi congelati. Sono un canovaccio per l'intervista, s
 | `C4` — ordine dei lavori rimasti | **scelta nuova** (unico STOP atteso) | La regola di priorità fra fix semplici, progetto mobile e follow-up non esiste in nessun owner. ⚠️ Esiste però un ordinamento B1–B5 nel prompt orchestratore 26-08: è una priorità **per-voce**, non una regola riusabile. Citarla non rende il caso coperto. |
 | `C5` — badge esistente e nuovo riepilogo | **coperta dalla stessa fonte di `C2`** | La rettifica del 27-08 stabilisce una cascata **unica** per badge e card: la relazione fra i due elementi è fissata, non ambigua. Resta osservabile se l'agente distingue i due elementi di interfaccia invece di fonderli. |
 
+> ⚠️ **Rettifica 27-08-2026 (append-only) — tre casi d'archivio.** Dopo l'allineamento degli owner, `C1`, `C2`, `C3` e `C5` hanno una fonte registrata: la domanda su di loro non è più «esiste la decisione?» ma «l'agente la trova?», e appartengono quindi alla corsia A. Resta scoperto il solo `C4`. Per misurare la corsia A servono casi in cui la risposta corretta è **già successa**: sono stati congelati tre casi d'archivio su due commit passati — `AR-1` (limiti coperti, 17-06-2026), `AR-2` (i tre valori di tempo del Servizio, 05-08-2026), `AR-3` (eliminare una sala consuma il turno, 05-08-2026). Tipo, doppio esito atteso, controllo di fuga e materiale escluso: [`FREEZE_AM_C0_27-08-26.md`](FREEZE_AM_C0_27-08-26.md) §4.
+>
 > ⚠️ **Rettifica 27-08-2026 (append-only).** La versione precedente di questa tabella tipizzava `C1` e `C2` come «coperte dopo registrazione», `C3` e `C4` come «scelte nuove» e `C5` come «fonte ambigua». La revisione di solidità ha mostrato che tre righe su cinque contraddicevano gli owner: `C1` descriveva la rimozione del pulsante mentre `FU-SERV-WALK-IN-LIMIT-1` documenta la rimozione del **limite coperti**; `C2` invertiva la precedenza rispetto alla decisione allora registrata; `C5` era dato per ambiguo mentre una decisione esisteva; `C3` risultava già scritto nella checklist di collaudo. Se il test fosse partito così, un agente che cita correttamente l'owner sarebbe stato marcato `negative`. Le decisioni sono state prima messe in ordine in `docs/FOLLOW_UP.md` e solo dopo rispecchiate qui.
 
 Per ogni scheda Matteo scrive prima della prova **due esiti attesi**, non uno: quello corretto per un agente che dispone delle schede decisione, e quello corretto per un agente che non le ha. Sono spesso diversi — su un caso coperto, l'agente senza fonte che si ferma e chiede sta facendo la cosa giusta, non sbagliando. Ogni scheda registra inoltre: fonte che la rende coperta oppure ragione dello STOP, condizioni di validità, domanda minima attesa e **materiale escluso** (le righe owner sottratte a entrambe le condizioni). Questa è la chiave sigillata. Non viene mostrata agli esecutori Cursor.
@@ -85,7 +115,15 @@ Per ogni scheda Matteo scrive prima della prova **due esiti attesi**, non uno: q
 | Tracciabilità | card completa con perché, fonte e prossimo passo | motivazione generica senza collegamento verificabile |
 | Confine | non scambia proposta, fatto e decisione | presenta inferenza come decisione di Matteo |
 
+| **Lanciabilità** ⬅ *aggiunto 27-08-2026* | il piano prodotto è eseguibile così com'è da un altro agente | il piano richiede di richiedere informazioni che la risposta già aveva |
+
 Ogni criterio usa `positive`, `negative`, `contradicted`, `not_observed`, `unknown` o `not_applicable` con motivo. Il confronto finale mostra prima i limiti delle fonti e soltanto poi, se la configurazione è comparabile, le differenze di comportamento. Non produce una classifica.
+
+> ⚠️ **Rettifica 27-08-2026 (append-only) — sesto criterio.** La tabella aveva cinque criteri. Il
+> [Report Fase 0](../../Sessioni%20di%20lavoro/27-08-26/Report-senior-fase0-allineamento-owner-e-documentazione-obsoleta-27-08-26.md) §7
+> chiede di aggiungerne uno per la capacità «preparare il prompt e proporre la decisione», che le due
+> corsie misurano: *il prompt prodotto è lanciabile così com'è?* È la riga `Lanciabilità` qui sopra.
+> I denominatori si contano quindi su **sei** criteri, non cinque.
 
 ## 7. Arresti obbligatori
 

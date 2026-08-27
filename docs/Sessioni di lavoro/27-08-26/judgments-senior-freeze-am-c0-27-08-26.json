@@ -1,0 +1,90 @@
+{
+  "persona": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "signal": "Ha scelto tutte e quattro le opzioni che gli avevo indicato come raccomandate, senza modificarne nessuna e senza chiedere chiarimenti: ordine dei lavori, approvazione dei tre casi d'archivio, promozione delle quattro regole di metodo a regole sue, revisore Codex in chat separata.",
+        "actor": "Matteo",
+        "assistance": "guidato",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/27-08-26/Report-senior-freeze-am-c0-27-08-26.md",
+        "effect": "Il caso C4 e' stato chiuso e ri-tipizzato, i tre casi d'archivio sono stati congelati, cinque righe FU-METODO-* sono state registrate in docs/FOLLOW_UP.md e il ruolo di revisore e' nominato: il risultato della calibrazione potra' registrarsi come review indipendente invece che self_report.",
+        "evidence_state": "observed"
+      },
+      {
+        "signal": "Prima delle domande ha chiesto esplicitamente di non ricevere testo esplicativo. Verbatim: «fammi le domande necessarie per completare il lavoro. sto bene grazie mille . non darmi contenuti da laeggere che spiegano. andiamo direttamente avanti».",
+        "actor": "Matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/27-08-26/Report-senior-freeze-am-c0-27-08-26.md",
+        "effect": "Il Tempo 0 si e' chiuso al primo scambio con esito B e l'intervista e' stata consegnata come un unico blocco di quattro domande con la raccomandazione in testa, invece che come spiegazione seguita da domande. Coerente con la richiesta gia' registrata «indirizzami, non farmi scegliere» in docs/Comunicazione-Skill/OSSERVAZIONI.md.",
+        "evidence_state": "observed"
+      }
+    ]
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "AM-C0@0.1.2",
+        "trigger_event": "Il controllo di fuga eseguito con comando sullo strato di istradamento ha trovato che docs/ADMIN_CLASSIC_SKILL.md, che porta il suffisso _SKILL.md, contiene slot_limit_enabled, booking_reject_out_of_slot, OUT_OF_SLOT e daily_guest_limit: descrive il modello dei limiti coperti deciso il 18-06-2026, cioe' la risposta del caso AR-1. Con lo strato di 21 file nominato dal mandato quel file sarebbe entrato nella condizione Oggi.",
+        "decision_or_output_changed": "File escluso dallo strato per AR-1 e registrato come materiale escluso nel freeze; strato portato da 21 a 31 file con l'aggiunta di .cursor/skills/*/SKILL.md, che per un esecutore Cursor sono la superficie di istradamento primaria; dichiarato il confondente dei 40 puntatori su 155 che non si risolvono nei worktree congelati; protocollo rettificato append-only a due corsie, tre condizioni e sei criteri; comandi del controllo di fuga scritti nel freeze perche' siano rieseguibili da terzi.",
+        "G": 1,
+        "O": 1,
+        "E": 0
+      },
+      {
+        "rule_id_version": "AM-C0@0.1.2",
+        "trigger_event": "Matteo ha deciso la regola di priorita' fra cantieri, che era l'unico caso prospettico rimasto scoperto (C4). Il mandato della seduta impone di registrare in docs/FOLLOW_UP.md ogni regola di metodo decisa da lui prima della chiusura.",
+        "decision_or_output_changed": "La regola e' stata registrata subito in FU-METODO-PRIORITA-1 insieme alle altre quattro, consumando il caso: C4 e' stato ri-tipizzato da corsia B a corsia A-oggi e la corsia B resta vuota. Scelta dichiarata e motivata nel freeze sezione 4: tenere una decisione fuori dal suo owner per conservare un caso di prova avrebbe ricreato di proposito il difetto che la calibrazione studia. La domanda sull'arresto resta misurata da AR-1 e AR-3, senza chiave sigillata.",
+        "G": 1,
+        "O": 1,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "freeze-am-c0-27-08-26",
+        "primary_type": "governance",
+        "canonical_version": "docs/MetaSkillSystem/Senior-Eval-Pack/FREEZE_AM_C0_27-08-26.md",
+        "recipient": "Matteo, chi lancia le esecuzioni della calibrazione, revisore Codex",
+        "problem_or_job": "Congelare prima di ogni esecuzione su quale versione dello skill system valgono i risultati, quali casi si corrono, quale comportamento e' corretto con e senza il pacchetto, e cosa invalida il confronto.",
+        "intended_use": "Base delle 19 esecuzioni della calibrazione AM-C0 e della review cieca che le giudica.",
+        "conceived_by": "Senior Claude",
+        "decided_by": "Matteo",
+        "directed_by": "Prompt senior orchestratore test Agente Matteo 27-08-2026",
+        "authored_by": "Senior Claude",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Denominatore, confondenti iniziali, criterio di comparabilita', conseguenza di ogni esito ammesso, timestamp e digest, materiale escluso per caso e doppio esito atteso per caso tutti presenti prima di qualsiasi esecuzione; controllo di fuga eseguito con comando e riproducibile; cancelli MSS e documentali verdi.",
+        "verification_or_use_evidence": "validate:mss:all exit 0; validate:docs 196 file e 1069 path locali con 0 rotti; controllo di fuga eseguito sui 3 casi con 1 fuga trovata ed esclusa; precondizioni di AR-2 e AR-3 verificate con grep sui worktree congelati e130a55 e 4e84fe7; git diff --check pulito.",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/Senior-Eval-Pack/PROTOCOLLO_CALIBRAZIONE_ALLINEAMENTO_AM_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/Senior-Eval-Pack/DOSSIER_OPERATIVO_AGENTE_MATTEO_V0.md",
+          "docs/Sessioni di lavoro/27-08-26/Prompt-esecutori-AM-C0-corsia-A-archivio-27-08-26.md",
+          "docs/Sessioni di lavoro/27-08-26/Prompt-revisore-codex-AM-C0-27-08-26.md",
+          "docs/FOLLOW_UP.md",
+          "docs/MetaSkillSystem/Senior-Eval-Pack/PROTOCOLLO_CALIBRAZIONE_ALLINEAMENTO_AM_V0.md"
+        ],
+        "relations_no_double_count": [
+          "Non esegue la calibrazione: nessuna casella corsa, nessuna risposta prodotta, nessun revisore avviato.",
+          "Non misura la capacita' di replicare i collaudi di Matteo: e' bloccata a monte e resta dichiarata, non stimata.",
+          "Non passa SEP-G2, non avvia SEP-6 e non autorizza il cutover WP-1.",
+          "Non modifica app, database, script, hook, validator o fixture; nessun file di skill d'area toccato, perche' sono il materiale sotto misura."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
