@@ -87,6 +87,16 @@ Una delle quattro capacità di «Agente Matteo» — *capire quali test ha fatto
 
 Prima la scena concreta (chi riceve cosa, cosa fa, cosa si guarda), poi le sigle. Causa → effetto → soluzione. Indirizzalo invece di fargli scegliere fra griglie. Poche domande, solo quelle che cambiano il lavoro. Prima frase autosufficiente.
 
+## Registra le tue decisioni di metodo, a mano
+
+Questa seduta produce decisioni — quale fonte prevale fra vecchia e nuova, quando una decisione
+è riusabile, che forma deve avere una citazione, come si registra il superamento di una decisione.
+È **esattamente la classe di decisione che oggi muore in chat**: il difetto che la seduta studia.
+L'enforcement che lo impedirà da solo è autorizzato ma non ancora costruito, quindi qui tocca a te:
+**prima di chiudere, ogni regola di metodo decisa da Matteo ha una riga in `docs/FOLLOW_UP.md`**,
+con `da_confermare` se è ambigua. Non lasciarle solo nel report di seduta: un report è la storia
+di un pomeriggio, non un registro che qualcuno andrà a consultare.
+
 ## Chiusura richiesta
 
 Freeze datato con tutti gli elementi; casi congelati con controllo di fuga registrato; prompt degli esecutori e del revisore pronti da copiare; report di seduta con sezione 11 compilata secondo `docs/Comunicazione-Skill/CHIUSURA_SESSIONE.md` §11 — **aprila prima di scrivere**; capsula, viste rigenerate, `validate:mss:all` e `validate:docs` verdi.
