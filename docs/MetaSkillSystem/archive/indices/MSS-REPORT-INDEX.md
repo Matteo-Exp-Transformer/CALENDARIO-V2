@@ -787,7 +787,9 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 | File | Path |
 |---|---|
 | Report-preparazione-calibrazione-allineamento-mss-27-08-26.md | `docs/Sessioni di lavoro/27-08-26/Report-preparazione-calibrazione-allineamento-mss-27-08-26.md` |
+| Report-senior-esecuzione-am-c0-27-08-26.md | `docs/Sessioni di lavoro/27-08-26/Report-senior-esecuzione-am-c0-27-08-26.md` |
 | Report-senior-fase0-allineamento-owner-e-documentazione-obsoleta-27-08-26.md | `docs/Sessioni di lavoro/27-08-26/Report-senior-fase0-allineamento-owner-e-documentazione-obsoleta-27-08-26.md` |
 | Report-senior-freeze-am-c0-27-08-26.md | `docs/Sessioni di lavoro/27-08-26/Report-senior-freeze-am-c0-27-08-26.md` |
+| Report-senior-lettura-am-c0-e-apertura-cantiere-criteri-27-08-26.md | `docs/Sessioni di lavoro/27-08-26/Report-senior-lettura-am-c0-e-apertura-cantiere-criteri-27-08-26.md` |
 
 <!-- mss:generated report-index fine -->
