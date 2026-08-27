@@ -1,0 +1,114 @@
+{
+  "persona": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "signal": "Matteo ha dichiarato la propria condizione di lavoro reale — in Cursor usa sempre «Auto» — e ha contestato il disegno di prova che trattava quella variabilita come un difetto da eliminare.",
+        "actor": "matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/27-08-26/Report-senior-lettura-am-c0-e-apertura-cantiere-criteri-27-08-26.md",
+        "effect": "Il disegno della prossima prova cambia: si separano frequenza (misurabile su Auto, che e la sua condizione reale) e attribuzione (che richiede il modello fissato), invece di trattare Auto come rumore. Registrato nel report §8.4 e portato come Nodo 1 nel mandato della seduta criteri.",
+        "evidence_state": "observed"
+      }
+    ]
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "AM-C0@0.1.1",
+        "trigger_event": "Esecuzione di AM-C0 chiusa: 54 giudizi emessi sui 114 dichiarati; comparabilita §8.3/§8.4 non retta (modello non conoscibile in 5 caselle su 9, strumenti diversi fra sessioni); due difetti del freeze trovati eseguendolo — quattro casi su cinque senza testo congelato, e C4 eseguito nel repository dove e leggibile il proprio esito atteso.",
+        "decision_or_output_changed": "Il confronto fra condizioni resta registrato come non attribuibile e le dieci caselle restano not_observed con motivo, invece di essere recuperate rattoppando il freeze. Registrato un quarto canale di contaminazione mai dichiarato prima: gli artefatti del test vivono nel repository sotto test. Il prodotto utile e riconosciuto nei due limiti di fonte, non nel confronto.",
+        "G": 2,
+        "O": 3,
+        "E": 0
+      },
+      {
+        "rule_id_version": "Prompt-senior-orchestratore-test-agente-matteo@a2fe312",
+        "trigger_event": "La seduta di calibrazione avrebbe chiuso lasciando le proprie regole di metodo solo nel report di seduta; il mandato le ha imposto una riga in docs/FOLLOW_UP.md prima della chiusura, con stato da_confermare se ambigua.",
+        "decision_or_output_changed": "Cinque righe FU-METODO-* esistono ora nell'owner e sono citabili come fonte ammessa: priorita dei lavori, fonte piu recente, riuso di una decisione, forma della citazione, registrazione del superamento. Senza l'obbligo sarebbero rimaste dentro un report. Verificato con grep FU-METODO docs/FOLLOW_UP.md.",
+        "G": 1,
+        "O": 1,
+        "E": 1
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "report-senior-lettura-am-c0-e-apertura-cantiere-criteri-27-08-26",
+        "primary_type": "governance",
+        "canonical_version": "docs/Sessioni di lavoro/27-08-26/Report-senior-lettura-am-c0-e-apertura-cantiere-criteri-27-08-26.md",
+        "recipient": "Matteo, senior dei criteri, senior Codex enforcement+fix",
+        "problem_or_job": "Leggere criticamente l'esito di AM-C0 al di la del riassunto ricevuto in chat, rispondere alle quattro osservazioni di Matteo, e aprire la seduta in cui sara lui a scegliere i criteri di valutazione.",
+        "intended_use": "Fonte di ingresso §8 del mandato Prompt-senior-criteri-valutazione-mss-e-agente-matteo-27-08-26.md.",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "Messaggi di Matteo 27-08-2026: quattro osservazioni numerate sull'esito AM-C0 e richiesta esplicita di opinione sulla seduta.",
+        "authored_by": "Senior Claude",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Ogni affermazione riportata da altri agenti riverificata con comando prima di essere usata; i numeri di AM-C0 dichiarati come letti e non ricalcolati; le lacune proprie dichiarate invece che omesse; cancelli MSS e documentali verdi; sezione 11 compilata.",
+        "verification_or_use_evidence": "test:mss verde nel repo principale e rosso nei due worktree sullo stesso commit 97ebf85; sha256sum e conteggio dei ritorni-carrello su FX-V01-bundle.jsonl (7602 vs 7606 byte, 0 vs 4); verde dopo *.jsonl text eol=lf con ri-checkout; validate:docs 194 file 0 path rotti; grep indipendente sullo strato di istradamento che conferma il buco 1; grep FU-METODO che conferma le cinque righe.",
+        "verification_status": "self_report",
+        "owner_ref": "docs/MetaSkillSystem/Senior-Eval-Pack/MASTERPLAN_V0.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/27-08-26/AM-C0/REGISTRO-ESITI.md",
+          "docs/Sessioni di lavoro/27-08-26/AM-C0/SINTESI.md",
+          "docs/Sessioni di lavoro/27-08-26/Prompt-senior-criteri-valutazione-mss-e-agente-matteo-27-08-26.md",
+          "docs/Sessioni di lavoro/27-08-26/Prompt-senior-enforcement-slice-1-2-mandato-tecnico-27-08-26.md"
+        ],
+        "relations_no_double_count": [
+          "Non esegue e non ripete la calibrazione: nessun caso nuovo congelato, nessun esecutore lanciato, nessun verdetto emesso o corretto.",
+          "Non corregge il freeze AM-C0 ne recupera le dieci caselle not_observed: dichiara che servono casi nuovi.",
+          "Non scrive la regola di STOP nello strato di istradamento: la propone, la decisione e di Matteo.",
+          "Non implementa lo slice 1+2 dell'enforcement, gia autorizzato e con mandato tecnico separato.",
+          "Non apre SEP-G2, non avvia SEP-6, non autorizza il cutover WP-1."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      },
+      {
+        "output_id": "fix-gitattributes-jsonl-eol-lf-27-08-26",
+        "primary_type": "processo",
+        "canonical_version": ".gitattributes",
+        "recipient": "chiunque apra un checkout nuovo del repository: senior enforcement, seduta di calibrazione, CI Windows",
+        "problem_or_job": "test:mss e validate:mss:all risultavano rossi su ogni checkout nuovo (worktree fresco, clone, CI Windows) e verdi nel repository storico, sullo stesso commit, per 12 hash di fixture congelate.",
+        "intended_use": "Rendere riproducibile la suite MSS fuori dalla cartella di chi l'ha scritta; sblocca la corsia A della calibrazione, che apre worktree sul passato.",
+        "conceived_by": "Senior Claude",
+        "decided_by": "Matteo",
+        "directed_by": "Messaggio di Matteo 27-08-2026: «committa pure».",
+        "authored_by": "Senior Claude",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Il rosso deve essere riprodotto in un worktree pulito creato da zero e tornare verde con la sola riga aggiunta, senza toccare nessuna fixture e senza cambiare nessun hash congelato.",
+        "verification_or_use_evidence": "Worktree pulito su 97ebf85: 12 hash frozen mutato. Dopo *.jsonl text eol=lf e ri-checkout dei soli .jsonl: 42 fixture + 57 gruppi verdi. Causa isolata con sha256sum e conteggio dei ritorni-carrello: 7602 vs 7606 byte, 0 vs 4. Commit 0e2a487.",
+        "verification_status": "self_report",
+        "owner_ref": ".gitattributes",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/fixtures/v0.1/FX-V01-bundle.jsonl"
+        ],
+        "relations_no_double_count": [
+          "Non modifica ne le fixture ne i loro hash congelati: corregge il checkout, non il dato.",
+          "Non chiude la lacuna piu ampia dichiarata in R5: la CI dovrebbe girare test:mss su un checkout fresco, altrimenti certifica solo la cartella di chi l'ha scritta."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
