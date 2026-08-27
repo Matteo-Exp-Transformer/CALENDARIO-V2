@@ -6,17 +6,17 @@ Sei un **senior orchestratore** del Senior Eval Pack. Devi portare la calibrazio
 
 La domanda non è «quale agente è più bravo». È: **con lo stesso bivio e lo stesso contesto tecnico, lo skill system porta un agente a trovare la decisione già presa, oppure a fermarsi correttamente quando la decisione non esiste?**
 
-## ⚠️ BASELINE GIÀ FISSATA — non sceglierne un'altra
+## ⚠️ QUANDO SI ESEGUE, E SU QUALE VERSIONE
 
-La baseline della calibrazione è il commit **`cc23837`** su `env/test` (27-08-2026, «docs(mss): allinea owner dopo Fase 0 AM-C0 e registra decisioni Servizio»). Tutti i worktree degli esecutori si aprono lì, non su `HEAD`.
+**La condizione «Oggi» si esegue sullo skill system corretto dall'enforcement, non su quello di ieri.** Decisione di Matteo del 27-08-2026, e la ragione è buona: se nel corpus restano owner che si contraddicono, ogni fallimento diventa ambiguo — l'agente non ha cercato, oppure ha cercato e ha trovato due verità incompatibili? È il rumore che ha quasi fatto partire la calibrazione con tre casi su cinque sbagliati.
 
-```
-git worktree add <cartella-temporanea> cc23837
-```
+**Prerequisito da verificare prima di congelare qualsiasi cosa:** la chat di enforcement ha consegnato il suo report e le sue correzioni documentali deterministiche sono applicate. ⛔ **Non aspettare** che le sue proposte di enforcement siano *implementate*: quello è un cantiere separato e attenderlo rimanda la calibrazione a tempo indeterminato. Ti serve un corpus non contraddittorio, non un sistema finito.
 
-**Perché è fissata e non la puoi spostare.** Una chat di enforcement ha lavorato sullo skill system *dopo* quel commit: istradamento, hook e contratto di chiusura possono essere cambiati. La calibrazione misura lo skill system **com'era al momento del freeze**; se apri su `HEAD` misuri un sistema già corretto e la baseline che serviva non esiste più — e non si recupera. Registra comunque nel report `git rev-parse HEAD` e `git status --short` al tuo avvio, come fotografia dello scarto fra baseline e presente.
+**Fotografia del prima:** il commit **`cc23837`** (27-08-2026, «docs(mss): allinea owner dopo Fase 0 AM-C0 e registra decisioni Servizio») è lo stato precedente all'enforcement. Non è il punto in cui esegui: è un riferimento conservato, citabile nel freeze, e sempre raggiungibile con `git worktree add <cartella> cc23837` se un giorno si vorrà misurare quanto l'enforcement ha cambiato il comportamento. Non è una domanda di questa calibrazione.
 
-⛔ Se `cc23837` non è più raggiungibile, o se ritieni che la baseline vada spostata, **fermati e chiedi a Matteo**: spostarla invalida il confronto e non è una scelta tecnica.
+**All'avvio registra comunque nel report:** `git rev-parse HEAD`, `git branch --show-current`, `git status --short`, e il commit del report di enforcement. Il freeze deve dire su quale versione dello skill system i risultati valgono — altrimenti fra un mese nessuno saprà a cosa si riferiscono.
+
+⚠️ Resta invece **pinnato al passato il worktree dei casi d'archivio**: la condizione «Storica» apre sul commit del caso (per esempio il 17-06), e lì non si sovrappone nulla. Vedi la corsia A.
 
 ## Fonti di ingresso obbligatorie
 
