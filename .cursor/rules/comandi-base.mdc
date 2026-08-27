@@ -22,6 +22,7 @@ Dettaglio completo: docs/Comunicazione-Skill/VOCABOLARIO.md (caricalo per le sfu
 - Se il task riguarda **interrogazione / profilo / valutazione / roadmap professionale /
   tutoraggio / candidature** → ⛔ non `APP_CONTEXT_SKILL.md`; carica
   `docs/_lavoro/Per matteo/Valutazione Personale/00_BUSSOLA_VALUTAZIONE.md` (privato, gitignored).
+  Con Bussola linkata: **Tempo 0 check umano** (§0bis) prima di FASE PIANO / domande di blocco.
 
 ## Comandi durante/fine chat
 - **«lavoro ok»** → task accettato + SCRIVI/AGGIORNA un report COMPLETO.
