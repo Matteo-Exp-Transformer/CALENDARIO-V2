@@ -380,3 +380,22 @@
 - **Formato che ha funzionato:** metafora di due agenti davanti allo stesso bivio; frasi complete che nominano soggetto, azione, motivo e limite; sequenza concreta di lancio; distinzione fra ciò che è già deciso, ciò che va chiesto e ciò che deve fermare l'agente. Nessuna sigla lasciata senza spiegazione nella risposta a Matteo.
 - **Feedback diretto di Matteo:** «ottimo. questo tipo di output mi piace molto. è chiaro e mi aiuta a non dover indovinare di cosa parli, è chiaro e mi fa capire come approfondire il discorso per scegliere bene.»
 - **Uso futuro:** quando un piano MSS propone test o decisioni, spiegare prima la scena concreta (chi riceve cosa, cosa fa, cosa si guarda) e solo dopo i codici del sistema. Questa è un'osservazione registrata: non promuove da sola una voce nel VOCABOLARIO.
+
+### 27-08-26 (sera) · Report di seduta illeggibile — la risposta lunga non è una risposta
+
+- **Cosa è successo:** a fine seduta `AM-C0` ho consegnato a Matteo un riepilogo di circa 900 parole
+  con sezioni, tabelle, sigle e due domande in fondo. Contenuto corretto, esito nullo.
+- **Feedback diretto, verbatim:** «mi sono stufato di chiedere ai modelli che mi parlano, di parlarmi
+  in linguaggio semplice, con soggetti non sottintesi, e facendomi capire in pochi paragrafi: 1 cosa
+  devo fare, come lo devo fare, cosa devo ottenere. in piu la sequenza di azioni che devo fare per
+  proseguire. io leggo le 6000 parole che mi hai scritto e penso: "quindi cosa cazzo devo fare?"»
+- **Perché è successo:** avevo scritto per il registro, non per il lettore. Il report di seduta è il
+  posto giusto per verifiche, digest e confondenti; la risposta in chat deve dire **cosa fa Matteo
+  adesso**. Ho consegnato il registro due volte invece di consegnare il registro e poi le istruzioni.
+- **Formato che ha funzionato (secondo giro, «così ho capito. Grazie»):** quattro blocchi, in
+  quest'ordine — (1) il problema in tre righe, (2) come lo risolvo, (3) le due strade con la mia
+  raccomandazione, (4) la sequenza numerata delle azioni, in tabella, una riga per azione. Soggetti
+  espliciti, niente sigle non spiegate, niente contesto prima delle istruzioni.
+- **Uso futuro:** quando la seduta finisce con del lavoro che deve fare Matteo, la risposta in chat è
+  la **sequenza**, non il resoconto. Il resoconto vive nel report ed è lì che si va a cercarlo. Se
+  servono le due cose, prima la sequenza e poi, separato, il resto.
