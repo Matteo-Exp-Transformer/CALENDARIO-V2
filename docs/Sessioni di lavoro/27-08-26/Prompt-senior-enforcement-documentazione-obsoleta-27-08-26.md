@@ -33,6 +33,16 @@ Dal report del 27-08, verificati con comando:
 
 Trattala come ipotesi, non come conclusione. Se i dati la smentiscono, dillo.
 
+## Due candidati che Matteo ha già indicato
+
+Non sono decisi e non sono ordini: sono due punti che Matteo ha riconosciuto come utili il 27-08-2026, e che devono comparire nella tua tabella delle proposte con costo, copertura e limiti — anche se la tua conclusione è che non vanno fatti così.
+
+**Candidato 1 — una decisione detta in chat deve finire in un registro prima che la chat chiuda.** Oggi non lo garantisce niente: la volontà di togliere «Aggiungi walk-in» dalla Home è sopravvissuta solo dentro un documento di test. Domande da chiudere: dove vive il controllo (chiusura di seduta? pre-commit? capsula?), come si distingue una decisione di prodotto da una considerazione di passaggio senza chiedere all'agente di indovinare, e che cosa succede quando la decisione è ambigua — meglio una riga in più con stato `da_confermare` che una persa. Costo atteso basso, copertura alta: è il difetto che ha prodotto metà dei casi di §5.
+
+**Candidato 2 — il collaudo manuale di Matteo non lascia traccia leggibile.** Una casella `[x]` scritta da lui è byte per byte identica a una scritta da un agente; per questo il 26-08 è stata decisa la firma «— verificato da chi, quando». Ma resta un promemoria, non una regola: dipende dal fatto che qualcuno se lo ricordi. Conseguenza misurata: 0 annotazioni su 438 verificate da terzi, asse Persona vuoto in 55 file di giudizi su 56. Serve un **canale d'ingresso per Matteo**, minimo: una riga per prova con esito, autore e data. Valutalo come enforcement, non come documentazione: finché quel dato non esiste, nessun agente può imparare come Matteo collauda, e una intera capacità del pilota resta non misurabile.
+
+⚠️ Il criterio che unisce i due candidati, e che dovresti applicare a ogni proposta: **ciò che accade solo se Matteo lo ripete non è una regola, è un promemoria.** Se una tua proposta si regge sul fatto che qualcuno si ricordi di applicarla, dichiaralo e stimane la tenuta, invece di contarla come copertura.
+
 ## Come lavorare
 
 **Branch e worktree separati.** Prima di toccare qualsiasi cosa, crea il tuo spazio: `git worktree add` su un branch dedicato a partire dal commit corrente di `env/test`. Un'altra chat sta congelando una calibrazione sullo stesso repository e non deve trovarsi il working tree cambiato sotto i piedi. Dichiara nel report il commit da cui sei partito.

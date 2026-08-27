@@ -6,15 +6,17 @@ Sei un **senior orchestratore** del Senior Eval Pack. Devi portare la calibrazio
 
 La domanda non è «quale agente è più bravo». È: **con lo stesso bivio e lo stesso contesto tecnico, lo skill system porta un agente a trovare la decisione già presa, oppure a fermarsi correttamente quando la decisione non esiste?**
 
-## ⚠️ PRIMA AZIONE, prima di leggere altro
+## ⚠️ BASELINE GIÀ FISSATA — non sceglierne un'altra
 
-Esegui e **registra nel report** il commit da cui parti:
+La baseline della calibrazione è il commit **`cc23837`** su `env/test` (27-08-2026, «docs(mss): allinea owner dopo Fase 0 AM-C0 e registra decisioni Servizio»). Tutti i worktree degli esecutori si aprono lì, non su `HEAD`.
 
 ```
-git rev-parse HEAD && git branch --show-current && git status --short
+git worktree add <cartella-temporanea> cc23837
 ```
 
-Quel commit è la **baseline congelata** della calibrazione. Un'altra chat sta lavorando in parallelo sull'enforcement dello skill system: se corregge istradamento, hook o contratto di chiusura, la baseline che vuoi misurare non esiste più. Con il commit registrato, le due chat non si contaminano — i tuoi esecutori girano su un worktree pinnato lì.
+**Perché è fissata e non la puoi spostare.** Una chat di enforcement ha lavorato sullo skill system *dopo* quel commit: istradamento, hook e contratto di chiusura possono essere cambiati. La calibrazione misura lo skill system **com'era al momento del freeze**; se apri su `HEAD` misuri un sistema già corretto e la baseline che serviva non esiste più — e non si recupera. Registra comunque nel report `git rev-parse HEAD` e `git status --short` al tuo avvio, come fotografia dello scarto fra baseline e presente.
+
+⛔ Se `cc23837` non è più raggiungibile, o se ritieni che la baseline vada spostata, **fermati e chiedi a Matteo**: spostarla invalida il confronto e non è una scelta tecnica.
 
 ## Fonti di ingresso obbligatorie
 
