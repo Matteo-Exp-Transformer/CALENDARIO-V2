@@ -336,8 +336,7 @@ Pre-commit (se committi): stesso perimetro `Report-*` / `Verbale-*` con `require
 | Limite | Stato | Cosa fare |
 |---|---|---|
 | **SK-7 D2/D3** | APERTO — prove false possibili in `mss:capsule` | Gate Matteo: (A) patch recuperabile o (B) autorità reimplementazione |
-| **WP-1** | **NO-GO** | Non aprire piloti reali |
-| **H-1.3** | **`PASS` 25-08-26** | PASS ≠ via libera pilota; `WP-1` resta NO-GO |
+| **Stato globale `WP-1` / `H-1.3`** | Solo owner | Leggi [`PLAN_V0.md` §4](PLAN_V0.md#4-quadro-corrente) o esegui `npm run mss:status`; questo manuale non replica stati dinamici |
 | **Tag ripristino** | `mss/baseline-h13` posato 24-08-26 su HEAD pre-M-A/M-B e **pubblicato su origin** (decisione `M5`) | Ritorno: `git reset --hard mss/baseline-h13`; mai forzato su origin senza conferma di Matteo |
 | **Hook Claude** | `guard-prod.mjs` + `settings.json` tracciati da git (24-08-26); casi `A1`/`A2`/`A3`/`A4` nel nome, verificarli con `npm run test:mss` | `settings.local.json`/`mcp.json` restano personali per design — mai tracciarli (`test:mss` lo verifica) |
 | **Cloud / Codex / Claude senza stop** | Hook `stop` **non installabile** su Cloud/remote; fallback Opzione B (M-E2-C): checklist in `CHIUSURA_SESSIONE.md` + CI `validate:mss:changed` | Non promettere hook Cloud; matrice `stop_does_not_cover_cloud_codex_claude` + `cloud_codex_claude_fallback_checklist_plus_ci` |

@@ -221,7 +221,7 @@ Protocollo minimo, per ogni mandato:
 
 ## 7. STOP — cosa non puoi fare
 
-- **`WP-1` resta `NO-GO`.** `SEP-G5` **non** è PASS. **`H-1.3` è `PASS` (25-08-26).** `H-1.3` PASS ≠ via libera pilota.
+- **Stati e gate globali:** leggi `PLAN_V0.md` §4-bis, §4-ter e §15 al momento dell'azione; questo mandato storico non è fonte di stato. `SEP-G5` resta invece di proprietà del masterplan Senior Eval Pack.
 - **Nessun `move` di file a mano:** usare `mss:move` (`T1`/`SK-9` CHIUSO; decisione `D15`).
 - **Nessuna riscrittura di record `final`.** La rettifica passa da un `amendment`, sempre.
 - **Nessun allentamento del validator** per far passare un test. Se un test non passa, o il codice è
@@ -254,11 +254,10 @@ dato la smentita sarebbe stata plausibile e inverificabile. Quindi, da ora, **pa
 è burocrazia, è l'unica differenza fra un difetto dimostrabile e parola contro parola.
 
 **Post-`T11` (25-08-2026):** D14 ROADMAP/HANDOFF **PROVATO**; N4 deny **PROVATO**; R-T7-06 Opzione B
-**PROVATO**. `H-1.3` **PASS**; `WP-1` **NO-GO**. Handoff orchestratore:
+**PROVATO**. Lo stato globale successivo si legge nell'owner, non in questa nota storica. Handoff orchestratore:
 [`Report-orchestratore-t11-p2-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Report-orchestratore-t11-p2-25-08-26.md).
 
 **Post-`T12` (25-08-2026):** M-SYNC-ORCH + M-D14-INDEX **PROMUOVERE**; decisioni Q-A/Q-B/Q-C in
 [`Decisioni-T12-QABC-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Decisioni-T12-QABC-25-08-26.md).
-**Prossima azione viva: `T13`** — commit/pubblicazione solo con sì Matteo; debiti Q-B/Q-C solo con
-nuovo sì; P3/D27/WP-1 solo verbatim. Stato vivo: `npm run mss:status` + `PLAN_V0.md` §15 — niente
-percentuali inventate.
+**Istruzione viva:** il prossimo task e gli eventuali STOP si leggono soltanto con `npm run mss:status`
+e `PLAN_V0.md` §15. Commit/pubblicazione solo con sì Matteo; niente percentuali inventate.

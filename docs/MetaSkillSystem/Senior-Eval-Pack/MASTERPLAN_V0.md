@@ -63,7 +63,7 @@ Questi stati valgono soltanto per i work package elencati qui e non aggiornano `
 | `SEP-8` | Primo confronto controllato | `BLOCCATO_DA_GATE` | richiede almeno due istanze comparabili; vietato anticipare ranking |
 | `SEP-9` | Consolidamento del routing | `BLOCCATO_DA_GATE` | richiede evidenza d'uso delle rotte; nessun secondo router senza mandato |
 | `SEP-10` | Analisi read-only dell'archiviazione | `CHIUSO_NEL_DISEGNO` | A1–A4 + B1 + B2 (`Report-B2-review-piano-migrazione.md`); B1 self-report «PRONTO PER DECISIONE»; B2 = **`ADEGUATO_CON_RISERVE`** (HIGH B2-F01 M03 link); **nessuna** migrazione; **SEP-G5 non PASS** |
-| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` (H-1.3 = **PASS_CON_RISERVE**; track L5 **committed+pushed** `ee0ab39`; prossimo = plan directory) | F1–F4-doc; remediation R01–R05; review post = **PASS_CON_RISERVE** (H13-POST-L01); **SEP-G5 non PASS**; WP-1 **NO-GO**; path L5 invariati; F5/move vietati finché plan directory approvato |
+| `SEP-11` | Piano di migrazione controllata | `IN_CORSO` | F1–F4-doc e remediation R01–R05 sono storia del pacchetto; **SEP-G5 non PASS**; path L5 invariati; F5/move vietati finché plan directory approvato. Stato globale, `H-1.3` e `WP-1` si leggono solo in `../PLAN_V0.md`. |
 | `SEP-12` | Promozione da sperimentale ad affidabile | `BLOCCATO_DA_GATE` | richiede review, uso prospettico, debiti accettati e decisione esplicita di Matteo |
 
 ### 4-bis. Registro append-only delle transizioni WP

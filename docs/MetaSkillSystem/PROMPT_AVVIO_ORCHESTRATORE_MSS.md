@@ -38,13 +38,9 @@ documento:** sono mobili, si citano come comando.
 
 Lo stato **vivo** non sta in questo file: esegui `npm run mss:status` e leggi `PLAN_V0.md` (owner).
 
-**Post-`T13`:** ciclo `T13` **CHIUSO e pubblicato** (`c361f2c` su `origin/env/test`). Residui
-lavagna / Q-B / Q-C chiusi per davvero. `H-1.3` è **PASS**; **`WP-1` resta NO-GO** finché Matteo
-non riapre `D27` in chat dedicata (`H-1.3` PASS ≠ via libera pilota).
-
-**Gate vivo: `T14`** — solo riapertura verbatim `D27` → prima istanza `WP-1` in ombra. Niente
-nuova costruzione scheletro. Niente cutover. `M-A`…`T13` sono **storico**.
-Prompt decisione/pilota: [`Prompt-d27-riapertura-wp1-ombra-25-08-26.md`](../Sessioni%20di%20lavoro/25-08-26/Prompt-d27-riapertura-wp1-ombra-25-08-26.md).
+Non riportare stati o gate qui: prima di agire esegui `npm run mss:status` e leggi
+[`PLAN_V0.md` §4-bis, §4-ter e §15](PLAN_V0.md). L'owner decide se un pilota è autorizzato e quale
+sia il prossimo task; questo prompt non può derogare al suo STOP.
 
 ---
 
@@ -91,8 +87,8 @@ Ricontrolla contro `git ls-files` e il file vero prima di passarlo a un esecutor
 ## STOP — non negoziabili
 
 - **Nessun commit o push senza sì esplicito di Matteo.**
-- **Nessuna chiusura di pacchetto senza Matteo.** Tu puoi dichiarare `PROVATO`; `CHIUSO` è solo suo.
-- **`WP-1` resta `NO-GO`.** `SEP-G5` non è PASS. **`H-1.3` è `PASS`.** `H-1.3` PASS ≠ via libera pilota.
+- **Chiusura di pacchetto:** applica la regola proprietaria `M12` in `PLAN_V0.md`; non attribuire a questo prompt un veto diverso da quello dell'owner.
+- **Stati e gate globali:** leggi `PLAN_V0.md` §4-bis, §4-ter e §15 al momento dell'azione; non usare questo prompt come fonte di stato.
 - **Nessun `move` di file a mano:** usare `mss:move` (`SK-9` CHIUSO; `D15`).
 - **Nessuna riscrittura di record `final`**: la rettifica passa da un `amendment`, sempre.
 - **Nessun allentamento del validator** per far passare un test. Se un test non passa, o il codice è
@@ -111,6 +107,6 @@ Ricontrolla contro `git ls-files` e il file vero prima di passarlo a un esecutor
 ## Prima azione
 
 Registra `HEAD` e `git status`. Leggi i tre file della tabella, esegui `npm run mss:status` e
-`npm run mss:query`. Poi opera sul gate vivo **`T13`** secondo
-`PROMPT_ORCHESTRATOR_MSS_24-08-26.md` §8 e `PLAN_V0.md` §15 — **non** aprire «prossima `M-D`».
+`npm run mss:query`. Poi opera esclusivamente sul task autorizzato da `PLAN_V0.md` §15; questo
+prompt non ne conserva una copia.
 Alla consegna di ogni famiglia, controverifica con il protocollo del mandato vivo §6.
