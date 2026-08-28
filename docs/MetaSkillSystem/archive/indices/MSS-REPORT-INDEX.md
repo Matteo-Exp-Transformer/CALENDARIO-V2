@@ -792,4 +792,10 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 | Report-senior-freeze-am-c0-27-08-26.md | `docs/Sessioni di lavoro/27-08-26/Report-senior-freeze-am-c0-27-08-26.md` |
 | Report-senior-lettura-am-c0-e-apertura-cantiere-criteri-27-08-26.md | `docs/Sessioni di lavoro/27-08-26/Report-senior-lettura-am-c0-e-apertura-cantiere-criteri-27-08-26.md` |
 
+## 28-08-26
+
+| File | Path |
+|---|---|
+| Report-senior-criteri-valutazione-mss-e-agente-matteo-28-08-26.md | `docs/Sessioni di lavoro/28-08-26/Report-senior-criteri-valutazione-mss-e-agente-matteo-28-08-26.md` |
+
 <!-- mss:generated report-index fine -->

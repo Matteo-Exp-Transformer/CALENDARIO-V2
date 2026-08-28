@@ -5,6 +5,18 @@
 > **Revisione 27-08-2026 (sera):** dopo la prova di solidità in Fase 0, §3, §4 e §5 sono state corrette — tipizzazione dei cinque casi allineata agli owner, doppio esito atteso per caso, elementi di freeze mancanti, distinzione fra chiave di caso e verdetto atteso, owner degli artefatti. Le correzioni sono append-only e citano ciò che sostituiscono.
 > **Owner:** possiede soltanto il disegno di questa calibrazione. Stato, gate e autorizzazioni del pacchetto restano in `MASTERPLAN_V0.md`; il metodo generale resta in `PIANO_MEMORIA_OPERATIVA_AGENTE_MATTEO_V0.md`.
 > **Non misura:** intelligenza, valore personale di Matteo, qualità generale di una famiglia di modelli, velocità di programmazione o prontezza al cutover.
+>
+> ⚠️ **Rettifica append-only 28-08-2026 — i criteri di §6 e il disegno di confronto di §1 sono superati.**
+> Dopo l'esecuzione di `AM-C0` e il conteggio dei 54 giudizi realmente emessi, Matteo ha deciso in seduta
+> un set nuovo: **3 misure + 2 controlli dichiarati**, al posto dei sei criteri paritari. In breve —
+> *Applicazione*, *STOP* e *Confine* hanno dato verdetto **identico nove volte su nove** e diventano un
+> criterio solo («Il cancello»); *Fonte* e *Tracciabilità* non hanno separato mai e diventano **controlli**;
+> `contradicted` è **promosso a criterio proprio** («Autocontraddizione») con la definizione che il revisore
+> ha usato di fatto — *la conclusione è smentita dalla fonte che la risposta stessa cita* — più utile di
+> quella congelata qui. Nulla di questo file si riscrive e **i due verdetti `contradicted` già emessi
+> restano come sono**. Owner nuovo del disegno:
+> [`PROTOCOLLO_VALUTAZIONE_MSS_E_AM_V1.md`](PROTOCOLLO_VALUTAZIONE_MSS_E_AM_V1.md) §2 e §4; owner delle
+> decisioni: [`docs/FOLLOW_UP.md`](../../FOLLOW_UP.md), righe `FU-EVAL-*`.
 
 ## 1. Domanda a cui risponde
 

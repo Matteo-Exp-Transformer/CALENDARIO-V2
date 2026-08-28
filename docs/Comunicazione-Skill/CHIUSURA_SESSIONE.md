@@ -196,7 +196,23 @@ esplicitamente perché il lavoro è terminale.
 
 ❓ Q6 — Contesto & hook: il contesto caricato dallo skill system era troppo / giusto / troppo poco? E gli hook che hai ricevuto ti sono stati utili o rumore?
 ✅ R6:
+
+❓ Q7 — Prova nuova: quale **prova utile** hai visto in questa seduta che oggi **non** misuriamo? Una riga: **che cosa separerebbe** e **come si giudica** (chi guarda, con quale fonte, quanto costa). Se non ne hai viste, scrivi `nessuna` e di' **su cosa** ti aspettavi di trovarne una.
+✅ R7:
 ```
+
+> **Perché Q7 esiste** (decisa da Matteo il 28-08-2026, owner `FU-METODO-PROVE-NUOVE-1`). Chi lavora a
+> una seduta di testing deve lasciare in eredità **prove nuove**, non solo risultati: è così che i
+> criteri crescono da soli invece di dipendere da una calibrazione pesante ogni volta. Sta qui e non in
+> un registro nuovo perché **questo è l'unico punto del sistema che costringe a rispondere** — l'hook
+> conta ogni `❓ Q` e blocca la chiusura se la `✅ R` è vuota — e perché le risposte vivono già nei
+> report, che sono indicizzati e validati: nessun owner nuovo.
+>
+> ⚠️ **Due limiti, dichiarati e non ammorbiditi:** (1) l'hook controlla che la risposta non sia
+> **vuota**, non che sia **buona** — ci saranno parecchi `nessuna`, ed è comunque meglio di zero;
+> (2) una domanda a cui si risponde in cinquanta report e che **nessuno rastrella** è una discarica,
+> non un registro: serve che una seduta Meta periodica promuova le risposte buone a criterio, altrimenti
+> Q7 è solo scrittura. Chi raccoglie: [`PROTOCOLLO_VALUTAZIONE_MSS_E_AM_V1.md`](../MetaSkillSystem/Senior-Eval-Pack/PROTOCOLLO_VALUTAZIONE_MSS_E_AM_V1.md) §0.
 
 ### 12. Self-review del report ⭐ (la fai TU, prima che scatti l'hook)
 

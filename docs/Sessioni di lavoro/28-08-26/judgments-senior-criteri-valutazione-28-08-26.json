@@ -1,0 +1,135 @@
+{
+  "persona": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "signal": "Matteo ha corretto due volte il disegno proposto, e in entrambi i casi ha allargato il perimetro invece di ridurlo: ha rifiutato che l'attribuzione fosse scartata («teniamo traccia anche dei test di attribuzione... potrei pensare di testarlo su piu modelli diversi, e fare una media») e ha rifiutato di scegliere un solo pezzo di MSS da valutare («ti risponderei tutti e 4. voglio valutare per intero cosa ho costruito fin ora»).",
+        "actor": "matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/28-08-26/Report-senior-criteri-valutazione-mss-e-agente-matteo-28-08-26.md",
+        "effect": "Due correzioni registrate come migliorative in §9. La media su piu modelli dichiarati e tecnicamente superiore all'impostazione del senior, perche «Auto» e una popolazione di modelli e una media la approssima meglio di un modello fissato, restando attribuibile: registrata in FU-EVAL-ATTRIBUZIONE-1. La richiesta di valutare tutti e quattro i pezzi ha prodotto il disegno di ablazione e la scoperta che i cancelli di chiusura non sono misurabili con nessuna corsa: registrata in FU-EVAL-ABLAZIONE-1.",
+        "evidence_state": "observed"
+      },
+      {
+        "signal": "Davanti alla proposta di un cancello che blocca validate, Matteo non ha confermato subito ma ha chiesto di capire l'attrito: «ma in che senso blocca quando lavoro ad altro? cosa cambia?». Ha confermato solo dopo la risposta verificata.",
+        "actor": "matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/28-08-26/Report-senior-criteri-valutazione-mss-e-agente-matteo-28-08-26.md",
+        "effect": "La domanda ha costretto a verificare dove gira davvero validate invece di rispondere a memoria: accertato che validate:mss:all gira gia senza filtri in CI su ogni push a main e env/test, quindi il cancello eredita l'accoppiamento fra aree e non lo crea. Il peso della decisione e cambiato, e l'attrito e stato accettato consapevolmente con il requisito aggiuntivo del messaggio d'errore azionabile. Registrato in FU-EVAL-RAGGIUNGIBILITA-1.",
+        "evidence_state": "observed"
+      }
+    ]
+  },
+  "sistema": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "rule_id_version": "PROTOCOLLO_CALIBRAZIONE_ALLINEAMENTO_AM_V0@70ab6f5",
+        "trigger_event": "Conteggio dei 54 giudizi realmente emessi in AM-C0, criterio per criterio, ricalcolato da verdetti-revisore.md e non ripreso dalle sintesi: Applicazione, STOP e Confine hanno dato verdetto identico nove volte su nove; Tracciabilita 9 positivi su 9 e Fonte 0 negativi su 54.",
+        "decision_or_output_changed": "I sei criteri paritari del PROTOCOLLO V0 §6 sono superati da 3 misure piu 2 controlli dichiarati: Applicazione, STOP e Confine erano un criterio misurato tre volte e diventano «Il cancello» (con i tre nomi conservati come sotto-voci per accorgersi se un giorno divergono); Fonte e Tracciabilita diventano controlli; contradicted e promosso a criterio proprio «Autocontraddizione» con la definizione che il revisore ha usato di fatto. Il costo per casella scende da una chat di revisore cieco a circa dieci secondi di Matteo. Rettifica append-only nel cappello del V0; i due verdetti gia emessi non sono stati corretti.",
+        "G": 2,
+        "O": 3,
+        "E": 1
+      },
+      {
+        "rule_id_version": "CHIUSURA_SESSIONE@70ab6f5",
+        "trigger_event": "Richiesta di Matteo 28-08-2026: gli agenti che lavorano alle sedute di testing devono annotare prove utili, cosi i criteri crescono senza dipendere ogni volta da una calibrazione pesante. Nessuno degli owner esistenti era adatto: OSSERVAZIONI.md ha per soggetto come lavora Matteo, e CATALOGO_SEDUTE_E_METODI_V0.md si dichiara baseline storica con tutte le sedute non_comparabile.",
+        "decision_or_output_changed": "Aggiunta una settima domanda obbligatoria in CHIUSURA_SESSIONE §11 invece di aprire un registro nuovo, perche l'hook conta ogni marcatore di domanda e blocca la chiusura se la risposta e vuota: e l'unico punto del sistema che costringe a rispondere, e le risposte vivono nei report gia indicizzati. Verificato in scripts/mss/report-questions.mjs che il conteggio e generico e non fissato a sei, quindi Q7 non rompe il cancello esistente. Due limiti dichiarati nel file stesso: l'hook controlla che la risposta non sia vuota, non che sia buona; e senza una rastrellatura periodica la domanda produce una discarica.",
+        "G": 1,
+        "O": 2,
+        "E": 1
+      },
+      {
+        "rule_id_version": "COVERAGE_MATRIX_H1@70ab6f5",
+        "trigger_event": "Ricerca del dato che permetterebbe di decidere su prove se un pezzo di MSS e superfluo. Trovato il registro di cosa i cancelli sono — 21 controlli catalogati, 19 deny, 1 warn, 1 ask — e accertato che non esiste nessun registro di cosa abbiano fatto: ogni cancello ha una fixture che dimostra che sa bloccare, nessuno registra se abbia mai bloccato una seduta vera.",
+        "decision_or_output_changed": "Dichiarato che finche quel dato manca la frase «MSS e troppo macchinoso, snelliamolo» non e decidibile su prove, e che nella discussione a sensazione chi difende l'apparato vince sempre perche il costo lo sentono tutti e il beneficio e invisibile. Aperta la raccolta in FU-EVAL-CANCELLI-CAMPO-1 e passata al mandato Codex come Lavoro E, con l'obbligo di congelare il disegno prima di implementarlo. Introdotto il criterio di costo in coppia con quello di beneficio, senza il quale il verdetto «snellisci» non puo mai uscire.",
+        "G": 2,
+        "O": 2,
+        "E": 0
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "protocollo-valutazione-mss-e-am-v1-28-08-26",
+        "primary_type": "governance",
+        "canonical_version": "docs/MetaSkillSystem/Senior-Eval-Pack/PROTOCOLLO_VALUTAZIONE_MSS_E_AM_V1.md",
+        "recipient": "i senior che riprenderanno i test dopo questa seduta, senza contesto della chat",
+        "problem_or_job": "Dopo AM-C0 mancava un owner del disegno: i criteri erano sei e paritari, lo skill system e «Agente Matteo» erano misurati insieme, e non esisteva ne un disegno che reggesse la condizione reale di lavoro di Matteo (Cursor su Auto) ne un modo di concludere che un pezzo di MSS e superfluo.",
+        "intended_use": "Fonte unica del disegno per le corse future. §0 dice a chi arriva da zero cosa e deciso, cosa e aperto, cosa non dedurre e quanto costa, prima di qualunque altra sezione.",
+        "conceived_by": "Senior Claude",
+        "decided_by": "Matteo",
+        "directed_by": "Matteo, seduta 28-08-2026: quattro nodi sciolti uno alla volta piu l'estensione ai quattro pezzi di MSS e la firma delle soglie di taglio.",
+        "authored_by": "Senior Claude",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Ogni criterio dichiara che cosa separa, chi lo giudica, con quale fonte e quanto costa una casella; i due oggetti (skill system e Agente Matteo) sono separati con la domanda a cui ciascuno risponde; il disegno dichiara esplicitamente che cosa non puo misurare; le soglie di taglio sono scritte prima di lanciare e permettono a un pezzo di perdere; nessun registro nuovo e nessun owner nuovo.",
+        "verification_or_use_evidence": "validate:docs verde con 197 file e 1094 path locali, 0 rotti, che copre i riferimenti incrociati del file nuovo. Il conteggio di §3 e ricalcolato dai verdetti e torna con REGISTRO-ESITI.md: 38 positivi piu 14 negativi piu 2 contraddetti uguale 54. Il limite dello strato di istradamento in §4.1 e riverificato con grep indipendente sui tre file gemelli. I 21 controlli di §4.4 sono letti da COVERAGE_MATRIX_H1.json.",
+        "verification_status": "self_report",
+        "owner_ref": "docs/FOLLOW_UP.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/MetaSkillSystem/Senior-Eval-Pack/PROTOCOLLO_CALIBRAZIONE_ALLINEAMENTO_AM_V0.md",
+          "docs/Sessioni di lavoro/27-08-26/AM-C0/verdetti-revisore.md",
+          "docs/Sessioni di lavoro/27-08-26/AM-C0/REGISTRO-ESITI.md",
+          "docs/MetaSkillSystem/COVERAGE_MATRIX_H1.json"
+        ],
+        "relations_no_double_count": [
+          "Non esegue nessuna corsa e non misura niente: possiede il disegno, non un'istanza. La prima istanza avra il suo freeze.",
+          "Non corregge il freeze AM-C0 ne i verdetti gia emessi, compresi i due contradicted usati con una definizione diversa da quella congelata.",
+          "Non riscrive il PROTOCOLLO V0: lo supera con una rettifica append-only nel cappello di quel file.",
+          "Non apre un registro nuovo: le decisioni restano in docs/FOLLOW_UP.md, righe FU-EVAL-* e FU-METODO-*.",
+          "Non apre SEP-G2, non avvia SEP-6, non autorizza il cutover WP-1."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      },
+      {
+        "output_id": "mandato-senior-codex-enforcement-e-fix-28-08-26",
+        "primary_type": "governance",
+        "canonical_version": "docs/Sessioni di lavoro/28-08-26/Prompt-senior-codex-enforcement-e-fix-dai-test-28-08-26.md",
+        "recipient": "il senior Codex che chiudera enforcement e fix",
+        "problem_or_job": "Il lavoro di enforcement era descritto da tre premesse scadute — slice non implementato, correzioni documentali ferme su un branch, vincolo di sequenza attivo — e non copriva il difetto trovato dal test: la regola di STOP non arriva allo strato di istradamento, che non e una decisione mancante in un registro ma una regola di metodo che non raggiunge i file letti all'apertura del progetto.",
+        "intended_use": "Mandato eseguibile cosi com'e, con cinque lavori in ordine di valore e lo stato reale verificato con comando al posto di quello scaduto.",
+        "conceived_by": "Senior Claude",
+        "decided_by": "Matteo",
+        "directed_by": "Matteo, 28-08-2026: «crea tutta la documentazione necessaria per poter riprendere con altri senior e riprendere i test da questi concetti che abbiamo stabilito».",
+        "authored_by": "Senior Claude",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "Ogni premessa di stato dichiarata nel mandato e verificata con comando e datata; la consegna piu vicina e messa per prima e isolata dal lavoro lungo; ogni lavoro cita l'owner della decisione che lo autorizza; i limiti di cio che si costruisce sono dichiarati nel mandato e non lasciati al report finale.",
+        "verification_or_use_evidence": "Stato dei due branch letto con git log e git diff: a19c04f su codex/mss-enforcement-slice-12-270826 contiene lo slice; c07a98d su env/test contiene gia le correzioni documentali. Controprova aritmetica che lo slice non e atterrato: su env/test test:mss da 42 fixture e test:mss:tools 73 test, mentre il report dello slice dichiara 47 e 76. Il buco sullo strato di istradamento riverificato con grep sui tre gemelli. Il conteggio generico delle domande verificato in scripts/mss/report-questions.mjs.",
+        "verification_status": "self_report",
+        "owner_ref": "docs/FOLLOW_UP.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/27-08-26/Prompt-senior-enforcement-slice-1-2-mandato-tecnico-27-08-26.md",
+          "docs/MetaSkillSystem/Senior-Eval-Pack/PROTOCOLLO_VALUTAZIONE_MSS_E_AM_V1.md",
+          "docs/MetaSkillSystem/COVERAGE_MATRIX_H1.json"
+        ],
+        "relations_no_double_count": [
+          "Non implementa niente: e un mandato. Lo slice esiste gia su un branch e va verificato e fatto atterrare, non riscritto.",
+          "Non scrive la regola di STOP nello strato di istradamento: la assegna come Lavoro A, da fare importando dagli owner e non riscrivendo a mano.",
+          "Non duplica il mandato tecnico del 27-08: lo supera nelle premesse di stato e vi aggiunge le tre voci che nessuna delle quattro proposte copriva.",
+          "Non autorizza le proposte 3 e 4 dell'enforcement, che restano fuori."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
