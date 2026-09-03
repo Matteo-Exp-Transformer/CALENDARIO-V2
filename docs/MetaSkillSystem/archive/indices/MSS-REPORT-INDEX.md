@@ -803,6 +803,7 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 | File | Path |
 |---|---|
 | Report-cap-prodotto-42-110-prenota-qr-03-09-26.md | `docs/Sessioni di lavoro/03-09-26/Report-cap-prodotto-42-110-prenota-qr-03-09-26.md` |
+| Report-carosello-testi-facoltativi-menu-qr-03-09-26.md | `docs/Sessioni di lavoro/03-09-26/Report-carosello-testi-facoltativi-menu-qr-03-09-26.md` |
 | Report-menu-qr-nav-footer-import-magazzino-03-09-26.md | `docs/Sessioni di lavoro/03-09-26/Report-menu-qr-nav-footer-import-magazzino-03-09-26.md` |
 | Report-revisione-menu-qr-nav-footer-import-magazzino-03-09-26.md | `docs/Sessioni di lavoro/03-09-26/Report-revisione-menu-qr-nav-footer-import-magazzino-03-09-26.md` |
 

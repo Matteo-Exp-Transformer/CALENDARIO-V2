@@ -1,0 +1,61 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "MENU_QR_SKILL@carosello-testi-slide-facoltativi-03-09-26",
+        "trigger_event": "Mandato Matteo 03-09-26: «non sono piu obbligatori testo in immagini carosello … i campi qua dentro non devono essere perforza compilati», da applicare in produzione PrenotaZen, env/test e main",
+        "decision_or_output_changed": "Il LOCK «Carosello obbligatorio = almeno una slide completa (foto + etichetta + titolo)», deciso il 30-05-26, diventa «carosello obbligatorio = almeno una foto; etichetta, titolo e descrizione della slide sono facoltativi». validateMenuQrSettings perde i due controlli di slide incompleta e tiene solo la presenza di una foto; il messaggio-requisito passa da 5 voci a 4. Allineati MENU_QR_SKILL §3-§4, MENU_QR_MINI §5, MENU_QR_DATA_FLOW_CONTEXT (riga Validazione Salva), MENU_QR_REFERENCE (RULE modale QR) e MENU_QR_TEST_SUITE_INDEX.",
+        "G": 2,
+        "O": 1,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "carosello-testi-facoltativi-menu-qr-03-09-26",
+        "primary_type": "prodotto",
+        "canonical_version": "docs/Sessioni di lavoro/03-09-26/Report-carosello-testi-facoltativi-menu-qr-03-09-26.md",
+        "recipient": "Matteo e i ristoratori che usano il modale Impostazione Menù QR",
+        "problem_or_job": "nel modale QR il Salva rifiutava una slide del carosello senza etichetta e titolo; ora basta la foto e i tre campi di testo si possono lasciare vuoti",
+        "intended_use": "creare o modificare un Menù QR caricando solo le foto del carosello; nel menù pubblico la slide senza testo mostra la foto pulita",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat 03-09-26 (profilo Esecuzione) + scelta di rilascio «Tutto fino a PrenotaZen»",
+        "authored_by": "claude-code-opus5-esecutore-carosello-testi-03-09-26",
+        "verified_by": "Matteo (controtest in produzione 03-09-26: «controtestato e è ok. tutto funzionante in prod»)",
+        "acceptance_criterion": "un QR con slide senza testi si salva; carosello vuoto resta bloccato con «Il carosello è obbligatorio: aggiungi almeno una foto.»; nome QR, categorie e ingrediente visibile restano requisiti; npm run validate verde su env/test; build verde nella repo pubblica prima del push",
+        "verification_or_use_evidence": "npm run validate exit 0 su env/test; menuQrValidation.test.ts 7 casi; su main tsc + eslint src + vitest run src = 127 file / 1048 test; npm run build PrenotaZen verde; commit env/test ab4c750, main fc4d648, PrenotaZen f30a8ad; controtest di Matteo in produzione",
+        "verification_status": "independently_verified",
+        "owner_ref": "docs/Menu-QR-Skill/MENU_QR_SKILL.md",
+        "privacy_release": "public",
+        "support_files": [
+          "src/features/booking/utils/menuQrValidation.ts",
+          "src/features/booking/utils/__tests__/menuQrValidation.test.ts",
+          "src/features/booking/components/MenuHomepageConfigPanel.tsx",
+          "src/pages/PublicMenuPage.tsx"
+        ],
+        "relations_no_double_count": [
+          "Non include i tetti 40/60/125 del carosello QR né 30/70 delle card categoria: restano invariati.",
+          "Non include il carosello della Pagina Prenota: lì i testi erano già facoltativi, verificato e non modificato.",
+          "Non include l'obbligo della foto, che resta in vigore."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
