@@ -185,7 +185,7 @@ Dettaglio: report mappa § Incoerenze. Fix Fase 3 in §11 sotto.
 | Admin carosello QR | Label + contatori (`AdminFieldWithCharCount`: Etichetta 40, Titolo 60, Descrizione 125); `Modal` conferma rimozione slide | `MenuHomepageConfigPanel.tsx`, `AdminFieldWithCharCount.tsx` |
 | Admin categorie QR | Zero categorie attive → messaggio (no card); `Modal` conferma rimozione foto categoria | `MenuHomepageConfigPanel.tsx` |
 | Salva modale | `Modal` post-success (stesso link vs nuovo QR) | `MenuQrManager.tsx` |
-| Validazione Salva | Carosello obbligatorio; ≥1 cat con ingrediente visibile; toast se invalido | `menuQrValidation.ts`, `MenuQrModal.tsx` |
+| Validazione Salva | Carosello: ≥1 foto (etichetta/titolo/descrizione slide facoltativi dal 03-09-26); ≥1 cat con ingrediente visibile; toast se invalido | `menuQrValidation.ts`, `MenuQrModal.tsx` |
 | Checkbox categorie | Elenco allineato a tab Menu (`menu_categories`); refetch all'apertura modale | `MenuQrModal.tsx`, `MenuQrManager.tsx` |
 | Pubblico carosello | Rimosso cuoricino decorativo su slide | `PublicMenuPage.tsx` |
 | Pubblico header | Nome da `restaurant_settings.restaurant_name` via `useRestaurantName` | `PublicMenuPage.tsx` |

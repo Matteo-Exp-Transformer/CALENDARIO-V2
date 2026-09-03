@@ -108,8 +108,11 @@ QR**, non in un «tipo di menù» strutturato. Il `content_type` strutturato è 
 - **Cappature carosello = anti-rottura mobile.** Etichetta/titolo/descrizione slide hanno limiti
   (40/60/125) per **non sfasciare il layout su mobile**: la card regge poco testo. Non sono arbitrari.
   Mappa completa e numeri ↔ codice: `contesto/MENU_QR_TEXT_LIMITS_MAP.md`.
-- **Carosello obbligatorio.** Un QR non si salva senza almeno una slide completa (foto + etichetta +
-  titolo). È un requisito voluto, non un eccesso di rigidità. Vedi §4.
+- **Carosello obbligatorio, testi della slide FACOLTATIVI.** Un QR non si salva senza almeno una
+  **foto** nel carosello. Etichetta, titolo e descrizione della slide sono invece **facoltativi**
+  (deciso 03-09-26, sostituisce la regola del 30-05-26 «foto + etichetta + titolo»): una slide con la
+  sola foto è valida e il pubblico salta semplicemente i campi vuoti. Non reintrodurre il requisito
+  «etichetta e titolo compilati». Vedi §4.
 - **Categorie: serve ≥1 categoria con ≥1 ingrediente visibile.** Un QR vuoto non avrebbe senso da
   consultare. Vedi §4.
 - **Solo categorie con ingredienti sono selezionabili.** Nel modale le categorie senza ingredienti
@@ -173,8 +176,8 @@ ordine) · Carosello specialità · Titoli/descrizioni/icone categorie · Tema h
 1. «Dai un nome al menù QR per salvarlo.» (`MenuQrModal`)
 2. «Seleziona almeno una categoria di prodotti visibili nel menù QR.»
 3. «Almeno una categoria selezionata deve avere almeno un ingrediente visibile per il cliente.»
-4. «Il carosello è obbligatorio: aggiungi almeno una foto con etichetta e titolo compilati.»
-5. «Ogni foto del carosello deve avere etichetta e titolo compilati, oppure rimuovi la slide.»
+4. «Il carosello è obbligatorio: aggiungi almeno una foto.» — **solo la foto**: dal 03-09-26 non
+   esiste più il requisito su etichetta/titolo della slide (né il messaggio «slide incompleta»).
 
 Il pulsante **Salva** resta cliccabile durante la compilazione ed è disabilitato solo mentre il
 salvataggio è in corso. Al click, un toast mostra il primo requisito mancante; nessun errore resta

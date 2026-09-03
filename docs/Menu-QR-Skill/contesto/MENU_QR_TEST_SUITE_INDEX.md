@@ -10,7 +10,7 @@
 
 | File | Cosa blinda |
 |---|---|
-| `src/features/booking/utils/__tests__/menuQrValidation.test.ts` | **Requisiti del form QR** (`validateMenuQrSettings`): rifiuta senza categoria / senza ingrediente visibile / senza carosello completo / con slide incompleta; ordine dei messaggi. È il cuore della «parte viva» (§4 dello skill). |
+| `src/features/booking/utils/__tests__/menuQrValidation.test.ts` | **Requisiti del form QR** (`validateMenuQrSettings`): rifiuta senza categoria / senza ingrediente visibile / senza nemmeno una foto nel carosello; accetta slide con la sola foto (testi facoltativi dal 03-09-26); ordine dei messaggi. È il cuore della «parte viva» (§4 dello skill). |
 | `src/features/booking/utils/__tests__/menuQrCategoryOrder.test.ts` | Ordinamento categorie da `category_filter` (la sequenza dell'array = ordine di visualizzazione). |
 | `src/features/booking/utils/__tests__/menuQrStorage.test.ts` | Helper storage/prefill foto (`buildCatalogPrefillForKeys`, refresh prefill catalogo → QR). |
 | `src/features/booking/utils/__tests__/menuQrCategoryKeySync.test.ts` | Sync rename/delete di una chiave categoria sui QR (pure functions). |
