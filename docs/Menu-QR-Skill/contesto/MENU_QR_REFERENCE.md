@@ -206,7 +206,7 @@ RULE  Body PNG: background-size 100% auto + position sotto --menu-header-band �
 RULE  Tab sticky: sfondo rgba(tabBarStickyRgb, opacity) cresce dopo lock; scrollbar-hide; frecce min-[700px]+ se overflow
 RULE  Admin carosello QR: CAROUSEL_SLIDE_EYEBROW_MAX=40, TITLE_MAX=60, DESCRIPTION_MAX=125 in MenuHomepageConfigPanel. Prenota usa limiti separati 19/18/38 in bookingPublicFormConfig.
 RULE  Nuovo QR: foto carosello/categorie in Storage `qr/draft/{shortCode}/` — migrate a `qr/{menuQrCodeId}/` in useSaveMenuQrSettings al primo insert
-RULE  Modale QR: checkbox categorie = elenco completo `menu_categories` (tab Menu); disabilitate se senza ingredienti; al Salva obbligatori carosello (≥1 foto + etichetta + titolo), ≥1 categoria con ≥1 ingrediente visibile — vedi `menuQrValidation.ts`
+RULE  Modale QR: checkbox categorie = elenco completo `menu_categories` (tab Menu); disabilitate se senza ingredienti; al Salva obbligatori carosello (≥1 foto; etichetta/titolo/descrizione slide FACOLTATIVI dal 03-09-26), ≥1 categoria con ≥1 ingrediente visibile — vedi `menuQrValidation.ts`
 RULE  Elimina menù QR: `Modal` conferma (non `window.confirm` al primo click icona)
 RULE  Modale QR: `hidden_menu_item_ids` — occhio chiuso = UUID in array; al Salva si scartano ID di categorie deselezionate
 RULE  PublicMenuCategoryPage: filtra `menu_items` con `hidden_menu_item_ids` del QR corrente

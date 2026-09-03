@@ -38,6 +38,7 @@ menu» · «feature qrMenu».
 ## 5. LOCK (solo link)
 - **`category_filter` semantica** (`null`=legacy tutte, `[]`=nessuna, `[keys]`=ordine) →
   `contesto/MENU_QR_DATA_FLOW_CONTEXT.md` §4.
-- **Carosello obbligatorio + ≥1 categoria con ≥1 ingrediente visibile** (requisiti Salva) →
+- **Carosello obbligatorio (≥1 foto; testi slide facoltativi dal 03-09-26) + ≥1 categoria con ≥1
+  ingrediente visibile** (requisiti Salva) →
   `MENU_QR_SKILL.md` §4.
 - **`shortCode` non trovato → «Menù QR non trovato», nessun redirect** → `MENU_QR_SKILL.md` §3.
