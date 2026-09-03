@@ -55,6 +55,20 @@
 - **Verbatim chiusura:** «ho guardato pagina prenota e va bene così manteniamo limiti modificati. fai commit e push»
 - **Report:** `docs/Sessioni di lavoro/03-09-26/Report-cap-prodotto-42-110-prenota-qr-03-09-26.md`.
 
+### 03-09-26 — Chiusura esecuzione Menu QR: «lavoro ok» poi «bravo»
+- **Area:** Menu QR pubblico + magazzino (mandato deep incollato in chat, non file-prompt).
+- **Verbatim chiusura:** «lavoro ok» · poi «bravo» · poi «annota che ho seguito live tuoi smoke test e navigato pagina QR menu.»
+- **Comportamento:** ha accettato il lavoro senza correzioni sul codice; «bravo» è lode. Ha seguito live lo smoke dell’esecutore e ha navigato lui la pagina Menu QR (home/categoria pubbliche).
+- **Report:** `docs/Sessioni di lavoro/03-09-26/Report-menu-qr-nav-footer-import-magazzino-03-09-26.md`.
+
+### 03-09-26 — Smoke: lo fa Agente Matteo, non l’esecutore
+- **Area:** processo multi-agente (prepara-prompt → esecutore, ciclo Menu QR / magazzino).
+- **Verbatim:** «sia che lo ha fatto fuori scope, sia che glie lo hai detto tu, non è il comportamento che voglio. smoke lo fa agente matteo. esecutore fa solo il fix e controlla che i test passino.»
+- **Comportamento desiderato emerso:** l’esecutore chiude con codice + test automatici verdi (`npm run validate` / Vitest pertinenti). Lo smoke a video (browser, URL pubblici, viewport) lo fa **Agente Matteo**. Non conta se lo smoke era nel mandato o era iniziativa: non lo vuole dall’esecutore.
+- **Dato di contesto (non correzione a voce sua):** il Prompt 1 di questa stessa chat *chiedeva* quello smoke (criterio di fatto + 3 view). PREPARA_PROMPT §1.B oggi lo impone. Checklist flussi utente è già il canale «Matteo prova a video».
+- **Esito:** annotato in `ERRORI_PROCESSO.md` + scheda `docs/Sessioni di lavoro/03-09-26/Nota-senior-smoke-esecutore-03-09-26.md`. Nessuna modifica a PREPARA/TESTING/VOCABOLARIO in questa chat.
+- **Per Meta senior:** decidere se §1.B (3 view nel mandato esecutore) va superata; e se il profilo Verifica tiene ancora il QA browser §8 o anche quello passa ad Agente Matteo.
+
 ### 25-08-26 — Meta MSS: overload decisioni/sigle; «tutto chiuso» prima del pilota
 - **Area:** comunicazione agenti ↔ Matteo (ciclo post-T12 / prep pilota).
 - **Verbatim (sintesi fedele):** stanco di leggere sigle e di dover prendere 4 decisioni a griglia

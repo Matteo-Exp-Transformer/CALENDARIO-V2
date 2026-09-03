@@ -43,6 +43,7 @@ filtro `PREPARA_PROMPT`, o una Nota in skill d'area. La promozione la decide il 
 | **Skill che referenzia file non ancora creato** — link a `BOOKING_PRENOTA_TEXT_LIMITS_MAP.md` prima che l’esecutore lo scriva | errore agente | 1 (03-06) | 🔶 candidato: regola «file citato in skill solo dopo esiste su disco» o ordine deliverable: mappa prima di skill |
 | **Scroll row Prenota: `%` width su inner `w-max` gonfia card** — dopo fix allineamento outer/inner | errore agente + vincolo strutturale | 1 (05-06) | ✅ Nota in `PRENOTA_LAYOUT_CONTEXT.md` §5 + CSS var viewport; misurare fit prima di justify |
 | **Linter rimuove import «non usato» tra edit sequenziali** — `ChevronUp` aggiunto all'import poi rimosso automaticamente da ESLint prima che il JSX che lo usava fosse salvato → errore TS al typecheck | vincolo strutturale | 1 (19-06) | 🔶 candidato: regola esecutore «import nuovo + primo uso nello stesso edit block»; o fare import e JSX in un'unica Edit call |
+| **Esecutore fa smoke/QA browser** — Matteo lo vuole solo da Agente Matteo; esecutore = fix + test automatici verdi | prompt ambiguo + vincolo strutturale | 1 (03-09) | 🔶 da decidere in Meta senior: `PREPARA_PROMPT` §1.B oggi *obbliga* le 3 view nel mandato esecutore; `TESTING` §8 le mette sul profilo Verifica; checklist flussi è già di Matteo. Conflitto di regole, non solo di un agente |
 
 ---
 
@@ -51,6 +52,16 @@ filtro `PREPARA_PROMPT`, o una Nota in skill d'area. La promozione la decide il 
 > **Registro riaperto il 26-08-26** dopo quasi tre mesi di silenzio (ultima voce: 05-06-26). Nel frattempo
 > gli errori di procedura sono stati scritti in `OSSERVAZIONI.md`, che è il registro di **come comunica
 > Matteo** — owner sbagliato. Chi annota un errore di procedura scrive **qui**.
+
+### 03-09-26 — Esecutore ha fatto smoke sul Menu QR dopo il Prompt 1 (prepara-prompt)
+
+- **Verbatim Matteo (03-09-26, chat prepara-prompt):** dopo l’esecutore del primo prompt (fix Menu QR / magazzino) ha fatto smoke test. «sia che lo ha fatto fuori scope, sia che glie lo hai detto tu, non è il comportamento che voglio. smoke lo fa agente matteo. esecutore fa solo il fix e controlla che i test passino.»
+- **Cosa è successo:** l’esecutore ha aperto il browser / fatto smoke. Non è solo «fuori scope»: il **Prompt 1** scritto da prepara-prompt chiedeva esplicitamente QA visivo (URL `/menu/da-tommaso/qr/sbmm42t`, criteri di fatto su home/categoria, view 375/834/1280). Anche il prompt di revisione accurata (stessa chat) ha chiesto QA manuale TESTING §8 al profilo Verifica — Matteo qui ha corretto l’**esecutore**; il Verifica resta da decidere in senior.
+- **prompt ambiguo / vincolo strutturale:** `PREPARA_PROMPT_SKILL.md` §1.B impone di richiedere nel mandato esecutore che il comportamento UI sia «verificato sulle 3 view». `TESTING_SKILL.md` §8 impone QA browser al profilo **Verifica**. In parallelo esiste già `CHECKLIST_FLUSSI_DA_TESTARE.md` (esecutore scrive i passi, **Matteo** mette la X) — EVOLUZIONE 19-06-26. Tre regole, tre owner diversi per lo stesso smoke.
+- **errore agente (prepara-prompt):** ha seguito PREPARA §1.B e ha materializzato lo smoke nel Prompt 1 invece di: fix + `npm run validate` / Vitest, e i passi visivi solo in checklist per Agente Matteo.
+- **Comportamento voluto (non ancora regola):** esecutore = patch + test automatici verdi. Smoke/QA a video = Agente Matteo. ⛔ Non promuovere da questa chat: sessione Meta senior (`REVISIONE.md`).
+- **Scheda per quella chat:** `docs/Sessioni di lavoro/03-09-26/Nota-senior-smoke-esecutore-03-09-26.md`
+- **FU:** `FU-METODO-SMOKE-ESECUTORE-1` (aperto, da decidere — non è un cantiere di codice).
 
 ### 26-08-26 — Pilota WP-1 istanze 1 e 2: quattro errori di procedura degli agenti
 

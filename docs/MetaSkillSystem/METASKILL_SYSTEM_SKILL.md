@@ -9,6 +9,21 @@ description: >-
 
 # MetaSkillSystem — ingresso v0
 
+> 🟡 **DAL 01-09-26 `SYS-1` NON È PIÙ IL CANTIERE GUIDA — è in MANUTENZIONE fino al 12/10/2026.**
+> Decisione di Matteo: il focus è passato a `C2`/Fase 3 (profilo recruiter), piano a scadenze in
+> `…\Io-Claude\Crescita professionale\13_Roadmap_Complessiva.md` **§9**.
+> **Si tiene in vita, non si avanza.** ⛔ Non aprire pacchetti nuovi, non fare cutover, non chiudere
+> `WP-1` senza una decisione esplicita di Matteo.
+>
+> 📋 **Il debito da chiudere alla ripresa è censito in roadmap §5, `MSS-FIX-1…5`** — in sintesi:
+> **1)** il generatore può ancora registrare **prove false** (`D2`/`D3`), legato a `SK-7` il cui fix
+> è andato perso: **serve una scelta di Matteo, A recuperare il patch o B dare autorità di
+> riscriverlo**, nessuna reimplementazione silenziosa · **2)** hook Claude e `guard-prod.mjs` senza
+> test né CI (`D6`/`D7`/`D8`) · **3)** viste ancora manuali (`D14`) · **4)** `T14`/`WP-1` da chiudere
+> · **5)** ⭐ **`PROM-1`** (roadmap **§10**): lo strumento **non ha mai promosso** — `ES-1` GRIGIO,
+> `ES-2` FALLISCE, `ES-3` GRIGIO B, zero su tre. Manca il **controllo positivo**. ⛔ La rubrica a 7
+> criteri resta `LOCK`.
+>
 > **Stato:** v0 in costruzione, modalità ombra. Il sistema esistente resta operativo finché i
 > gate del piano non autorizzano il passaggio. Questo file smista: non conserva la storia.
 
