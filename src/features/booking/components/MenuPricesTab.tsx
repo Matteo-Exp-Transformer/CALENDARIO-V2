@@ -2019,10 +2019,10 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       value={newCategoryDescription}
                       onChange={(e) =>
                         setNewCategoryDescription(
-                          e.target.value.slice(0, COMPOSE_L.itemDescription),
+                          e.target.value.slice(0, COMPOSE_L.categoryDescription),
                         )
                       }
-                      maxLength={COMPOSE_L.itemDescription}
+                      maxLength={COMPOSE_L.categoryDescription}
                       placeholder="Testo breve sotto il titolo (opzionale)"
                       rows={3}
                       className="w-full rounded-2xl border-gray-200 px-4 py-3 text-sm"
@@ -2030,12 +2030,12 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                     <p
                       className={cn(
                         'mt-1 text-right text-[11px] tabular-nums',
-                        newCategoryDescription.length >= COMPOSE_L.itemDescription
+                        newCategoryDescription.length >= COMPOSE_L.categoryDescription
                           ? 'text-red-500'
                           : 'text-gray-500',
                       )}
                     >
-                      {newCategoryDescription.length}/{COMPOSE_L.itemDescription}
+                      {newCategoryDescription.length}/{COMPOSE_L.categoryDescription}
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
                       Visibile nella pagina Prenota. Nel menu QR puoi personalizzarla separatamente.

@@ -96,9 +96,10 @@ describe('@admin-blindatura menu-magazzino-limits — avviso propagazione save (
 })
 
 describe('@admin-blindatura menu-magazzino-limits — cap testo compose (FU-030)', () => {
-  it('allineati a BOOKING_MENU_COMPOSE_TEXT_LIMITS 24/24/79', () => {
+  it('categoria 24/79, piatto 42/110', () => {
     expect(BOOKING_MENU_COMPOSE_TEXT_LIMITS.categoryLabel).toBe(24)
-    expect(BOOKING_MENU_COMPOSE_TEXT_LIMITS.itemName).toBe(24)
-    expect(BOOKING_MENU_COMPOSE_TEXT_LIMITS.itemDescription).toBe(79)
+    expect(BOOKING_MENU_COMPOSE_TEXT_LIMITS.categoryDescription).toBe(79)
+    expect(BOOKING_MENU_COMPOSE_TEXT_LIMITS.itemName).toBe(42)
+    expect(BOOKING_MENU_COMPOSE_TEXT_LIMITS.itemDescription).toBe(110)
   })
 })
