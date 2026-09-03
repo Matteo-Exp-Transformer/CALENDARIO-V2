@@ -3,7 +3,7 @@ name: public-menu-layout
 description: >-
   Dettaglio struttura componenti, griglie, icone e regole visive della pagina
   pubblica menu QR (PublicMenuPage). Leggere quando si toccano layout, card categorie,
-  carosello, header tema, tab sticky, o sovrapposizione testo su immagini.
+  carosello, header tema, pill categorie in pagina categoria, o sovrapposizione testo su immagini.
 ---
 
 # PublicMenuPage — Layout & Componenti
@@ -25,9 +25,7 @@ description: >-
 │  │  mx-auto — invisibile, no bordo        │    oltre 1024px  │
 │  │  ┌──────────────────────────────────┐  │                  │
 │  │  │ <header> nome + MenuCarousel      │  │                  │
-│  │  │ MenuNavTabs (sticky top-0)        │  │                  │
 │  │  │ Griglia categorie (main)          │  │                  │
-│  │  │ Footer data/ora (mt-auto)       │  │                  │
 │  │  └──────────────────────────────────┘  │                  │
 │  └────────────────────────────────────────┘                  │
 └──────────────────────────────────────────────────────────────┘
@@ -52,7 +50,8 @@ Pagina: `useMenuPageBackgroundStyle()` sul **wrapper esterno scrollabile** — *
 │  │  + min-h-svh                           │    oltre 1024px  │
 │  │  ┌──────────────────────────────────┐  │                  │
 │  │  │ <header> sticky PNG tema (~56px) │  │                  │
-│  │  │ <main> lista piatti (px-4)       │  │                  │
+│  │  │ <main> lista piatti + pad-bottom │  │                  │
+│  │  │ MenuNavTabs fixed bottom + safe  │  │                  │
 │  │  └──────────────────────────────────┘  │                  │
 │  └────────────────────────────────────────┘                  │
 └──────────────────────────────────────────────────────────────┘
@@ -98,23 +97,15 @@ PNG in `public/menu-themes/` con naming `{tema-key}-header.png` / `{tema-key}-bo
 
 ### `MenuNavTabs`
 
-Sticky in cima durante lo scroll. Mostra **sempre** le tab categoria (il ramo preset è stato rimosso).
+File: `src/features/public-menu/MenuNavTabs.tsx`. **Solo sulla pagina categoria** (`PublicMenuCategoryPage`), **non** sulla homepage. Barra **fissa in basso** (`fixed bottom-0`), sempre visibile mentre si scorre i piatti. Categoria corrente evidenziata (`aria-current="page"`, fill `accentColor`). Click → naviga all’altra categoria dello stesso QR. Niente pill «Home».
 
-```tsx
-{/* sentinel 1px + barra sticky */}
-<div ref={sentinelRef} className="h-px" />
-<div className="sticky top-0 z-10 ..." style={{
-  backgroundColor: `rgba(${theme.tabBarStickyRgb}, opacity)`, // 0 → ~0.97 in ~56px scroll dopo lock
-  backdropFilter: blur progressivo,
-}} />
-```
+Padding-bottom sul `<main>`: `PUBLIC_MENU_CATEGORY_MAIN_BOTTOM_PAD_CLASS` (`4rem` + `env(safe-area-inset-bottom)`), così l’ultimo piatto non resta sotto la barra. Header sticky in alto resta usabile.
 
-Trasparente finché la barra non si blocca in alto; poi sfondo e blur aumentano mentre scorri (~56px) così le card sotto restano leggibili.
+Scroll orizzontale: classe `.scrollbar-hide` in `index.css`. **Desktop (`min-[700px]`):** frecce sx/dx se c’è overflow; **mobile**: solo swipe, senza frecce.
 
-Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mobile/desktop). **Desktop (`md+`)**: frecce sx/dx semi-opache (`theme.tabBarStickyRgb`) se c’è overflow; **mobile**: solo swipe, senza frecce.
-
-- Pill: fill `rgba(tabBarStickyRgb, 0.92)` (sempre visibile, anche con barra trasparente) + bordo/testo `accentColor`; `inline-flex items-center gap-1.5` + `leading-none` — icona Phosphor 16px + testo allineati su mobile
-- Icona: `resolveMenuQrCategoryIcon(menu_qrcode_categories.icon, category_key)` (solo quando mostra categorie)
+- Pill inattiva: fill `rgba(tabBarStickyRgb, 0.92)` + bordo/testo `accentColor`; `inline-flex items-center gap-1.5` + `leading-none` — icona Phosphor/Lucide 16px + testo
+- Icona: `resolveMenuQrCategoryIcon(menu_qrcode_categories.icon, category_key)`
+- Titolo pill: override `menu_qrcode_categories.title` se presente, altrimenti `menu_categories.label`
 
 ### `CategoryCard`
 
@@ -134,10 +125,6 @@ Scroll orizzontale: classe `.scrollbar-hide` in `index.css` (niente barra su mob
 **Titolo e icona**: override `menu_qrcode_categories` → fallback `menu_categories` / `resolveMenuQrCategoryIcon`.
 I due `<h2>` titolo (con/senza foto) hanno **`line-clamp-2`** difensivo: l'override QR è cappato a 30,
 ma il fallback `menu_categories.label` non ha cap, quindi il clamp evita che un nome lungo sfondi la card.
-
-### `MenuFooterCard`
-
-Card larga `mx-4 mb-6`. Aggiorna `new Date()` ogni 60s via `setInterval`. Usa `Intl.DateTimeFormat('it-IT')`.
 
 ---
 

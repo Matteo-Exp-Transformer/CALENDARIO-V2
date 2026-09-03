@@ -154,9 +154,8 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 1. **Sfondo pagina** — `useMenuPageBackgroundStyle()` in `PublicMenuPage.tsx`: solo `bodyImage` con `background-size: 100% auto` + `background-repeat: repeat-y` fin dal primo paint (niente switch JS single→layer multipli — evita flash in scroll). `bodyFallbackBg` riempie eventuali gap (es. terracotta `#9a3412`).
 2. **Hero `<header>`** — nome ristorante da **`useRestaurantName()`** (`restaurant_settings.restaurant_name`, fallback `organizations_public.name`, poi «Menu») + fregio + `MenuCarousel` (nessuna label esterna “Specialità…”); badge solo dentro ogni slide. **`PublicMenuPageHeader` non usato** sulla homepage.
 3. **Carosello** — slide full-bleed, overlay gradiente 40% sx, titolo/descrizione da `carousel_items`; pallini **cliccabili** (tap mobile 44px). Placeholder `h-28` se zero foto. Eyebrow slide **solo se compilato** in admin.
-4. **Tab `MenuNavTabs`** — sticky; sfondo trasparente → opaco progressivo (~56px scroll) con `theme.tabBarStickyRgb`; pill `inline-flex items-center` (icona + testo allineati su mobile); icona via `MenuQrCategoryIconGlyph(override.icon, category_key)`; scroll senza barra (`.scrollbar-hide`); frecce sx/dx da **700px** se overflow.
+4. **Tab `MenuNavTabs`** — **solo pagina categoria**, `fixed bottom-0` (sempre visibile); homepage senza pill. Categoria corrente evidenziata; scroll `.scrollbar-hide`; frecce sx/dx da **700px** se overflow. File: `src/features/public-menu/MenuNavTabs.tsx`.
 5. **Griglia categorie** — 1 col &lt;520 · **2 col ≥520** (stesso layout card a tutte le larghezze dentro `max-w-[1024px]`). **Con foto**: tile `aspect-[7/2]` (da 520 `5/2`), gradiente, titolo su immagine. **Senza foto**: riga ~**30%** icona su bianco + ~**70%** header PNG con titolo/chevron; descrizione opzionale **sotto il titolo nel 70%**. Mix foto: da 520px card senza foto `aspect-[5/2]` come le tile con foto. **Nessun** ramo thumb orizzontale da 1025px. **Mai emoji** (FU-023). Sfondo pagina: `useMenuPageBackgroundStyle()` full-bleed; contenuto centrato oltre 1024px.
-6. **Footer `MenuFooterCard`** — data e ora IT, `mt-auto` in fondo pagina.
 
 > Dettaglio componenti: **`docs/Menu-QR-Skill/contesto/MENU_QR_LAYOUT_CONTEXT.md`**
 
@@ -169,6 +168,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 - Risolve il QR con `usePublicMenuQr` e esclude gli ID in `hidden_menu_item_ids`
 - **`isCategoryInQrFilter`**: se `categoryKey` non è in `category_filter` (o filtro `[]`), messaggio + link «Torna al menù QR» — non lista piatti
 - **Layout FU-025 (01-06-26):** shell esterna `min-h-svh bg-stone-50` full viewport; wrapper interno `PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS` (`publicMenuLayout.ts`) avvolge **header sticky + main** — stessa colonna ~1024px centrata della homepage QR oltre 1024px; bande `stone-50` ai lati su desktop largo
+- **Pill categorie** (`MenuNavTabs`) fisse in basso, sempre visibili; `PUBLIC_MENU_CATEGORY_MAIN_BOTTOM_PAD_CLASS` sul main così l’ultimo piatto non resta coperto; niente footer data/ora
 - Header sticky: fascia PNG da `theme_key` del QR (`menuThemes.headerImage`); corpo lista `bg-stone-50` invariato (no `useMenuPageBackgroundStyle` sul body — fuori scope FU-019)
 - `ItemCardWithPhoto`: immagine full-width `h-44` + testo sotto
 - `ItemCardText`: solo testo (fallback quando `image_url` assente)
@@ -201,9 +201,8 @@ RULE  Titolo card categoria: legge prima menu_qrcode_categories.title, fallback 
 RULE  Descrizione breve categoria: in `CategoryCard` solo nella fascia header 70% (sotto titolo), se valorizzata in `menu_qrcode_categories` o `menu_categories`
 RULE  Carosello senza foto: placeholder trasparente h-28 — eyebrow slide solo se valorizzato in admin (no fallback «Specialità della casa»)
 RULE  Pallini carosello: button cliccabili con goToSlide — non solo drag/scroll
-RULE  Sfondo pagina: useMenuPageBackgroundStyle() — `repeat-y` + `100% auto` fin dal primo paint; non layer JS multipli (evita flash scroll footer)
-RULE  Body PNG: background-size 100% auto + position sotto --menu-header-band — non cover sul body intero
-RULE  Tab sticky: sfondo rgba(tabBarStickyRgb, opacity) cresce dopo lock; scrollbar-hide; frecce min-[700px]+ se overflow
+RULE  Tab categorie: solo pagina categoria, `fixed bottom-0` + padding-bottom main (altezza barra + safe-area); homepage senza pill e senza footer data/ora
+RULE  Sfondo pagina: useMenuPageBackgroundStyle() — `repeat-y` + `100% auto` fin dal primo paint; non layer JS multipli
 RULE  Admin carosello QR: CAROUSEL_SLIDE_EYEBROW_MAX=40, TITLE_MAX=60, DESCRIPTION_MAX=125 in MenuHomepageConfigPanel. Prenota usa limiti separati 19/18/38 in bookingPublicFormConfig.
 RULE  Nuovo QR: foto carosello/categorie in Storage `qr/draft/{shortCode}/` — migrate a `qr/{menuQrCodeId}/` in useSaveMenuQrSettings al primo insert
 RULE  Modale QR: checkbox categorie = elenco completo `menu_categories` (tab Menu); disabilitate se senza ingredienti; al Salva obbligatori carosello (≥1 foto + etichetta + titolo), ≥1 categoria con ≥1 ingrediente visibile — vedi `menuQrValidation.ts`

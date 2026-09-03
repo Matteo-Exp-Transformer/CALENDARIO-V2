@@ -27,7 +27,7 @@ menu» · «feature qrMenu».
 ## 4. Mappa file
 | Se il task tocca… | Apri (intero) |
 |---|---|
-| Layout pubblico (homepage/categoria), griglia categorie, carosello, tab sticky, temi, icone | `contesto/MENU_QR_LAYOUT_CONTEXT.md` |
+| Layout pubblico (homepage/categoria), griglia categorie, carosello, pill categoria in basso, temi, icone | `contesto/MENU_QR_LAYOUT_CONTEXT.md` |
 | Flusso dati admin ↔ pubblico, `category_filter`/`category_images`/`hidden_menu_item_ids`, rename/delete chiave | `contesto/MENU_QR_DATA_FLOW_CONTEXT.md` **(OBBLIGATORIO)** |
 | Cappature/limiti testo (carosello, nome QR, titoli categoria), contatori | `contesto/MENU_QR_TEXT_LIMITS_MAP.md` |
 | Form crea/modifica QR, validazione/messaggi-requisito, salvataggio modale | `MENU_QR_SKILL.md` §4 + `MenuQrModal.tsx`, `menuQrValidation.ts` |

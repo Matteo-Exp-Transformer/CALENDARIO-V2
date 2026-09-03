@@ -122,11 +122,10 @@ Admin UI: `resolveCategoryFilterForUi` tratta `null` come «tutte le categorie c
 
 ## 5. Layout homepage (post-rimozione preset)
 
-La homepage QR mostra **sempre** tab categorie + griglia categorie: non c'è più un `content_type` che
-ne cambi il layout (rimosso, §0). `MenuContent`/`MenuNavTabs` hanno un solo ramo: le categorie da
-`category_filter`. Se non ci sono categorie da mostrare → stato vuoto «Menu in preparazione».
+La homepage QR mostra **sempre** la griglia categorie (niente tab pill in alto né in basso): non c'è più un `content_type` che
+ne cambi il layout (rimosso, §0). Le pill categorie vivono sulla **pagina categoria** (`MenuNavTabs` fixed in basso). Se non ci sono categorie da mostrare → stato vuoto «Menu in preparazione». Nessun footer data/ora.
 
-File: `src/pages/PublicMenuPage.tsx` (`MenuContent`, `MenuNavTabs`).
+File: `src/pages/PublicMenuPage.tsx` (`MenuContent`) · `src/pages/PublicMenuCategoryPage.tsx` + `src/features/public-menu/MenuNavTabs.tsx`.
 
 ---
 
@@ -240,5 +239,6 @@ Guida generica query: aggiungere § Menu QR (**FU-017**).
 | Storage path | `src/features/booking/utils/menuQrStorage.ts` |
 | Homepage pubblica | `src/pages/PublicMenuPage.tsx` |
 | Categoria pubblica | `src/pages/PublicMenuCategoryPage.tsx` |
+| Pill categorie (barra basso) | `src/features/public-menu/MenuNavTabs.tsx` |
 | Temi | `src/features/public-menu/menuThemes.ts` |
 | Tipi | `src/types/menu.ts` (`MenuQrCode`, `CarouselItem`) |

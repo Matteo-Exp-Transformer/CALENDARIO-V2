@@ -1,0 +1,70 @@
+{
+  "persona": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "signal": "Matteo ha seguito live gli smoke test dell'esecutore e ha navigato lui la pagina Menu QR.",
+        "actor": "matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/03-09-26/Report-menu-qr-nav-footer-import-magazzino-03-09-26.md",
+        "effect": "QR-NAV-01/02 registrati come visti da Matteo; restano da lui i tre flussi admin (import, form nuovo piatto, tetti).",
+        "evidence_state": "observed"
+      }
+    ]
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "MENU_QR_SKILL@footer-nav-03-09-26",
+        "trigger_event": "Mandato Matteo: pill categorie fuori dalla homepage QR, barra fissa in basso in pagina categoria, footer data/ora rimosso; import QR con ingredienti visibili; tetti magazzino 7/12 rimossi",
+        "decision_or_output_changed": "Skill MENU_QR: niente MenuFooterCard; pill solo in pagina categoria. Skill MAGAZZINO: tetti restanti 6 preset e 6 QR; form nuovo prodotto resta aperto dopo Salva. Import bozza: hidden_menu_item_ids vuoto.",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "menu-qr-nav-footer-import-magazzino-03-09-26",
+        "primary_type": "prodotto",
+        "canonical_version": "docs/Sessioni di lavoro/03-09-26/Report-menu-qr-nav-footer-import-magazzino-03-09-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "homepage QR senza scorciatoie né orologio; cambio categoria dalla barra in basso; import visibile; form nuovo piatto continuo; tetti 7/12 via",
+        "intended_use": "commit su «fai report finale»; smoke admin residuo in checklist",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat 03-09-26 Profilo Esecuzione deep",
+        "authored_by": "cursor-grok-esecutore-menu-qr-03-09-26",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "npm run validate verde; home senza pill e senza footer; categoria con pill in basso; import hiddenItemIds vuoto in helper; form create resta aperto; canAdd categoria/prodotto sempre true; skill d'area allineate",
+        "verification_or_use_evidence": "npm run validate 164/1358; test:mss 42+57; e2e public-menu-qr; unit import e menu-magazzino-limits",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Menu-QR-Skill/MENU_QR_SKILL.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "src/pages/PublicMenuPage.tsx",
+          "src/pages/PublicMenuCategoryPage.tsx",
+          "src/features/booking/components/MenuQrModal.tsx",
+          "src/features/booking/components/MenuPricesTab.tsx",
+          "src/features/booking/constants/menuMagazzinoLimits.ts"
+        ],
+        "relations_no_double_count": [
+          "Non include i cap testo 42/110 (sessione 2). Non include FU-METODO-SMOKE-ESECUTORE-1 (altra chat)."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

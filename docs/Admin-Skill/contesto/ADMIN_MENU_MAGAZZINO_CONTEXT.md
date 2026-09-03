@@ -104,14 +104,18 @@ Scroll al form (anche **Modifica** su un’altra card con form già aperto): `sc
 su titolo form (`productFormTitleRef` / `categoryFormTitleRef`), `scrollMarginTop` ~132px,
 `ensureVisible: true` — stesso helper dell’overlay Categorie Menu.
 
+**Dopo Salva di un NUOVO prodotto:** il form **resta aperto**, la categoria resta quella appena usata,
+nome/prezzo/foto/descrizione tornano vuoti (pronti per il pezzo successivo). Toast di successo breve ok.
+Dopo **modifica** di un prodotto esistente il form si chiude (comportamento invariato).
+
 **Cap testo compose Prenota (FU-030 Fase 1, 10-06-26; completato M3 Fase 1 11-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
 nome prodotto **24**, descrizione **79** (`maxLength` + contatore `N/max` nel form prodotto);
 titolo categoria **24** e **descrizione categoria 79** nell'overlay «Categorie Menu». Allineati ai cap sottotab. Il pubblico
 tronca in silenzio al render (`clampBookingText`); vedi `../../Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
 
-**Limiti duri magazzino (M3 Fase 1, 11-06-26):** costante `MENU_MAGAZZINO_HARD_LIMITS` in `menuMagazzinoLimits.ts` —
-**7** categorie · **12** prodotti/categoria · **6** preset staff · **6** QR. Blocco solo su **nuovi** inserimenti
-(tenant già oltre soglia: nessuna cancellazione). UX: pulsante disabilitato + `MenuMagazzinoLimitNotice` con messaggio
+**Limiti duri magazzino:** costante `MENU_MAGAZZINO_HARD_LIMITS` in `menuMagazzinoLimits.ts` —
+**6** preset staff · **6** QR. **Nessun tetto** su numero di categorie né su prodotti per categoria
+(sovrascrive M3 dell'11-06-26). Blocco solo su **nuovi** inserimenti di preset/QR (tenant già oltre soglia: nessuna cancellazione). UX preset/QR: pulsante disabilitato + `MenuMagazzinoLimitNotice` con messaggio
 esplicito. Helper puri testati `@admin-blindatura: menu-magazzino-limits`.
 
 **Avviso propagazione (M3 Fase 1; edition-aware 17-06-26):** form Nuovo/Modifica Prodotto mostra
@@ -243,16 +247,16 @@ implementati; questa sezione spiega il PERCHÉ e cosa è ancora da costruire.
 
 | Cosa | Regola | Tipo |
 |---|---|---|
-| Categorie per tenant | max **7** | blocco **duro** |
-| Prodotti per categoria | max **12** | blocco **duro** |
+| Categorie per tenant | **nessun tetto** | — |
+| Prodotti per categoria | **nessun tetto** | — |
 | Menù preselezionati | max **6** | blocco **duro** |
 | QR code | max **6** | blocco **duro** |
 | Nome piatto e nome categoria | cap caratteri (priorità responsive mobile) | duro |
 | Descrizione piatto e descrizione categoria | cap caratteri, più generoso del nome | duro |
 
-> **Retroattività (deciso):** i blocchi duri valgono **solo sui nuovi inserimenti**. Un tenant già
-> oltre soglia (es. >7 categorie configurate alla vendita) **non** va rotto né svuotato: si impedisce
-> di aggiungerne altre, non si cancella l'esistente.
+> **Retroattività (deciso):** i blocchi duri su preset/QR valgono **solo sui nuovi inserimenti**. Un tenant già
+> oltre soglia (es. >6 QR) **non** va rotto né svuotato: si impedisce
+> di aggiungerne altri, non si cancella l'esistente. Stessa regola se un tenant ha già molte categorie/prodotti: nessuna cancellazione.
 
 I cap testo sono i campi ancora "da cappare" segnalati come debito Prenota (§7). Foto: il flusso
 upload converte/comprime già lato client (`menuPhotoUpload.ts`, webp ≤450KB, lato lungo 1200px) →
@@ -278,7 +282,7 @@ caso che può fallire → messaggio gentile (no blocco preventivo dei formati).
 
 **Fase 1 ✅ (11-06-26)** — implementato in codice (`menuMagazzinoLimits.ts`, `MenuPricesTab`, `MenuQrManager`):
 
-1. **Blocchi duri** 7 categorie / 12 prodotti / 6 preset / 6 QR — solo su **nuovi** inserimenti; pulsante disabilitato + messaggio («Hai raggiunto il massimo di …»); tenant già oltre soglia non rotto.
+1. **Blocchi duri** 6 preset / 6 QR — solo su **nuovi** inserimenti; pulsante disabilitato + messaggio («Hai raggiunto il massimo di …»); tenant già oltre soglia non rotto. **Nessun tetto** categorie né prodotti per categoria.
 2. **Cap nome + descrizione** piatti e categorie — `BOOKING_MENU_COMPOSE_TEXT_LIMITS` 24/24/79; contatore anche su **descrizione categoria** overlay.
 3. **Avviso propagazione edition-aware** sul salvataggio **ingredienti** (`MenuMagazzinoPropagationNotice` +
    `getMenuMagazzinoSavePropagationMessage` — Prenota sempre; Menu QR solo se `features.qrMenu`).

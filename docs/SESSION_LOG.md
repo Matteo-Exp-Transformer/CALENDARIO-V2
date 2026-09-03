@@ -9,6 +9,13 @@ description: >-
 
 > Controlli e lavori **rimandati** legati a un report → `docs/FOLLOW_UP.md` (non duplicare qui).
 
+## 2026-09
+
+| Data | Sessione | Report |
+|------|----------|--------|
+| 03-09-26 | **Revisione Menu QR nav/footer/import/magazzino** — A1 A2 B C2 C3 pass sui tre schermi; indice resoconti riallineato; piatto di prova rimosso da Antipasti TEST; niente Prompt 2. · `event:mss-evt-01a0648a-4a25-7aaf-a71f-50e210bdf28c` | deep — [Revisione](Sessioni%20di%20lavoro/03-09-26/Report-revisione-menu-qr-nav-footer-import-magazzino-03-09-26.md) |
+| 03-09-26 | **Menu QR pubblico + import + magazzino** — home senza pill e senza barra data/ora; pill fisse in basso in pagina categoria; import nuovo QR con ingredienti visibili; form nuovo prodotto resta aperto; tetti 7 categorie / 12 piatti via (restano 6 preset e 6 QR). Matteo ha seguito live lo smoke e ha navigato la pagina QR. Validate 164/1358. Nessun commit. · `event:mss-evt-01a06478-dfdc-704d-a347-2b8376dc1245` | deep — [Report](Sessioni%20di%20lavoro/03-09-26/Report-menu-qr-nav-footer-import-magazzino-03-09-26.md) |
+
 ## 2026-08
 
 | Data | Sessione | Report |

@@ -85,7 +85,7 @@ QR**, non in un «tipo di menù» strutturato. Il `content_type` strutturato è 
 | Scansiona il QR → apre il link col `:slug` + `:shortCode` | `TenantContext` risolve lo `slug` → `tenantId`; lookup parte **solo** quando lo slug dell'URL combacia col tenant (`tenantReady`, evita tenant stale da sessione admin) |
 | Vede nome locale + **carosello foto** in cima | client **pubblico anonimo** (`supabasePublic`, niente sessione) carica il QR via `usePublicMenuQr(shortCode)`; nome da `useRestaurantName` |
 | Vede la **griglia categorie** (con foto o icona) | `category_filter` decide quali e in che ordine; titoli/icone da `menu_qrcode_categories`, fallback `menu_categories` |
-| Tocca una categoria → **lista piatti** | `PublicMenuCategoryPage` carica `menu_items`, esclude gli `hidden_menu_item_ids` del QR |
+| Tocca una categoria → **lista piatti** | `PublicMenuCategoryPage` carica `menu_items`, esclude gli `hidden_menu_item_ids` del QR; in basso una **barra pill categorie** (stesso insieme del QR) per cambiare pagina senza tornare in home |
 | (nessun invio, nessun carrello) | la consultazione **non scrive nulla** sul DB |
 
 **Tre confini da non confondere** (un agente che li mescola rompe il flusso):
@@ -135,8 +135,8 @@ QR**, non in un «tipo di menù» strutturato. Il `content_type` strutturato è 
 - **Nome locale assente → ripiego letterale «Menu».** Se mancano sia `restaurant_name` sia
   `organizations_public.name`, l'intestazione mostra la parola neutra «Menu» (`PublicMenuPage`). Voluto:
   neutro, mai un nome inventato. Deciso 06-06-26.
-- **Footer data/ora = voluto, di sistema.** Il footer in fondo con data e ora correnti è sempre
-  mostrato e **non** configurabile dall'admin: è un elemento di sistema, non un buco. Deciso 06-06-26.
+- **Niente footer data/ora.** La barra bianca con data e ora (`MenuFooterCard`) è **rimossa** da tutte le pagine pubbliche Menu QR. Non reintrodurla e non lasciare `mt-auto` / buco vuoto al suo posto. (Sovrascrive la scelta del 06-06-26.)
+- **Pill categorie: solo in pagina categoria, barra fissa in basso.** Sulla homepage il cliente entra in una categoria **solo** toccando le card. Sulla pagina categoria (`…/c/:categoryKey`) le pill restano visibili in basso mentre si scorre (padding-bottom sul main = altezza barra + `env(safe-area-inset-bottom)`). Categoria corrente evidenziata; click → altra categoria dello stesso QR. Niente pill «Home».
 - **Titolo card categoria: line-clamp difensivo a 2 righe.** I due `<h2>` titolo (card con/senza foto)
   hanno `line-clamp-2` per non sfondare la card su mobile quando il titolo ricade sul nome categoria di
   magazzino (`menu_categories.label`, che **non** ha cap). Il cap 30 dell'override QR copre il caso
@@ -190,9 +190,7 @@ silenzioso. (Preferenza utente: `Modal` per successo/conferme; toast solo per la
 - **Ordine piatti per-QR** (`item_sort_overrides` su `menu_qr_codes`): frecce Su/Giù in
   `MenuQrHiddenItemsPicker` («Visibilità e ordine ingredienti»). Lettura pubblica
   `applyQrItemSortOverride` (`menuQrAppearance.ts`); `null` = ordine default magazzino + foto-prima.
-- **Import preset staff nel modal QR** («Importa da preset»): precompila `categoryFilter` +
-  `hiddenItemIds` dal preset, carosello escluso; preset **read-only** (vivono nel loro tab). Nessuna
-  colonna DB nuova.
+- **Import preset staff nel modal QR** («Importa da preset»): precompila `categoryFilter` dalle categorie del preset; gli ingredienti di quelle categorie partono **tutti visibili** (`hiddenItemIds` vuoto). Il ristoratore può nascondere a mano. Carosello escluso; preset **read-only** (vivono nel loro tab). Nessuna colonna DB nuova. Non riscrive i QR già salvati.
 - **`PublicMenuCategoryPage`** applica override titolo (`menu_qrcode_categories`) + hero foto
   (`qr.category_images[categoryKey]`); `hidden_menu_item_ids`/`theme_key` già applicati.
 - **Titoli/descrizioni categoria per-QR cappati** (30/70, `AdminFieldWithCharCount`) — vedi §4 +
@@ -207,7 +205,7 @@ Cronologia chiusure FU (FU-019/MQR-1/MQR-2/MQR-3, import preset): [Report Ciclo 
 
 | Se il task tocca… | Apri (e leggi intero) |
 |---|---|
-| Layout pagine pubbliche (homepage, categoria), griglia categorie, carosello, tab sticky, temi, card con/senza foto, icone | `contesto/MENU_QR_LAYOUT_CONTEXT.md` |
+| Layout pubblico (homepage/categoria), griglia categorie, carosello, pill categoria in basso, temi, icone | `contesto/MENU_QR_LAYOUT_CONTEXT.md` |
 | Flusso dati admin ↔ pubblico, `category_filter`, `category_images`, `hidden_menu_item_ids`, rename/delete chiave categoria, hook pubblici/admin | `contesto/MENU_QR_DATA_FLOW_CONTEXT.md` **(OBBLIGATORIO prima di modificare dati)** |
 | Cappature/limiti testo (carosello, nome QR, titoli categoria), contatori, dove aggiungere un cap | `contesto/MENU_QR_TEXT_LIMITS_MAP.md` (numeri ↔ codice) |
 | Form crea/modifica QR, validazione/messaggi-requisito, salvataggio modale | §4 qui sopra + `MenuQrModal.tsx`, `menuQrValidation.ts` |

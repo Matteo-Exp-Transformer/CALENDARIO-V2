@@ -1,0 +1,70 @@
+{
+  "persona": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "signal": "Matteo ha chiesto revisione indipendente del Prompt 1 e ha avvisato che un altro agente stava chiudendo la capsula per l'hook di validazione.",
+        "actor": "matteo",
+        "assistance": "spontaneo",
+        "origin": "naturale",
+        "source_ref": "docs/Sessioni di lavoro/03-09-26/Report-revisione-menu-qr-nav-footer-import-magazzino-03-09-26.md",
+        "effect": "La verifica non ha toccato il report esecutore; ha usato gli URL smoke del Menu QR (non Prenota); niente patch e niente commit.",
+        "evidence_state": "observed"
+      }
+    ]
+  },
+  "sistema": {
+    "delta": "verificato",
+    "assertions": [
+      {
+        "rule_id_version": "MENU_QR_SKILL@verifica-nav-footer-03-09-26",
+        "trigger_event": "Mandato Verifica deep: A1 A2 B C2 C3 sui tre viewport, niente patch, niente Prompt 2",
+        "decision_or_output_changed": "Comportamento utente A1/A2/B/C2/C3 confermato in QA indipendente; skill MENU_QR e MAGAZZINO già allineate dall'esecutore; il comando unico di validazione resta rosso sulle viste indice (V1/D14), non sul codice del menu.",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "revisione-menu-qr-nav-footer-import-magazzino-03-09-26",
+        "primary_type": "prova",
+        "canonical_version": "docs/Sessioni di lavoro/03-09-26/Report-revisione-menu-qr-nav-footer-import-magazzino-03-09-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "controverificare indipendentemente homepage/categoria QR, import visibile, form nuovo piatto e tetti magazzino prima del commit",
+        "intended_use": "gate umano: non dichiarare PULITO sul comando unico di validazione; pulire piatto di prova; poi «fai report finale»",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat 03-09-26 Profilo Verifica deep",
+        "authored_by": "cursor-grok-verifica-menu-qr-03-09-26",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "A1 A2 B C2 C3 osservati sui tre viewport smoke; validate:app verde; niente patch; report con Q1–Q7 verbatim",
+        "verification_or_use_evidence": "Playwright 375/834/1280 su /menu/da-tommaso/qr/sbmm42t; admin 1280 import+form+notice; validate:app 164/1358; npm run validate exit 1 su test:mss:tools V1+D14",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Testing-Skill/TESTING_SKILL.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "docs/Sessioni di lavoro/03-09-26/Report-menu-qr-nav-footer-import-magazzino-03-09-26.md",
+          "src/pages/PublicMenuPage.tsx",
+          "src/pages/PublicMenuCategoryPage.tsx",
+          "src/features/booking/components/MenuQrModal.tsx",
+          "src/features/booking/components/MenuPricesTab.tsx"
+        ],
+        "relations_no_double_count": [
+          "Non sostituisce il report esecutore. Non include Prompt 2 cap 42/110. Non conta come verifica del tetto UI 6 QR/preset (tenant sotto soglia)."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}

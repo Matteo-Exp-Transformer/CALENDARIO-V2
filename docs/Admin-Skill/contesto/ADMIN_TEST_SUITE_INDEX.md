@@ -222,7 +222,7 @@ test Menu/Magazzino di blindatura.
 
 Addendum visual checklist (16-06-26): `public-booking-smoke.spec.ts` copre sfondo striscia/full-page/
 crema + footer Orari assente + EmptyState form non configurato; `public-menu-qr.spec.ts` copre
-carosello, tema, ordine categorie, footer data/ora e icona default card senza foto con seed/cleanup
+carosello, tema, ordine categorie, assenza footer data/ora, pill in pagina categoria e icona default card senza foto con seed/cleanup
 su TEST. `admin-calendar-blindatura.spec.ts` esteso a badge senza limite e oltre 100% reale.
 
 ### Baseline corrente — 06-08-26

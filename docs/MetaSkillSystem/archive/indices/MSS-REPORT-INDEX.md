@@ -798,4 +798,11 @@ Raggruppato per cartella giorno. Nome file = etichetta (nessun «tipo» dedotto)
 |---|---|
 | Report-senior-criteri-valutazione-mss-e-agente-matteo-28-08-26.md | `docs/Sessioni di lavoro/28-08-26/Report-senior-criteri-valutazione-mss-e-agente-matteo-28-08-26.md` |
 
+## 03-09-26
+
+| File | Path |
+|---|---|
+| Report-menu-qr-nav-footer-import-magazzino-03-09-26.md | `docs/Sessioni di lavoro/03-09-26/Report-menu-qr-nav-footer-import-magazzino-03-09-26.md` |
+| Report-revisione-menu-qr-nav-footer-import-magazzino-03-09-26.md | `docs/Sessioni di lavoro/03-09-26/Report-revisione-menu-qr-nav-footer-import-magazzino-03-09-26.md` |
+
 <!-- mss:generated report-index fine -->

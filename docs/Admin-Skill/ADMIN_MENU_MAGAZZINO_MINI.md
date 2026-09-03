@@ -22,8 +22,8 @@ disponibilità» · «limiti magazzino».
 2. **SNAPSHOT prenotazioni intatto:** modificare/eliminare nel magazzino aggiorna SUBITO Prenota+QR,
    ma `booking_requests.menu_selection` resta congelato (il cliente vede ciò che ha scelto). Non
    «far rileggere il magazzino» alle prenotazioni esistenti.
-3. **Limiti duri solo su NUOVI inserimenti** (7 cat / 12 prod / 6 preset / 6 QR,
-   `MENU_MAGAZZINO_HARD_LIMITS`): tenant già oltre soglia non si rompe né si svuota. Toggle
+3. **Limiti duri solo su NUOVI inserimenti** (6 preset / 6 QR,
+   `MENU_MAGAZZINO_HARD_LIMITS`; **nessun tetto** categorie/prodotti): tenant già oltre soglia non si rompe né si svuota. Toggle
    `is_available` spento = nascosto OVUNQUE (Prenota + QR + modal config), distinto da
    `visible_on_booking`/`hidden_menu_item_ids`.
 
