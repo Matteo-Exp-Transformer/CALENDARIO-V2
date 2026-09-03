@@ -168,9 +168,9 @@ preset selezionabile per capacità → `presetMenuDisplay.test.ts`; resolver →
 > agente che le incontra sa che NON deve «sistemarle» di sua iniziativa, ma può proporne
 > l'implementazione quando il task è pertinente. Tracciate in `docs/FOLLOW_UP.md`.
 
-- **Testi menù ingredienti — prova Fase 1 (FU-030, 10-06-26).** Cap **24/24/79** via
-  `BOOKING_MENU_COMPOSE_TEXT_LIMITS`; clamp silenzioso in pubblico, contatori in `MenuPricesTab`.
-  Resta in follow-up finché Matteo non accetta dopo revisione (Fase 2 QA). Mappa §E in
+- **Testi menù ingredienti.** Cap categoria **24/79**, piatto **42/110** via
+  `BOOKING_MENU_COMPOSE_TEXT_LIMITS`; clamp silenzioso in pubblico (Prenota e lista piatti QR),
+  contatori in `MenuPricesTab`. Titolo/descrizione categoria restano 24/79. Mappa §E in
   `contesto/PRENOTA_TEXT_LIMITS_MAP.md`.
 
 ---

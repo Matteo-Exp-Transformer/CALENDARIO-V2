@@ -108,10 +108,12 @@ su titolo form (`productFormTitleRef` / `categoryFormTitleRef`), `scrollMarginTo
 nome/prezzo/foto/descrizione tornano vuoti (pronti per il pezzo successivo). Toast di successo breve ok.
 Dopo **modifica** di un prodotto esistente il form si chiude (comportamento invariato).
 
-**Cap testo compose Prenota (FU-030 Fase 1, 10-06-26; completato M3 Fase 1 11-06-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
-nome prodotto **24**, descrizione **79** (`maxLength` + contatore `N/max` nel form prodotto);
-titolo categoria **24** e **descrizione categoria 79** nell'overlay «Categorie Menu». Allineati ai cap sottotab. Il pubblico
-tronca in silenzio al render (`clampBookingText`); vedi `../../Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
+**Cap testo compose Prenota (FU-030; alzati piatti 03-09-26):** `BOOKING_MENU_COMPOSE_TEXT_LIMITS` —
+nome prodotto **42**, descrizione piatto **110** (`maxLength` + contatore `N/max` nel form prodotto);
+titolo categoria **24** e **descrizione categoria 79** nell'overlay «Categorie Menu» (invariati, via
+`categoryLabel` / `categoryDescription` — non usare `itemDescription` sull'overlay). Il pubblico
+tronca in silenzio al render (`clampBookingText` su Prenota e sulla lista piatti Menu QR); vedi
+`../../Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md` §E.
 
 **Limiti duri magazzino:** costante `MENU_MAGAZZINO_HARD_LIMITS` in `menuMagazzinoLimits.ts` —
 **6** preset staff · **6** QR. **Nessun tetto** su numero di categorie né su prodotti per categoria
@@ -283,7 +285,9 @@ caso che può fallire → messaggio gentile (no blocco preventivo dei formati).
 **Fase 1 ✅ (11-06-26)** — implementato in codice (`menuMagazzinoLimits.ts`, `MenuPricesTab`, `MenuQrManager`):
 
 1. **Blocchi duri** 6 preset / 6 QR — solo su **nuovi** inserimenti; pulsante disabilitato + messaggio («Hai raggiunto il massimo di …»); tenant già oltre soglia non rotto. **Nessun tetto** categorie né prodotti per categoria.
-2. **Cap nome + descrizione** piatti e categorie — `BOOKING_MENU_COMPOSE_TEXT_LIMITS` 24/24/79; contatore anche su **descrizione categoria** overlay.
+2. **Cap nome + descrizione** — piatti **42/110**, categorie **24/79** (`BOOKING_MENU_COMPOSE_TEXT_LIMITS`;
+   overlay categorie usa `categoryDescription`, non `itemDescription`). Contatore anche su
+   **descrizione categoria** overlay.
 3. **Avviso propagazione edition-aware** sul salvataggio **ingredienti** (`MenuMagazzinoPropagationNotice` +
    `getMenuMagazzinoSavePropagationMessage` — Prenota sempre; Menu QR solo se `features.qrMenu`).
 

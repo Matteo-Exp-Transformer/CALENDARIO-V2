@@ -48,6 +48,13 @@
 
 ## Sessioni registrate (append-only)
 
+### 03-09-26 — Esecuzione cap piatto 42/110 (sessione 2)
+- **Area:** magazzino Tab Menu + Pagina Prenota + lista piatti Menu QR.
+- **Verbatim mandato:** «Nome prodotto * passa da 24 a 42 caratteri; Descrizione da 79 a 110. […] NON toccare titolo/descrizione categoria (restano 24/79). NON commit.»
+- **Comportamento:** un solo turno, nessun «lavoro ok» in chat; il mandato chiede report + capsula a fine sessione.
+- **Verbatim chiusura:** «ho guardato pagina prenota e va bene così manteniamo limiti modificati. fai commit e push»
+- **Report:** `docs/Sessioni di lavoro/03-09-26/Report-cap-prodotto-42-110-prenota-qr-03-09-26.md`.
+
 ### 25-08-26 — Meta MSS: overload decisioni/sigle; «tutto chiuso» prima del pilota
 - **Area:** comunicazione agenti ↔ Matteo (ciclo post-T12 / prep pilota).
 - **Verbatim (sintesi fedele):** stanco di leggere sigle e di dover prendere 4 decisioni a griglia

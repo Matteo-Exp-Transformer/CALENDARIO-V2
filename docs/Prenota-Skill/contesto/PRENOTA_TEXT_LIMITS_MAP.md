@@ -59,13 +59,15 @@ Normalizer: `normalizeCarouselSlideItem` + migration `040_clamp_booking_carousel
 
 ## E. Menù ingredienti (Tab Menu → pubblico)
 
-Costante: `BOOKING_MENU_COMPOSE_TEXT_LIMITS` in `bookingPrenotaTextLimits.ts` (prova FU-030 Fase 1, 10-06-26).
+Costante: `BOOKING_MENU_COMPOSE_TEXT_LIMITS` in `bookingPrenotaTextLimits.ts`.
+Categoria = stessi numeri delle sottotab (24/79). Piatto = **42** nome / **110** descrizione (Matteo accetta il rischio visivo mobile; revert isolato se non convince).
 
 | Superficie UI | Componente | Storage | Max | Limite in UI | Note |
 |---------------|------------|---------|-----|--------------|------|
 | Nome categoria (header card chiusa/aperta + overlay portal) | `BookingMenuCategoryCard` | `menu_categories.label` | **24** | admin-contatore (`MenuPricesTab` overlay Categorie) · pubblico `clampBookingText` silenzioso | Allineato a `subTabLabel` |
-| Nome ingrediente (pannello + riepilogo) | `BookingMenuCategoryCard`, `BookingSummarySidebar` | `menu_items.name` | **24** | admin-contatore (form prodotto) · pubblico silenzioso | Allineato a `subTabLabel` |
-| Descrizione ingrediente | `BookingMenuCategoryCard` | `menu_items.description` | **79** | admin-contatore (form prodotto) · pubblico silenzioso | Allineato a `subTabDescription` |
+| Descrizione categoria | overlay Categorie Menu | `menu_categories.description` | **79** | admin-contatore (`categoryDescription`) | Allineato a `subTabDescription`; **non** segue il tetto piatto |
+| Nome ingrediente (pannello + riepilogo) | `BookingMenuCategoryCard`, `BookingSummarySidebar` | `menu_items.name` | **42** | admin-contatore (form prodotto) · pubblico silenzioso | Stesso tetto sulla lista piatti Menu QR |
+| Descrizione ingrediente | `BookingMenuCategoryCard` | `menu_items.description` | **110** | admin-contatore (form prodotto) · pubblico silenzioso | Stesso tetto sulla lista piatti Menu QR |
 | Teaser card chiusa | `BookingMenuCategoryCard` | hardcoded | «Scopri cosa è incluso» | — | Non editabile |
 
 Legacy in DB oltre cap: il pubblico tronca al render; l'admin non può superare il max in digitazione.

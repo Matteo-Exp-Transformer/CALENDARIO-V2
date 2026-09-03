@@ -51,10 +51,15 @@ taglio). Vedi `MENU_QR_TEST_SUITE_INDEX.md`.
 
 ---
 
-## C. Senza cap perché NON è testo libero del cliente
+## C. Piatti e nomi categoria magazzino — ereditano i cap del magazzino
 
-- I **piatti** (`menu_items` nome/descrizione) e i **nomi categoria magazzino** (`menu_categories`)
-  appartengono all'area **Menu admin**, non al QR: eventuali cap si decidono lì
-  (`../../Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` §3.3). Il QR li **mostra**, non li scrive.
+- I **piatti** (`menu_items` nome/descrizione) appartengono all'area **Menu admin**, non al QR: i cap
+  si decidono lì (`../../Admin-Skill/contesto/ADMIN_MENU_MAGAZZINO_CONTEXT.md` §3.3). Oggi:
+  nome **42**, descrizione **110** (`BOOKING_MENU_COMPOSE_TEXT_LIMITS.itemName` / `.itemDescription`).
+  La lista piatti (`PublicMenuCategoryPage`) **mostra** con lo stesso `clampBookingText` silenzioso
+  di Prenota, così un testo lungo in DB non sfonda la riga (prezzo `shrink-0`, nome `min-w-0` + wrap).
+  Il QR **non** scrive questi campi.
+- I **nomi/descrizioni categoria magazzino** (`menu_categories`) restano **24/79**. L'override titolo/descrizione
+  *per-QR* è un altro cap (30/70, sezione B) e non va confuso.
 - Anna (cliente) **non scrive testo** sul Menu QR (è sola consultazione): nessun cap lato cliente,
   a differenza di Prenota dove Anna compila il form.

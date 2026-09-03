@@ -396,7 +396,7 @@ Debiti fuori cancello: ~~**FU-M3-QA-CT**~~ chiuso Ciclo 8 (15-06-26) — spec CT
 
 | File | Cosa copre |
 |---|---|
-| `src/features/booking/constants/__tests__/menuMagazzinoLimits.adminBlindatura.test.ts` | Soglie 7/12/6/6; retroattività (blocca solo +1); conteggio per categoria; cap 24/24/79 allineati a FU-030 |
+| `src/features/booking/constants/__tests__/menuMagazzinoLimits.adminBlindatura.test.ts` | Soglie 6 preset / 6 QR (niente tetto categorie/prodotti); retroattività (blocca solo +1); conteggio per categoria; cap testo categoria 24/79 e piatto 42/110 |
 | `src/features/booking/constants/__tests__/menuMagazzinoAvailability.adminBlindatura.test.ts` | Default `is_available` true; categoria/item off; preset+magazzino; QR hidden+magazzino; snapshot intatto; catalogo admin config (filter pubblico) |
 | `src/features/booking/services/__tests__/menuMagazzinoSync.adminBlindatura.test.ts` | Rename/delete sync orchestrato (`syncMenuCategoryKeyRename`/`Delete`): QR filter+images, `menu_qrcode_categories`, `hidden_category_keys`/`category_order_keys` form; messaggi modale; **3 controtest parziale** (QR ok/form fail; 2° QR fail; delete ok/form fail); rename con `is_available` off + filtri pubblici |
 | `e2e/admin-menu-magazzino-blindatura.spec.ts` | FU-M3-QA-E2E: login staging TEST, toggle categoria/prodotto da Admin Menu, niente toggle disponibilità nell'overlay categoria, propagazione pubblica Menu QR + Prenota, viewport 1280/375/834, teardown `is_available` + dati E2E. Eseguire con `--workers=1` perché i progetti condividono dati staging temporanei |

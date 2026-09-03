@@ -1,0 +1,59 @@
+{
+  "persona": {
+    "delta": "nessuno",
+    "assertions": []
+  },
+  "sistema": {
+    "delta": "modificato",
+    "assertions": [
+      {
+        "rule_id_version": "PRENOTA_TEXT_LIMITS_MAP@piatto-42-110-03-09-26",
+        "trigger_event": "Mandato Matteo: alzare nome prodotto 24→42 e descrizione 79→110; categorie restano 24/79; stesso tetto su Prenota e lista piatti QR",
+        "decision_or_output_changed": "BOOKING_MENU_COMPOSE_TEXT_LIMITS: itemName 42, itemDescription 110, categoryLabel 24, categoryDescription 79. Overlay Categorie Menu non usa più itemDescription. Clamp silenzioso anche sulla lista piatti Menu QR. Mappe §E magazzino §3.3 e QR §C allineate.",
+        "G": 2,
+        "O": 2,
+        "E": 2
+      }
+    ]
+  },
+  "output": {
+    "delta": "creato",
+    "assertions": [
+      {
+        "output_id": "cap-prodotto-42-110-prenota-qr-03-09-26",
+        "primary_type": "prodotto",
+        "canonical_version": "docs/Sessioni di lavoro/03-09-26/Report-cap-prodotto-42-110-prenota-qr-03-09-26.md",
+        "recipient": "Matteo",
+        "problem_or_job": "nel form Modifica Ingredienti si digitano 42 caratteri nel nome e 110 in descrizione; Prenota e Menu QR mostrano il testo intero senza taglio a 24/79",
+        "intended_use": "guardare a 375px; se non convince, revert solo di questo diff dopo commit isolato",
+        "conceived_by": "Matteo",
+        "decided_by": "Matteo",
+        "directed_by": "mandato chat 03-09-26 Profilo Esecuzione deep sessione 2",
+        "authored_by": "cursor-grok-esecutore-cap-42-110-03-09-26",
+        "verified_by": "non_osservato",
+        "acceptance_criterion": "npm run validate verde; costanti 42/110; categoria 24/79; clamp Prenota e QR allo stesso tetto; contatore N/max nel form prodotto; niente migrazione (TEXT)",
+        "verification_or_use_evidence": "npm run validate 164/1358; Vitest bookingPrenotaTextLimits + menu-magazzino-limits; misura 375px wrap senza overlap",
+        "verification_status": "self_report",
+        "owner_ref": "docs/Prenota-Skill/contesto/PRENOTA_TEXT_LIMITS_MAP.md",
+        "privacy_release": "internal",
+        "support_files": [
+          "src/features/booking/constants/bookingPrenotaTextLimits.ts",
+          "src/features/booking/components/MenuPricesTab.tsx",
+          "src/pages/PublicMenuCategoryPage.tsx",
+          "src/features/booking/components/publicBooking/BookingSummarySidebar.tsx"
+        ],
+        "relations_no_double_count": [
+          "Non include tetti 7/12/6/6 (sessione 1). Non include cap carosello/card QR 30/70 40/60/125. Non include titolo/descrizione categoria (restano 24/79)."
+        ],
+        "product_candidate": {
+          "recipient": "pass",
+          "problem_or_job": "pass",
+          "canonical_version": "pass",
+          "fixed_acceptance_criterion": "pass",
+          "verification_or_use_evidence": "pass",
+          "result": "eligible"
+        }
+      }
+    ]
+  }
+}
