@@ -153,7 +153,7 @@ Tutte le pagine pubbliche menu sono **standalone** (non dentro AdminShell), ness
 
 1. **Sfondo pagina** — `useMenuPageBackgroundStyle()` in `PublicMenuPage.tsx`: solo `bodyImage` con `background-size: 100% auto` + `background-repeat: repeat-y` fin dal primo paint (niente switch JS single→layer multipli — evita flash in scroll). `bodyFallbackBg` riempie eventuali gap (es. terracotta `#9a3412`).
 2. **Hero `<header>`** — nome ristorante da **`useRestaurantName()`** (`restaurant_settings.restaurant_name`, fallback `organizations_public.name`, poi «Menu») + fregio + `MenuCarousel` (nessuna label esterna “Specialità…”); badge solo dentro ogni slide. **`PublicMenuPageHeader` non usato** sulla homepage.
-3. **Carosello** — slide full-bleed, overlay gradiente 40% sx, titolo/descrizione da `carousel_items`; pallini **cliccabili** (tap mobile 44px). Placeholder `h-28` se zero foto. Eyebrow slide **solo se compilato** in admin.
+3. **Carosello** — slide full-bleed, overlay gradiente 40% sx **solo se la slide ha testo**, titolo/descrizione da `carousel_items` (tutti facoltativi); pallini **cliccabili** (tap mobile 44px). Placeholder `h-28` se zero foto. Eyebrow slide **solo se compilato** in admin.
 4. **Tab `MenuNavTabs`** — **solo pagina categoria**, `fixed bottom-0` (sempre visibile); homepage senza pill. Categoria corrente evidenziata; scroll `.scrollbar-hide`; frecce sx/dx da **700px** se overflow. File: `src/features/public-menu/MenuNavTabs.tsx`.
 5. **Griglia categorie** — 1 col &lt;520 · **2 col ≥520** (stesso layout card a tutte le larghezze dentro `max-w-[1024px]`). **Con foto**: tile `aspect-[7/2]` (da 520 `5/2`), gradiente, titolo su immagine. **Senza foto**: riga ~**30%** icona su bianco + ~**70%** header PNG con titolo/chevron; descrizione opzionale **sotto il titolo nel 70%**. Mix foto: da 520px card senza foto `aspect-[5/2]` come le tile con foto. **Nessun** ramo thumb orizzontale da 1025px. **Mai emoji** (FU-023). Sfondo pagina: `useMenuPageBackgroundStyle()` full-bleed; contenuto centrato oltre 1024px.
 
@@ -190,7 +190,7 @@ RULE  Card categoria QR: titolo cappato 30 (QR_CATEGORY_TITLE_MAX), descrizione 
 RULE  La pagina /menu/:slug senza short_code usa il QR default (primo is_active=true, sort_order ASC)
 RULE  Se short_code non trovato → messaggio «Menù QR non trovato» (nessun redirect al menu default — evita di mostrare sempre il primo QR)
 RULE  Lookup QR pubblico solo quando `tenantSlug` del context coincide con lo slug nell’URL (`tenantReady` in PublicMenuPage)
-RULE  Testo sovrapposto su immagini carosello: gradiente linear-gradient(to right, rgba 0,0,0,0.55 0%, transparent 50%) — overlay 40% sx
+RULE  Testo sovrapposto su immagini carosello: gradiente linear-gradient(to right, rgba 0,0,0,0.55 0%, transparent 50%) — overlay 40% sx, disegnato SOLO se la slide ha almeno un testo (eyebrow/titolo/descrizione); slide senza testo = foto pulita (03-09-26)
 RULE  Griglia categorie: 1 col &lt;520 · 2 col ≥520 — stesso layout card mobile/tablet/desktop (wrapper max 1024px)
 RULE  Card categoria **con foto**: tile aspect + gradiente + titolo su immagine (tutte le larghezze)
 RULE  Card categoria **senza foto**: flex 30% icona su bianco + 70% header PNG con titolo/chevron; descrizione (override QR o `menu_categories.description`) **sotto il titolo dentro il 70%**, mai fuori dalla card
@@ -212,7 +212,7 @@ RULE  PublicMenuCategoryPage: filtra `menu_items` con `hidden_menu_item_ids` del
 RULE  PublicMenuCategoryPage: `isCategoryInQrFilter(category_filter, categoryKey)` — legacy `null` = tutte; `[]` = nessuna; URL fuori filtro → messaggio + link homepage QR
 RULE  PublicMenuCategoryPage header: PNG `theme_key` QR in fascia sticky (~56px); testo colore `headerTextColor`; corpo lista `bg-stone-50` — asset scroll FU-021
 RULE  Admin carosello QR: `AdminFieldWithCharCount` (Etichetta/Titolo slide/Descrizione breve); `Modal` conferma elimina slide e foto categoria
-RULE  Salva modale QR: `canSave` = nome + `isMenuQrSettingsValid` (carosello ≥1 slide completa, ≥1 cat con ingrediente visibile); ordine messaggio validazione: categorie → carosello
+RULE  Salva modale QR: `canSave` = nome + `isMenuQrSettingsValid` (carosello ≥1 foto — testi slide facoltativi dal 03-09-26 —, ≥1 cat con ingrediente visibile); ordine messaggio validazione: categorie → carosello
 RULE  Comunicazioni utente admin: preferenza **Modal** (successo, elimina, conferme); toast validazione opzionale/backup se Salva già disattivato
 RULE  Temi: getMenuTheme(key) da menuThemes.ts — 5 chiavi; chiavi sconosciute (es. wine_bistrot legacy) → fallback `mediterranean_teal`
 RULE  PNG temi in public/menu-themes/ — tutti e 5 i temi hanno header+body PNG; homepage usa solo bodyImage (stesso asset mobile/desktop)

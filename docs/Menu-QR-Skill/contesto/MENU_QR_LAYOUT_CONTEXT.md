@@ -89,7 +89,7 @@ PNG in `public/menu-themes/` con naming `{tema-key}-header.png` / `{tema-key}-bo
 |----------|--------|------|
 | Altezza slide con foto | `h-52` | Cambia qui per slide più alte/basse |
 | Placeholder senza foto | `h-28 bg-transparent/15` | Mantiene spazio — non nasconde la sezione |
-| Overlay testo | `linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 50%)` | Gradiente orizzontale 40% sx |
+| Overlay testo | `linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 50%)` | Gradiente orizzontale 40% sx — reso **solo se la slide ha testo** (`hasOverlayText`) |
 | Posizione testo | `absolute inset-y-0 left-0 w-1/2` | Solo sul 50% sinistro |
 | Cuore | Phosphor `Heart weight="fill"` | Colore `theme.accentColor` |
 | Pallini | `width: activeIdx ? 16 : 8; height: 8` | **`<button>`** cliccabili → `goToSlide(i)`; `min-h-11 min-w-11`, `touch-manipulation` |
@@ -137,6 +137,10 @@ background: linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 50%)
 ```
 
 Il testo è posizionato in assoluto sul 50% sinistro (`inset-y-0 left-0 w-1/2`), non in basso. Testo sempre `text-white`.
+
+**Il gradiente esiste per rendere leggibile il testo, quindi segue il testo** (03-09-26): etichetta,
+titolo e descrizione della slide sono facoltativi, e una slide senza nessun testo viene renderizzata
+come **foto pulita**, senza velo scuro (`hasOverlayText` in `MenuCarousel`).
 
 ---
 

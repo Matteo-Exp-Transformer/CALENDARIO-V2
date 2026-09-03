@@ -63,11 +63,12 @@ _(si riempie solo se `mss:capsule` o `validate:mss --require-capsule` falliscono
 | `docs/Menu-QR-Skill/MENU_QR_SKILL.md` | §3 il LOCK «Carosello obbligatorio» diventa «carosello obbligatorio, testi della slide FACOLTATIVI» con data e divieto di reintrodurre il requisito; §4 i messaggi-requisito passano da 5 a 4 | la regola vecchia era un LOCK esplicito: senza riscriverlo il prossimo agente lo «ripristina» |
 | `docs/Menu-QR-Skill/MENU_QR_MINI.md` | §5 LOCK carosello: «≥1 foto; testi slide facoltativi dal 03-09-26» | la mini-skill è la copia corta letta dagli agenti veloci |
 | `docs/Menu-QR-Skill/contesto/MENU_QR_DATA_FLOW_CONTEXT.md` | riga «Validazione Salva» della tabella interventi | descrive cosa blocca il salvataggio |
-| `docs/Menu-QR-Skill/contesto/MENU_QR_REFERENCE.md` | RULE «Modale QR … al Salva obbligatori carosello (≥1 foto + etichetta + titolo)» corretta | le RULE sono la fonte operativa citata dagli agenti |
+| `docs/Menu-QR-Skill/contesto/MENU_QR_REFERENCE.md` | 4 punti: RULE «Modale QR … al Salva obbligatori carosello», RULE `canSave` («≥1 slide completa» → «≥1 foto»), RULE «Testo sovrapposto su immagini carosello» (gradiente solo con testo), riepilogo §5.3 carosello | le RULE sono la fonte operativa citata dagli agenti; le ultime 3 le ha trovate la controverifica (§12-bis), non il mio primo grep |
+| `docs/Menu-QR-Skill/contesto/MENU_QR_LAYOUT_CONTEXT.md` | §3 riga «Overlay testo» + §4: il gradiente segue il testo, slide senza testo = foto pulita | chi ricostruisse `MenuCarousel` da qui rimetterebbe il velo scuro sempre |
 | `docs/Menu-QR-Skill/contesto/MENU_QR_TEST_SUITE_INDEX.md` | riga di `menuQrValidation.test.ts`: cosa copre ora | l'indice deve dire cosa è blindato davvero |
 | `docs/SESSION_LOG.md` | riga 03-09-26 con link a questo report | indice delle sedute |
 
-Non toccati (verificato che non contengono la regola vecchia): `MENU_QR_TEXT_LIMITS_MAP.md` (parla solo dei tetti 40/60/125, che restano), `MENU_QR_LAYOUT_CONTEXT.md` §4 (regola del gradiente descritta in forma generale). I report storici in `Sessioni di lavoro/29-05-26` e `13-06-26` restano come sono: sono cronaca, non regola viva.
+Non toccato: `MENU_QR_TEXT_LIMITS_MAP.md` (parla solo dei tetti 40/60/125, che restano). I report storici in `Sessioni di lavoro/29-05-26` e `13-06-26` restano come sono: sono cronaca, non regola viva.
 
 ---
 
@@ -128,6 +129,7 @@ La capsula viene appesa in coda dal generatore (`mss:capsule --append-to`). I co
 | `npm run validate:app` non esiste su `main` | vincolo strutturale | `package.json` di main più vecchio | su main verificare con `npx tsc --noEmit` + `npx eslint src` + `npx vitest run src` |
 | Primo `git commit` fermato dal cold-check pre-commit | non è un errore | comportamento voluto dell'hook | rilanciare lo stesso commit dopo la rilettura (documentato in `CHIUSURA_SESSIONE.md` Parte B §2) |
 | `validate` rosso dopo aver scritto il report (viste generate stale) | non è un errore | l'indice report e il cruscotto sono viste **generate**: un report nuovo li disallinea per definizione | rigenerare con `node scripts/mss/views.mjs --write` prima del commit di chiusura, non toccare i file generati a mano |
+| Grep di verifica più stretto della regola («etichetta e titolo», non «slide completa») | errore agente | ho cercato le **parole del messaggio** che avevo cambiato, non tutti i **modi di dire la regola** | cercare la regola per concetto e sinonimi; è esattamente la prova che propongo in R7, e alla prima passata non ha retto |
 | Messaggio di commit con `@` in prima riga | errore agente | ho usato la sintassi here-string di PowerShell (`-m @'…'@`) dentro la shell Bash | in Bash usare `git commit -F -` con heredoc; corretto con `--amend` prima del push |
 
 Nessun pattern nuovo da appendere in `ERRORI_PROCESSO.md`: i primi tre sono la stessa causa (main indietro) e vivono già nella memoria di rilascio; l'ultimo è mio e non ricorrente.
@@ -167,7 +169,7 @@ Lavoro **terminale**: non serve un agente successivo, salvo che Matteo risponda 
 ✅ R2: sì — `ab4c750` tocca 9 file (+76/−47) e `fc4d648` è il suo cherry-pick, `f30a8ad` porta pubblicamente i soli 4 file di `src/`; i numeri 127/1048 sono del run su `main` ed è scritto in §4 che su `env/test` ho solo l'exit code; i `controls[]` della capsula sono gli stessi comandi di §4 rieseguiti dal generatore.
 
 ❓ Q3 — File correlati: la tabella §5 «File di skill aggiornati» è completa e verificata? Se no, cosa manca (o «nessuno — motivo» come in §5).
-✅ R3: sì — verificata con `grep -rn "etichetta e titolo|Carosello obbligatorio|carosello è obbligatorio" docs` (escluso `_lavoro/`): dopo l'allineamento restano solo le occorrenze di questo report e le due righe di cronaca nei report storici del 29-05-26 e 13-06-26, che non sono regola viva.
+✅ R3: **no alla prima passata, sì adesso.** Il mio grep iniziale (`etichetta e titolo|Carosello obbligatorio|carosello è obbligatorio`) era **più stretto della regola** e mi ha fatto dichiarare completa una spazzata che non lo era: la controverifica (§12-bis) ha trovato in `MENU_QR_REFERENCE.md` la RULE `canSave` con «carosello ≥1 slide completa» — la regola vecchia viva nello stesso file che avevo corretto due righe più su — e tre punti (REFERENCE RULE gradiente + riepilogo §5.3, LAYOUT §3/§4) dove il velo scuro sulle slide era descritto come sempre presente. Corretti tutti e quattro in questa chiusura e rifatto il controllo con un grep largo (`slide completa|slide incompleta|etichetta e titolo|etichetta + titolo` su tutte le skill d'area + `gradiente|overlay` su Menu-QR): nei doc vivi restano solo le occorrenze che **enunciano la regola nuova**. §5 aggiornata di conseguenza.
 
 ❓ Q4 — Cosa NON hai fatto? Cosa volevi/dovevi fare e hai lasciato a metà o saltato? (vietato «tutto ok» a vuoto: se davvero nulla, scrivilo e di' perché ne sei certo.)
 ✅ R4: (1) non ho tolto l'obbligo della **foto** — assunzione dichiarata a Matteo, non confermata né smentita; (2) non ho lanciato il sub-agente previsto dal mandato «se non è facile» (era facile: una funzione di validazione); (3) non ho aperto una riga in `FOLLOW_UP.md` per la domanda di §10; (4) non ho verificato il deploy Vercel della PrenotaZen pubblica — quel progetto non è nel team visibile da qui, l'ho detto a Matteo che l'ha controllato lui; (5) non ho toccato il carosello di Prenota (verificato: già libero) né i tetti 40/60/125.
@@ -188,6 +190,22 @@ Lavoro **terminale**: non serve un agente successivo, salvo che Matteo risponda 
 1. **Triade MSS:** `npm run validate` verde su env/test prima dei commit; `test:mss` + `git diff --check` girano come `controls[]` dentro l'append della capsula; `validate:mss --require-capsule` subito dopo.
 2. **§5 tabella skill** allineata in questa chiusura (5 file Menu QR + SESSION_LOG), non rimandata; il controllo `grep` è in R3.
 3. **§11 coerente:** ho corretto in §4 la tentazione di attribuire i conteggi 127/1048 a `env/test` — sono del run su `main`; su env/test dichiaro solo l'exit code, che è ciò che ho davvero catturato.
+## 12-bis. Controverifica imparziale (sub-agente, dopo il «report finale»)
+
+Lanciata secondo `docs/Comunicazione-Skill/CONTROVERIFICA.md` su un agente che non ha eseguito il lavoro.
+**Verdetto: ⚠️ 2 problemi**, entrambi di allineamento documentale, nessuno sul codice.
+
+| Problema | Dove | Esito |
+|---|---|---|
+| La regola vecchia «carosello ≥1 slide completa» sopravviveva nella RULE `canSave`, nello stesso file già corretto due righe più su | `contesto/MENU_QR_REFERENCE.md` | **corretto in questa chiusura** |
+| Il gradiente sulle slide era descritto come sempre presente, mentre ora segue il testo | `contesto/MENU_QR_REFERENCE.md` (RULE testo sovrapposto + riepilogo §5.3) e `contesto/MENU_QR_LAYOUT_CONTEXT.md` §3-§4 | **corretto in questa chiusura** |
+
+Controlli **passati** secondo il sub-agente: nessuno scope creep (riga di aiuto e gradiente condizionale sono conseguenze della richiesta, la seconda coerente col principio già scritto «campo vuoto → niente, NON fallback»); assunzione «foto obbligatoria» sana e dichiarata; **rilascio pulito** — `fc4d648` è identico ad `ab4c750` e `f30a8ad` porta i soli 4 file `src/`, nessuna riga dei ~190 commit non destinati alla produzione è finita in PrenotaZen; numeri di §4 rieseguiti e veri (7 test, 73 MSS tools, 197 file / 0 path rotti), e la cautela su 127/1048 era giustificata (su `env/test` i file di test sono 163, non 127).
+
+Le correzioni non sono state rimandate a `prepara-prompt` perché sono **allineamento skill della stessa seduta**, che `CHIUSURA_SESSIONE.md` §5 vieta esplicitamente di trattare come follow-up.
+
+---
+
 ## Capsula MetaSkillSystem
 
 ```jsonl
