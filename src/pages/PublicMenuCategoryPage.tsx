@@ -9,7 +9,12 @@ import { usePublicMenuQrcodeCategories } from '@/features/booking/hooks/useMenuQ
 import { isCategoryInQrFilter, applyQrItemSortOverride } from '@/features/booking/utils/menuQrAppearance'
 import { categoryHeaderBackgroundStyle } from '@/features/public-menu/categoryHeaderBackgroundStyle'
 import { getMenuTheme } from '@/features/public-menu/menuThemes'
-import { PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS } from '@/features/public-menu/publicMenuLayout'
+import { MenuNavTabs } from '@/features/public-menu/MenuNavTabs'
+import { usePublicMenuCategories } from '@/features/public-menu/usePublicMenuCategories'
+import {
+  PUBLIC_MENU_CONTENT_MAX_WIDTH_CLASS,
+  PUBLIC_MENU_CATEGORY_MAIN_BOTTOM_PAD_CLASS,
+} from '@/features/public-menu/publicMenuLayout'
 import type { MenuItem } from '@/types/menu'
 import {
   filterMenuItemsForPublicQr,
@@ -120,9 +125,17 @@ export function PublicMenuCategoryPage() {
     shortCode ?? null,
   )
   const { data: qrCatOverrides = [] } = usePublicMenuQrcodeCategories(qr?.id ?? null)
+  const { data: navCategories = [] } = usePublicMenuCategories(
+    tenantReady && qr ? tenantId : null,
+    qr?.category_filter ?? null,
+  )
   const categoryOverride = useMemo(
     () => qrCatOverrides.find((o) => o.category_key === categoryKey),
     [qrCatOverrides, categoryKey],
+  )
+  const overridesByKey = useMemo(
+    () => Object.fromEntries(qrCatOverrides.map((o) => [o.category_key, o])),
+    [qrCatOverrides],
   )
 
   const categoryInQrFilter =
@@ -216,7 +229,7 @@ export function PublicMenuCategoryPage() {
           </div>
         )}
 
-        <main className="flex flex-col gap-3 px-4 py-6">
+        <main className={`flex flex-col gap-3 px-4 py-6 ${PUBLIC_MENU_CATEGORY_MAIN_BOTTOM_PAD_CLASS}`}>
         {loading && (
           <div className="py-16 text-center text-sm text-gray-500">Caricamento...</div>
         )}
@@ -256,6 +269,18 @@ export function PublicMenuCategoryPage() {
             ),
           )}
         </main>
+
+        {tenantSlug && shortCode && navCategories.length > 0 && (
+          <MenuNavTabs
+            categories={navCategories}
+            slug={tenantSlug}
+            shortCode={shortCode}
+            accentColor={theme.accentColor}
+            tabBarStickyRgb={theme.tabBarStickyRgb}
+            overridesByKey={overridesByKey}
+            activeCategoryKey={categoryKey}
+          />
+        )}
       </div>
     </div>
   )
