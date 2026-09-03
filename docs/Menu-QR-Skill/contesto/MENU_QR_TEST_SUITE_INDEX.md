@@ -17,7 +17,7 @@
 | `src/features/booking/utils/__tests__/menuQrItemSortOverrides.test.ts` | Override ordine piatti per-QR (`parseItemSortOverrides`, `applyQrItemSortOverride`). |
 | `src/features/public-menu/__tests__/categoryIcons.test.ts` | Risoluzione icone categoria (mapping Phosphor/Lucide, default `lucide_salad`, mai emoji). |
 | `src/features/booking/components/__tests__/menuQrCategoryFieldCap.test.tsx` | **FU-MQR-1**: cap titolo (30) / descrizione (70) card categoria — valori + taglio difensivo via `AdminFieldWithCharCount`. |
-| `src/features/booking/components/__tests__/menuQrPresetImport.test.ts` | Import preset staff nel QR (`computeImportFromPreset`): categorie + hidden item precompilati, carosello escluso. |
+| `src/features/booking/components/__tests__/menuQrPresetImport.test.ts` | Import preset staff nel QR (`computeImportFromPreset`): categorie precompilate e **tutti gli ingredienti visibili** (`hiddenItemIds: []`, dal 03-09-26), carosello escluso. |
 | `e2e/public-menu-qr.spec.ts` | Flusso cliente pubblico: homepage QR, apertura categoria, browser back, shortCode mancante, fallback `/menu/:slug`; visual checklist seedata con carosello, tema, ordine categorie da `category_filter`, **niente footer data/ora**, pill categorie in pagina categoria (non in home), card categoria senza foto con default `lucide_salad` (no immagine/emoji). |
 
 ---

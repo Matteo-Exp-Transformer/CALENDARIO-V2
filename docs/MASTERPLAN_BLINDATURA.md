@@ -162,7 +162,9 @@ Ogni `PLAN_BLINDATURA_<AREA>.md` applica quel manuale all'area specifica.
   (`rwuxgvld`, colonne `is_available` su `menu_categories` + `menu_items`, default `true`) → merge
   `env/test`→`main` privato (`7d8fd56`) → build privata verde → `release:prenotazen` → build PrenotaZen
   verde → commit pubblico `b324df0` → push. Vercel deploya da PrenotaZen `main`.
-- **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7/12/6/6; cap 24/79;
+- **Decisioni chiave (vedi `ADMIN_MENU_MAGAZZINO_CONTEXT.md §9`):** limiti duri 7/12/6/6; cap 24/79
+  — ⚠️ **superati il 03-09-26**: tetti 7 categorie / 12 prodotti rimossi (restano 6 preset / 6 QR),
+  cap piatto **42/110** (categoria resta 24/79);
   **toggle disponibilità magazzino** ✅ (`is_available`, spento = nascosto Prenota+QR, snapshot intatto);
   avviso propagazione su save/toggle; QR `is_active` spento → "menu non disponibile".
 - **Invariante confermato (già nel codice):** prenotazioni pending/accettate/archivio conservano lo
