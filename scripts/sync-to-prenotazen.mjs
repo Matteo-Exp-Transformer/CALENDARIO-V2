@@ -50,6 +50,9 @@ const STRIP_FROM_PUBLIC = [
   '.cursor',
   '.claude',
   '_skill-system-v0',
+  // Console super-admin: strumento interno multi-tenant (crea/elimina aziende).
+  // Tracciata in dev ma NON va nella repo pubblica.
+  'console',
   'AGENTS.md',
   'ONBOARDING.md',
   'CONTRIBUTING.md',
@@ -225,7 +228,7 @@ const publicCiPath = join(PUBLIC_ROOT, '.github', 'workflows', 'ci.yml')
 if (existsSync(publicCiPath)) {
   const publicCi = readFileSync(publicCiPath, 'utf8')
   const nextPublicCi = publicCi.replace(
-    /\r?\n      - name: Validate doc paths\r?\n        run: npm run validate:docs\r?\n/g,
+    /\r?\n {6}- name: Validate doc paths\r?\n {8}run: npm run validate:docs\r?\n/g,
     '\n',
   )
   if (nextPublicCi !== publicCi) {
