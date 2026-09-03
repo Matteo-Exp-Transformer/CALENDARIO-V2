@@ -69,13 +69,7 @@ import { CATEGORY_KEY_RENAME_INFO_MESSAGE } from '@/features/booking/services/sy
 import { CATEGORY_KEY_DELETE_INFO_MESSAGE } from '@/features/booking/services/syncMenuCategoryKeyDelete'
 import { BOOKING_MENU_COMPOSE_TEXT_LIMITS } from '../constants/bookingPrenotaTextLimits'
 import {
-  canAddMenuCategory,
-  canAddMenuProductAnywhere,
-  canAddMenuProductToCategory,
   canAddStaffPreset,
-  countMenuProductsInCategory,
-  getMenuCategoryLimitMessage,
-  getMenuProductPerCategoryLimitMessage,
   getStaffPresetLimitMessage,
   isMenuCategoryAvailable,
 } from '../constants/menuMagazzinoLimits'
@@ -706,20 +700,8 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
     [dbCategories]
   )
 
-  const categoriesAtLimit = !canAddMenuCategory(dbCategories.length)
-  const categoryLimitMessage = getMenuCategoryLimitMessage()
   const presetsAtLimit = !canAddStaffPreset(customStaffPresets.length)
   const presetLimitMessage = getStaffPresetLimitMessage()
-  const canAddAnyProduct = canAddMenuProductAnywhere(menuItems, dbCategories)
-  const productLimitMessage = getMenuProductPerCategoryLimitMessage()
-
-  const getCategoryProductCount = (categoryKey: string, categoryLabel: string) =>
-    countMenuProductsInCategory(menuItems, categoryKey, categoryLabel)
-
-  const canAddProductToCategoryKey = (categoryKey: string) => {
-    const label = dbCategoryByKey.get(categoryKey)?.label ?? categoryKey
-    return canAddMenuProductToCategory(getCategoryProductCount(categoryKey, label))
-  }
 
   const [formData, setFormData] = useState<MenuItemInput>({
     name: '',
@@ -829,11 +811,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
   }
 
   const handleStartAdd = (preselectedCategory?: string) => {
-    const category = preselectedCategory ?? categoryKeys[0] ?? ''
-    if (category && !canAddProductToCategoryKey(category)) {
-      toast.error(productLimitMessage)
-      return
-    }
     setViewMode('menu')
     setIsAddingCategory(false)
     setIngredientEditMode(true)
@@ -1018,11 +995,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
           is_available: isMenuCategoryAvailable(editingCategory),
         })
       } else {
-        if (!canAddMenuCategory(dbCategories.length)) {
-          toast.error(categoryLimitMessage)
-          return
-        }
-
         const key = slugifyCategory(rawLabel)
         if (!key) {
           toast.error('Nome categoria non valido')
@@ -1253,11 +1225,6 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
       is_available: editingItem ? editingItem.is_available !== false : true,
     }
 
-    if (!editingId && !canAddProductToCategoryKey(formData.category)) {
-      toast.error(productLimitMessage)
-      return
-    }
-
     try {
       if (editingId) {
         let imageUrl: string | null | undefined = undefined
@@ -1306,18 +1273,19 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
         }
         await refetchMenuItems()
         await refetchCategories()
+        const keptCategory = formData.category
         setPriceInput('')
         setPhotoFile(null)
         setPhotoPreviewUrl(null)
         setCurrentImageUrl(null)
         setFormData({
           name: '',
-          category: categoryKeys[0] ?? '',
+          category: keptCategory,
           price: 0,
           description: '',
           sort_order: 0,
+          is_available: true,
         })
-        setIsAdding(false)
         setEditingId(null)
       }
     } catch {
@@ -1466,15 +1434,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                   size="sm"
                   type="button"
                   onClick={() => handleStartAdd()}
-                  disabled={!canAddAnyProduct}
                   className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Aggiungi nuovo ingrediente
                 </Button>
-                {!canAddAnyProduct && (
-                  <MenuMagazzinoLimitNotice message={productLimitMessage} className="max-w-xs" />
-                )}
               </div>
             )}
             {(isAdding || editingId) && (
@@ -1777,18 +1741,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                               size="sm"
                               type="button"
                               onClick={() => handleStartAdd(categoryKey)}
-                              disabled={!canAddProductToCategoryKey(categoryKey)}
                               className="gap-1.5 text-xs"
                             >
                               <Plus className="h-3.5 w-3.5" />
                               Aggiungi ingrediente
                             </Button>
-                            {!canAddProductToCategoryKey(categoryKey) && (
-                              <MenuMagazzinoLimitNotice
-                                message={productLimitMessage}
-                                className="max-w-xs px-2"
-                              />
-                            )}
                           </div>
                         )}
                       </div>
@@ -2191,15 +2148,11 @@ export const MenuPricesTab = forwardRef<MenuPricesTabHandle, MenuPricesTabProps>
                       hasPhotoPreview: false,
                     }
                   }}
-                  disabled={categoriesAtLimit}
                   className="h-9 shrink-0 gap-1.5 px-4 py-0 text-xs"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Nuova categoria ingredienti
                 </Button>
-                {categoriesAtLimit && (
-                  <MenuMagazzinoLimitNotice message={categoryLimitMessage} className="w-full" />
-                )}
               </div>
             )}
 
